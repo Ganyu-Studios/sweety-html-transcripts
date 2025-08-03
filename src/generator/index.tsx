@@ -1,25 +1,17 @@
 import { renderToString } from '@derockdev/discord-components-core/hydrate';
-import { readFileSync } from 'fs';
-import path from 'path';
 import React from 'react';
 import { prerenderToNodeStream } from 'react-dom/static';
 import type { AllChannels, AllGuildTextableChannels, GuildRole, Message, User } from 'seyfert';
 import type { Awaitable } from 'seyfert/lib/common';
+import { devDependencies } from '../../package.json';
 import type { ResolveImageCallback } from '../downloader/images';
 import { revealSpoiler, scrollToMessage } from '../static/client';
 import { buildProfiles } from '../utils/buildProfiles';
 import { streamToString } from '../utils/utils';
 import DiscordMessages from './transcript';
 
-// read the package.json file and get the @derockdev/discord-components-core version
-let discordComponentsVersion = '^3.6.1';
-
-try {
-  const packagePath = path.join(__dirname, '..', '..', 'package.json');
-  const packageJSON = JSON.parse(readFileSync(packagePath, 'utf8'));
-  discordComponentsVersion = packageJSON.dependencies['@derockdev/discord-components-core'] ?? discordComponentsVersion;
-  // eslint-disable-next-line no-empty
-} catch {} // ignore errors
+const resolveVersion = (version: string) => version.replace('^', '').replace('~', '');
+const discordComponentsVersion = resolveVersion(devDependencies['@penwin/discord-components-core'])
 
 export type RenderMessageContext = {
   messages: Message[];
@@ -65,6 +57,8 @@ export default async function render({ messages, channel, callbacks, ...options 
           }
         />
 
+        <link rel="stylesheet" href={`https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${discordComponentsVersion}/dist/bundle/styles/base.css`} />
+
         {/* title */}
         <title>
           {channel.isDM() || channel.isDirectory() ? 'Direct Messages' : (channel as AllGuildTextableChannels).name}
@@ -88,7 +82,7 @@ export default async function render({ messages, channel, callbacks, ...options 
             {/* component library */}
             <script
               type="module"
-              src={`https://cdn.jsdelivr.net/npm/@derockdev/discord-components-core@${discordComponentsVersion}/dist/derockdev-discord-components-core/derockdev-discord-components-core.esm.js`}
+              src={`https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${discordComponentsVersion}/dist/bundle/index.mjs`}
             ></script>
           </>
         )}

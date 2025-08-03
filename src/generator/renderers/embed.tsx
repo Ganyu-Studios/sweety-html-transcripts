@@ -4,7 +4,7 @@ import {
   DiscordEmbedField,
   DiscordEmbedFields,
   DiscordEmbedFooter,
-} from '@derockdev/discord-components-react';
+} from '@penwin/discord-components-react-render';
 import React from 'react';
 import type { RenderMessageContext } from '..';
 import { calculateInlineIndex } from '../../utils/embeds';

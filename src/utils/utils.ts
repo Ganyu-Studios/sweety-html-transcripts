@@ -7,7 +7,7 @@ export function isDefined<T>(value: T | undefined | null): value is T {
 }
 
 export function formatBytes(bytes: number, decimals = 2) {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return { size: 0, unit: 'Bytes' };
 
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
@@ -15,7 +15,7 @@ export function formatBytes(bytes: number, decimals = 2) {
 
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  return { size: parseFloat((bytes / Math.pow(k, i)).toFixed(dm)), unit: sizes[i] };
 }
 
 export function parseDiscordEmoji(emoji: Emoji | APIMessageComponentEmoji) {

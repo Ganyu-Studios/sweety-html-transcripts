@@ -1,4 +1,4 @@
-import { DiscordHeader, DiscordMessages as DiscordMessagesComponent } from '@derockdev/discord-components-react';
+import { DiscordTranscriptHeader, DiscordMessages as DiscordMessagesComponent } from '@penwin/discord-components-react-render';
 import React from 'react';
 import type { RenderMessageContext } from '.';
 import MessageContent, { RenderType } from './renderers/content';
@@ -17,7 +17,7 @@ export default async function DiscordMessages({ messages, channel, callbacks, ..
   return (
     <DiscordMessagesComponent style={{ minHeight: '100vh' }}>
       {/* header */}
-      <DiscordHeader
+      <DiscordTranscriptHeader
         guild={
           channel.isDM() || channel.isDirectory() ? 'Direct Messages' : (channel as AllGuildTextableChannels).guild.name
         }
@@ -54,7 +54,7 @@ export default async function DiscordMessages({ messages, channel, callbacks, ..
         ) : (
           `This is the start of #${(channel as AllGuildTextableChannels).name} channel.`
         )}
-      </DiscordHeader>
+      </DiscordTranscriptHeader>
 
       {/* body */}
       {messages.map((message) => (
@@ -65,8 +65,8 @@ export default async function DiscordMessages({ messages, channel, callbacks, ..
       <div style={{ textAlign: 'center', width: '100%' }}>
         {options.footerText
           ? options.footerText
-              .replaceAll('{number}', messages.length.toString())
-              .replaceAll('{s}', messages.length > 1 ? 's' : '')
+            .replaceAll('{number}', messages.length.toString())
+            .replaceAll('{s}', messages.length > 1 ? 's' : '')
           : `Exported ${messages.length} message${messages.length > 1 ? 's' : ''}.`}{' '}
         {options.poweredBy ? (
           <span style={{ textAlign: 'center' }}>

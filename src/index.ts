@@ -8,6 +8,7 @@ import {
 import { TranscriptImageDownloader, type ResolveImageCallback } from './downloader/images';
 import type { AllChannels, AllGuildChannels, Message } from 'seyfert';
 import { AttachmentBuilder, Collection } from 'seyfert';
+import { writeFile } from 'fs/promises';
 
 // re-exports
 export { default as DiscordMessages } from './generator/transcript';
@@ -67,13 +68,7 @@ export async function generateFromMessages<T extends ExportReturnType = ExportRe
     hydrate: options.hydrate ?? false,
   });
 
-  // get the time it took to render the messages
-  // const renderTime = process.hrtime(startTime);
-  // console.log(
-  //   `[seyfert-html-transcripts] Rendered ${transformedMessages.length} messages in ${renderTime[0]}s ${
-  //     renderTime[1] / 1000000
-  //   }ms`
-  // );
+  await writeFile('index.html', html);
 
   // return the html in the specified format
   if (options.returnType === ExportReturnType.Buffer) {

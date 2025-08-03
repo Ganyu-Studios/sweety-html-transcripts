@@ -2,14 +2,16 @@ import {
   DiscordBold,
   DiscordCodeBlock,
   DiscordCustomEmoji,
-  DiscordInlineCode,
+  DiscordCode,
   DiscordItalic,
   DiscordMention,
   DiscordQuote,
   DiscordSpoiler,
   DiscordTime,
   DiscordUnderlined,
-} from '@derockdev/discord-components-react';
+  DiscordSubscript,
+  DiscordLink,
+} from '@penwin/discord-components-react-render';
 import parse, { type RuleTypesExtended } from 'discord-markdown-parser';
 import React from 'react';
 import type { ASTNode } from 'simple-markdown';
@@ -100,17 +102,17 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
 
     case 'link':
       return (
-        <a href={node.target}>
+        <DiscordLink href={node.target}>
           <MessageASTNodes nodes={node.content} context={context} />
-        </a>
+        </DiscordLink>
       );
 
     case 'url':
     case 'autolink':
       return (
-        <a href={node.target} target="_blank" rel="noreferrer">
+        <DiscordLink href={node.target} target="_blank" rel="noreferrer">
           <MessageASTNodes nodes={node.content} context={context} />
-        </a>
+        </DiscordLink>
       );
 
     case 'blockQuote':
@@ -170,10 +172,10 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
       if (context.type !== RenderType.REPLY) {
         return <DiscordCodeBlock language={node.lang} code={node.content} />;
       }
-      return <DiscordInlineCode>{node.content}</DiscordInlineCode>;
+      return <DiscordCode multiline>{node.content}</DiscordCode>;
 
     case 'inlineCode':
-      return <DiscordInlineCode>{node.content}</DiscordInlineCode>;
+      return <DiscordCode>{node.content}</DiscordCode>;
 
     case 'em':
       return (
@@ -224,8 +226,15 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
           name={node.name}
           url={parseDiscordEmoji(node as APIMessageComponentEmoji)}
           embedEmoji={context.type === RenderType.EMBED}
-          largeEmoji={context._internal?.largeEmojis}
+          jumbo={context._internal?.largeEmojis}
         />
+      );
+
+    case 'subtext':
+      return (
+        <DiscordSubscript>
+          <MessageASTNodes nodes={node.content} context={context} />
+        </DiscordSubscript>
       );
 
     case 'timestamp':

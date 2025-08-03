@@ -1,8 +1,8 @@
-import { DiscordActionRow, DiscordButton } from '@derockdev/discord-components-react';
-import type { ActionRow, ActionRowMessageComponents } from 'seyfert';
+import { DiscordActionRow, DiscordButton } from '@penwin/discord-components-react-render';
 import React from 'react';
-import { parseDiscordEmoji } from '../../utils/utils';
+import type { ActionRow, AllComponents } from 'seyfert';
 import { ButtonStyle, ComponentType } from 'seyfert/lib/types';
+import { parseDiscordEmoji } from '../../utils/utils';
 
 export default function ComponentRow({ row, id }: { row: ActionRow; id: number }) {
   return (
@@ -23,19 +23,24 @@ const ButtonStyleMapping = {
   [ButtonStyle.Premium]: 'primary',
 } as const;
 
-export function Component({ component, id }: { component: ActionRowMessageComponents; id: number }) {
-  if (component.data.type === ComponentType.Button) {
-    return (
-      <DiscordButton
-        key={id}
-        type={'style' in component.data ? ButtonStyleMapping[component.data.style] : 'secondary'}
-        url={'url' in component.data ? component.data.url : undefined}
-        emoji={'emoji' in component.data ? parseDiscordEmoji(component.data.emoji!) : undefined}
-      >
-        {'label' in component.data ? component.data.label : undefined}
-      </DiscordButton>
-    );
-  }
+export function Component({ component, id }: { component: AllComponents; id: number }) {
+
+  switch (component.data.type) {
+    case ComponentType.Button:
+      return (
+        <DiscordButton
+          key={id}
+          type={'style' in component.data ? ButtonStyleMapping[component.data.style] : 'secondary'}
+          url={'url' in component.data ? component.data.url : undefined}
+          emoji={'emoji' in component.data ? parseDiscordEmoji(component.data.emoji!) : undefined}
+        >
+          {'label' in component.data ? component.data.label : undefined}
+        </DiscordButton>
+      );
+    case ComponentType.ActionRow: {
+      component.data;
+    }
+  };
 
   return undefined;
 }

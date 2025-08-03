@@ -45,10 +45,10 @@ client.events.values.READY = {
 
       console.info(`Transcript generated for channel ${channel.name}.`);
 
-      await channel.messages.write({
-        content: 'Here is the transcript',
-        files: [attachment],
-      });
+      // await channel.messages.write({
+      //   content: 'Here is the transcript',
+      //   files: [attachment],
+      // });
 
       client.gateway.disconnectAll();
       process.exit(0);
@@ -59,5 +59,5 @@ client.events.values.READY = {
 client.start();
 
 declare module 'seyfert' {
-  interface UsingClient extends ParseClient<Client<true>> {}
+  interface UsingClient extends ParseClient<Client<true>> { }
 }

@@ -6,7 +6,7 @@ import {
   DiscordReactions,
   DiscordThread,
   DiscordThreadMessage,
-} from '@derockdev/discord-components-react';
+} from '@penwin/discord-components-react-render';
 import type { ActionRow, Message as MessageType } from 'seyfert';
 import React from 'react';
 import type { RenderMessageContext } from '..';
@@ -32,9 +32,11 @@ export default async function DiscordMessage({
   const isCrosspost = message.messageReference && message.messageReference.guildId !== message.guildId;
   const threadMessage =
     message.thread &&
-    (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)
+      (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)
       ? await message.client.messages.fetch(message.thread.lastMessageId!, message.thread.id).catch(() => null)
       : null;
+
+  console.log(message)
 
   return (
     <DiscordMessageComponent

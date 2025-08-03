@@ -1,4 +1,4 @@
-import { DiscordReaction, DiscordReactions, DiscordSystemMessage } from '@derockdev/discord-components-react';
+import { DiscordReaction, DiscordReactions, DiscordSystemMessage } from '@penwin/discord-components-react-render';
 import React from 'react';
 import { convertToHEX, parseDiscordEmoji } from '../../utils/utils';
 import type { GuildMember, Message, User } from 'seyfert';

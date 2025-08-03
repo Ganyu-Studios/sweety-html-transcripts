@@ -1,4 +1,4 @@
-import { DiscordReply } from '@derockdev/discord-components-react';
+import { DiscordReply } from '@penwin/discord-components-react-render';
 import type { RenderMessageContext } from '..';
 import React from 'react';
 import MessageContent, { RenderType } from './content';

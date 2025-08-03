@@ -1,8 +1,16 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["@types/node", "react/experimental", "@types/react-dom"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "types": [
+      "@types/node",
+      "react/experimental",
+      "@types/react-dom"
+    ],
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
@@ -17,6 +25,7 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "exactOptionalPropertyTypes": false,
+    "resolveJsonModule": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": true,
@@ -27,6 +36,10 @@
     "declaration": true,
     "skipLibCheck": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
