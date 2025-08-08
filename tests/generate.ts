@@ -3,8 +3,9 @@ import 'dotenv/config';
 import { Client, type ParseClient } from 'seyfert';
 import { GatewayIntentBits } from 'seyfert/lib/types';
 
-import { createTranscript } from '../src';
+import { createTranscript, ExportReturnType } from '../src';
 import { SeyfertTranscript, SeyfertTranscriptAdapter } from '../src/adapters/seyfert';
+import { writeFile } from 'fs/promises';
 
 const client = new Client({
   getRC() {
@@ -51,9 +52,12 @@ client.events.values.READY = {
       // });
 
       const attachment = await SeyfertTranscript.create({
+        returnType: ExportReturnType.String,
         channel,
         limit: 10,
       })
+
+      await writeFile('index.html', attachment);
 
       console.info(`Transcript generated for channel ${channel.name}.`);
 

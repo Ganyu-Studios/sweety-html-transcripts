@@ -1,5 +1,4 @@
 import { APIMessage } from 'discord-api-types/v10';
-import { writeFile } from 'fs/promises';
 import { Collection } from 'seyfert';
 import { TranscriptAdapter } from './adapters/core';
 import { TranscriptImageDownloader, type ResolveImageCallback } from './downloader/images';
@@ -30,8 +29,6 @@ export async function generateFromMessages<Adapter extends TranscriptAdapter<unk
 ): Promise<ObjectType<T, Adapter>> {
 
   const { adapter, channel } = options;
-
-  console.log('calling generateFromMessages')
 
   const guild = "guild_id" in channel && channel.guild_id ? await adapter.resolveGuild(channel.guild_id) : null;
 
@@ -77,9 +74,6 @@ export async function generateFromMessages<Adapter extends TranscriptAdapter<unk
     favicon: options.favicon ?? 'guild',
     hydrate: options.hydrate ?? false,
   });
-
-  //! REMOVE LATER
-  await writeFile('index.html', html);
 
   // return the html in the specified format
   if (options.returnType === ExportReturnType.Buffer) {

@@ -31,7 +31,7 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
 
   override listChannelMessages(channelId: string, options: { limit?: number, before?: string }): Awaitable<APIMessageData[]> {
 
-    // if(options && !options?.before) delete options.before;
+    if (options && !options?.before) delete options.before;
 
     return this.client.messages.list(channelId, options).then(messages => messages.map(message => message.data as APIMessageData)).catch(() => []);
   }
@@ -54,13 +54,15 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
 
 export class SeyfertTranscript {
 
-  static async create<T extends ExportReturnType>(options: Omit<CreateTranscriptOptions<T, SeyfertTranscriptAdapter>, 'adapter' | 'channel'> & {
+  static async create<T extends ExportReturnType = ExportReturnType.Attachment>(options: Omit<CreateTranscriptOptions<T, SeyfertTranscriptAdapter>, 'adapter' | 'channel'> & {
     channel: AllChannels
   }) {
-    return createTranscript({
+    return createTranscript<SeyfertTranscriptAdapter, T>({
       ...options,
       adapter: new SeyfertTranscriptAdapter(options.channel.client),
       channel: options.channel.data as AllAPIChannel,
     });
   }
 }
+
+export { ExportReturnType } from '../../types';
