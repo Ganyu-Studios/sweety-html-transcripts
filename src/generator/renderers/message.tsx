@@ -5,57 +5,59 @@ import {
   DiscordReaction,
   DiscordReactions,
   DiscordThread,
-  DiscordThreadMessage,
+  DiscordThreadMessage
 } from '@penwin/discord-components-react-render';
-import type { ActionRow, Message as MessageType } from 'seyfert';
+import { APIMessageComponentEmoji, ChannelType, InteractionType } from 'discord-api-types/v10';
 import React from 'react';
 import type { RenderMessageContext } from '..';
+import { APIMessageData } from '../../utils/channel';
 import { parseDiscordEmoji } from '../../utils/utils';
 import { Attachments } from './attachment';
-import ComponentRow from './components';
+import { Component } from './components';
 import MessageContent, { RenderType } from './content';
 import { DiscordEmbed } from './embed';
 import MessageReply from './reply';
 import DiscordSystemMessage from './systemMessage';
-import type { APIMessageComponentEmoji } from 'seyfert/lib/types';
-import { ChannelType } from 'seyfert/lib/types';
 
 export default async function DiscordMessage({
   message,
   context,
 }: {
-  message: MessageType;
+  message: APIMessageData;
   context: RenderMessageContext;
 }) {
-  if ('system' in message) return <DiscordSystemMessage message={message} />;
 
-  const isCrosspost = message.messageReference && message.messageReference.guildId !== message.guildId;
+  const { adapter } = context;
+
+  if ('system' in message) return <DiscordSystemMessage message={message} context={context} />;
+
+  const isCrosspost = message.message_reference && message.message_reference.guild_id !== message.guild_id;
+
   const threadMessage =
     message.thread &&
       (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)
-      ? await message.client.messages.fetch(message.thread.lastMessageId!, message.thread.id).catch(() => null)
+      ? await adapter.resolveMessage(message.thread.id, message.thread.last_message_id!)
       : null;
 
-  console.log(message)
 
   return (
     <DiscordMessageComponent
       id={`m-${message.id}`}
-      timestamp={message.createdAt.toISOString()}
+      timestamp={message.timestamp}
       key={message.id}
-      edited={message.editedTimestamp !== null}
+      edited={message.edited_timestamp !== null}
       server={isCrosspost ?? undefined}
-      highlight={message.mentions.roles.includes('@everyone') || message.mentions.roles.includes('@here')}
+      highlight={message.mention_roles.includes('@everyone') || message.mention_roles.includes('@here')}
       profile={message.author.id}
     >
       {/* reply */}
       <MessageReply message={message} context={context} />
 
       {/* slash command */}
-      {message.interactionMetadata && (
+      {message.interaction_metadata?.type === InteractionType.ApplicationCommand && (
         <DiscordCommand
           slot="reply"
-          profile={message.interactionMetadata.user.id}
+          profile={message.interaction_metadata.user.id}
           //@ts-expect-error not implented yet
           command={'/' + message.interaction.name}
         />
@@ -65,7 +67,7 @@ export default async function DiscordMessage({
       {message.content && (
         <MessageContent
           content={message.content}
-          context={{ ...context, type: message.webhookId ? RenderType.WEBHOOK : RenderType.NORMAL }}
+          context={{ ...context, type: message.webhook_id ? RenderType.WEBHOOK : RenderType.NORMAL }}
         />
       )}
 
@@ -74,14 +76,14 @@ export default async function DiscordMessage({
 
       {/* message embeds */}
       {message.embeds.map((embed, id) => (
-        <DiscordEmbed embed={embed.toBuilder()} context={{ ...context, index: id, message }} key={id} />
+        <DiscordEmbed embed={embed} context={{ ...context, index: id, message }} key={id} />
       ))}
 
       {/* components */}
-      {message.components.length > 0 && (
+      {message.components && message.components.length > 0 && (
         <DiscordAttachments slot="components">
           {message.components.map((component, id) => (
-            <ComponentRow key={id} id={id} row={component.toBuilder() as ActionRow} />
+            <Component key={id} component={component} id={id} />
           ))}
         </DiscordAttachments>
       )}
@@ -107,15 +109,16 @@ export default async function DiscordMessage({
             slot="thread"
             name={message.thread.name}
             cta={
-              message.thread.messageCount
-                ? `${message.thread.messageCount} Message${message.thread.messageCount > 1 ? 's' : ''}`
+              message.thread.message_count
+                ? `${message.thread.message_count} Message${message.thread.message_count > 1 ? 's' : ''}`
                 : 'View Thread'
             }
           >
-            {message.thread.lastMessageId && threadMessage ? (
+            {message.thread.last_message_id && threadMessage ? (
               <DiscordThreadMessage
                 profile={
-                  (await message.client.messages.fetch(message.thread.lastMessageId, message.thread.id)).author.id
+                  // (await message.client.messages.fetch(message.thread.lastMessageId, message.thread.id)).author.id
+                  (await adapter.resolveMessage(message.thread.id, message.thread.last_message_id!))?.author.id
                 }
               >
                 <MessageContent

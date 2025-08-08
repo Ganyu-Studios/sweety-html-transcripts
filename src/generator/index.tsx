@@ -1,12 +1,15 @@
 import { renderToString } from '@derockdev/discord-components-core/hydrate';
+import { APIGuild, APIRole, APIUser } from 'discord-api-types/v10';
 import React from 'react';
 import { prerenderToNodeStream } from 'react-dom/static';
-import type { AllChannels, AllGuildTextableChannels, GuildRole, Message, User } from 'seyfert';
 import type { Awaitable } from 'seyfert/lib/common';
 import { devDependencies } from '../../package.json';
+import { TranscriptAdapter } from '../adapters/core';
 import type { ResolveImageCallback } from '../downloader/images';
 import { revealSpoiler, scrollToMessage } from '../static/client';
 import { buildProfiles } from '../utils/buildProfiles';
+import { AllAPIChannel, APIMessageData, channelUtils } from '../utils/channel';
+import { guildUtils } from '../utils/guild';
 import { streamToString } from '../utils/utils';
 import DiscordMessages from './transcript';
 
@@ -14,14 +17,16 @@ const resolveVersion = (version: string) => version.replace('^', '').replace('~'
 const discordComponentsVersion = resolveVersion(devDependencies['@penwin/discord-components-core'])
 
 export type RenderMessageContext = {
-  messages: Message[];
-  channel: AllChannels;
+  adapter: TranscriptAdapter<unknown>;
+  messages: APIMessageData[];
+  channel: AllAPIChannel;
+  guild?: APIGuild | null;
 
   callbacks: {
     resolveImageSrc: ResolveImageCallback;
-    resolveChannel: (channelId: string) => Awaitable<AllChannels | null>;
-    resolveUser: (userId: string) => Awaitable<User | null>;
-    resolveRole: (roleId: string) => Awaitable<GuildRole | null>;
+    resolveChannel: (channelId: string) => Awaitable<AllAPIChannel | null>;
+    resolveUser: (userId: string) => Awaitable<APIUser | null>;
+    resolveRole: (roleId: string) => Awaitable<APIRole | null>;
   };
 
   poweredBy?: boolean;
@@ -31,8 +36,11 @@ export type RenderMessageContext = {
   hydrate: boolean;
 };
 
-export default async function render({ messages, channel, callbacks, ...options }: RenderMessageContext) {
-  const profiles = await buildProfiles(messages);
+export default async function render(context: RenderMessageContext) {
+
+  const { adapter, messages, channel, callbacks, ...options } = context;
+
+  const profiles = await buildProfiles(context);
 
   // NOTE: this renders a STATIC site with no interactivity
   // if interactivity is needed, switch to renderToPipeableStream and use hydrateRoot on client.
@@ -49,9 +57,12 @@ export default async function render({ messages, channel, callbacks, ...options 
           type="image/png"
           href={
             options.favicon === 'guild'
-              ? channel.isDM() || channel.isDirectory()
+              // ? channel.isDM() || channel.isDirectory()
+              ? channelUtils.isDM(channel) || channelUtils.isDirectory(channel)
                 ? undefined
-                : ((await (channel as AllGuildTextableChannels).guild()).iconURL({ size: 16, extension: 'png' }) ??
+                : (
+                  (context.guild ?
+                    guildUtils.iconURL(context.guild, { size: 16, extension: 'png' }) : undefined) ??
                   undefined)
               : options.favicon
           }
@@ -61,7 +72,7 @@ export default async function render({ messages, channel, callbacks, ...options 
 
         {/* title */}
         <title>
-          {channel.isDM() || channel.isDirectory() ? 'Direct Messages' : (channel as AllGuildTextableChannels).name}
+          {channelUtils.isDM(channel) || channelUtils.isDirectory(channel) ? 'Direct Messages' : channel.name}
         </title>
 
         {/* message reference handler */}
@@ -94,7 +105,7 @@ export default async function render({ messages, channel, callbacks, ...options 
           minHeight: '100vh',
         }}
       >
-        <DiscordMessages messages={messages} channel={channel} callbacks={callbacks} {...options} />
+        <DiscordMessages context={context} />
       </body>
 
       {/* Make sure the script runs after the DOM has loaded */}

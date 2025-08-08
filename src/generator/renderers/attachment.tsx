@@ -1,19 +1,18 @@
 import { DiscordFileAttachment, DiscordAttachments, DiscordTextFileAttachmentPreviewer, DiscordMediaGallery, DiscordMediaGalleryItem } from '@penwin/discord-components-react-render';
 import React from 'react';
-import type { Attachment as AttachmentType, Message } from 'seyfert';
+// import type { Attachment as AttachmentType, Message } from 'seyfert';
 import type { RenderMessageContext } from '..';
 import type { AttachmentTypes } from '../../types';
 import { formatBytes } from '../../utils/utils';
-import type { APIAttachment, APIMessage } from 'seyfert/lib/types';
-import { ReplaceRegex, toSnakeCase } from 'seyfert/lib/common';
+// import { ReplaceRegex, toSnakeCase } from 'seyfert/lib/common';
+import { APIMessageData } from '../../utils/channel';
+import { APIAttachment } from 'discord-api-types/v10';
 
-// "audio" | "video" | "image" | "file"
-function getAttachmentType(attachment: Pick<AttachmentType, 'contentType'>): AttachmentTypes {
-  const type = attachment.contentType?.split('/')?.[0] ?? 'unknown';
+function getAttachmentType(attachment: Pick<APIAttachment, 'content_type'>): AttachmentTypes {
+  const type = attachment.content_type?.split('/')?.[0] ?? 'unknown';
   if (['audio', 'video', 'image'].includes(type)) return type as AttachmentTypes;
   return 'file';
 }
-
 
 /**
  * Renders all attachments for a message
@@ -21,7 +20,7 @@ function getAttachmentType(attachment: Pick<AttachmentType, 'contentType'>): Att
  * @param context
  * @returns
  */
-export async function Attachments(props: { message: Message; context: RenderMessageContext }) {
+export async function Attachments(props: { message: APIMessageData; context: RenderMessageContext }) {
   if (props.message.attachments.length === 0) return <></>;
 
   const grouped = { mediaGallery: [] as typeof props.message.attachments, other: [] as typeof props.message.attachments };
@@ -34,7 +33,6 @@ export async function Attachments(props: { message: Message; context: RenderMess
       grouped.other.push(attachment);
     }
   }
-
 
   return (
     <DiscordAttachments slot="attachments">
@@ -111,9 +109,9 @@ export async function Attachment({
   context,
   message,
 }: {
-  attachment: AttachmentType;
+  attachment: APIAttachment;
   context: RenderMessageContext;
-  message: Message;
+  message: APIMessageData;
 }) {
   let url = attachment.url;
   // const name = attachment.filename;
@@ -122,11 +120,10 @@ export async function Attachment({
 
   const type = getAttachmentType(attachment);
   const attach = ('data' in attachment ? attachment.data : attachment) as APIAttachment;
-  const json = toJSON(message) as APIMessage;
 
   if (type === 'image' || type === 'video') {
     // download it to a data url
-    const downloaded = await context.callbacks.resolveImageSrc(attach, json);
+    const downloaded = await context.callbacks.resolveImageSrc(attach, message);
 
     if (downloaded !== null) {
       url = downloaded ?? url;
@@ -136,14 +133,14 @@ export async function Attachment({
         media={url}
         key={attachment.id}
         description={attachment.description}
-        mime-type={attachment.contentType}
+        mime-type={attachment.content_type}
       // spoiler={attachment}
       />
     )
 
   }
 
-  const mime = attachment.contentType?.split(';')[0]!;
+  const mime = attachment.content_type?.split(';')[0]!;
   const format = programmingLanguageMimeMap.get(mime);
   const { size, unit } = formatBytes(attachment.size);
 
@@ -186,21 +183,21 @@ export async function Attachment({
  * @param {Message} message the message to convert
  * @returns the JSON object
  */
-function toJSON(message: Message) {
-  const keys = Object.getOwnPropertyNames(message);
-  const obj: Partial<APIMessage> = {};
+// function toJSON(message: Message) {
+//   const keys = Object.getOwnPropertyNames(message);
+//   const obj: Partial<APIMessage> = {};
 
-  for (const key of keys) {
-    if (['timestamp', 'client'].includes(key)) continue;
+//   for (const key of keys) {
+//     if (['timestamp', 'client'].includes(key)) continue;
 
-    const value = message[key as keyof Message];
-    if (value && typeof value === 'object' && 'client' in value)
-      Object.defineProperty(value, 'client', { value: undefined });
+//     const value = message[key as keyof Message];
+//     if (value && typeof value === 'object' && 'client' in value)
+//       Object.defineProperty(value, 'client', { value: undefined });
 
-    if (value === undefined || value === null) continue;
+//     if (value === undefined || value === null) continue;
 
-    obj[ReplaceRegex.snake(key) as keyof APIMessage] = toSnakeCase(message[key as keyof Message] as never);
-  }
+//     obj[ReplaceRegex.snake(key) as keyof APIMessage] = toSnakeCase(message[key as keyof Message] as never);
+//   }
 
-  return obj;
-}
+//   return obj;
+// }

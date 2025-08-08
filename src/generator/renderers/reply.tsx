@@ -1,50 +1,43 @@
 import { DiscordReply } from '@penwin/discord-components-react-render';
-import type { RenderMessageContext } from '..';
 import React from 'react';
-import MessageContent, { RenderType } from './content';
-import type { Message } from 'seyfert';
-import { convertToHEX } from '../../utils/utils';
 import { UserFlags } from 'seyfert/lib/types';
+import type { RenderMessageContext } from '..';
+import { APIMessageData, channelUtils } from '../../utils/channel';
+import { convertToHEX } from '../../utils/utils';
+import MessageContent, { RenderType } from './content';
+import { userUtils } from '../../utils/user';
 
-export default async function MessageReply({ message, context }: { message: Message; context: RenderMessageContext }) {
-  if (!message.messageReference) return null;
+export default async function MessageReply({ message, context }: { message: APIMessageData; context: RenderMessageContext }) {
+  if (!message.message_reference) return null;
 
-  if (message.messageReference.guildId !== message.guildId) return null;
+  if (message.message_reference.guild_id !== message.guild_id) return null;
 
-  const referencedMessage = context.messages.find((m) => m.id === message.messageReference!.messageId);
+  const referencedMessage = message.message_reference.message_id ? await context.adapter.resolveMessage(message.message_reference.channel_id, message.message_reference.message_id) : null;
   if (!referencedMessage) return <DiscordReply slot="reply">Message could not be loaded.</DiscordReply>;
 
-  await referencedMessage.fetch();
-
   const isCrosspost =
-    referencedMessage.messageReference && referencedMessage.messageReference.guildId !== message.guildId;
-  const isCommand = referencedMessage.interactionMetadata !== null;
+    referencedMessage.message_reference && referencedMessage.message_reference.guild_id !== message.guild_id;
+  const isCommand = referencedMessage.interaction_metadata !== null;
 
-  if (!referencedMessage.member)
-    referencedMessage.member = await message.client.members.fetch(message.guildId!, referencedMessage.author.id);
+  const referencedMember = (await context.adapter.resolveGuildMember(message.guild_id!, referencedMessage.author.id))!;
 
-  const channel = await message.channel();
-  const role = await referencedMessage.member.roles.highest();
+  const channel = await context.adapter.resolveChannel(message.channel_id);
+  const role = await context.adapter.resolveHighestGuildMemberRole(referencedMember, message.guild_id!);
 
-  await role.fetch();
-
-  const roleColor = role?.color ?? referencedMessage.author.accentColor;
-  const authorName = referencedMessage.author.bot ? referencedMessage.author.username : referencedMessage.author.tag;
-
-  // what the f*ck is wrong with you?
-  if (typeof referencedMessage.author.client === "undefined") (referencedMessage.author as { client: undefined | typeof message.client }).client = message.client;
+  const roleColor = role?.color ?? referencedMessage.author.accent_color;
+  const authorName = referencedMessage.author.bot ? referencedMessage.author.username : userUtils.tag(referencedMessage.author);
 
   return (
     <DiscordReply
       slot="reply"
-      edited={!isCommand && referencedMessage.editedTimestamp !== null}
+      edited={!isCommand && referencedMessage.edited_timestamp !== null}
       attachment={referencedMessage.attachments.length > 0}
       author={referencedMessage.member?.nick ?? authorName}
-      avatar={referencedMessage.author.avatarURL({ size: 32 })}
+      avatar={userUtils.avatarURL(referencedMessage.author, { size: 32 })}
       roleColor={roleColor ? convertToHEX(roleColor) : undefined}
       bot={!isCrosspost && referencedMessage.author.bot}
-      verified={(referencedMessage.author.publicFlags ?? 0 & UserFlags.VerifiedBot) === UserFlags.VerifiedBot}
-      op={channel.isThread() && referencedMessage.author.id === channel.ownerId}
+      verified={(referencedMessage.author.public_flags ?? 0 & UserFlags.VerifiedBot) === UserFlags.VerifiedBot}
+      op={Boolean(channel && channelUtils.isThread(channel) && referencedMessage.author.id === channel.owner_id)}
       server={isCrosspost ?? undefined}
       command={isCommand}
     >

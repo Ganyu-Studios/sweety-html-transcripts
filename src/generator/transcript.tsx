@@ -5,6 +5,8 @@ import MessageContent, { RenderType } from './renderers/content';
 import DiscordMessage from './renderers/message';
 import { ChannelType } from 'seyfert/lib/types';
 import type { AllGuildTextableChannels } from 'seyfert';
+import { channelUtils } from '../utils/channel';
+import { guildUtils } from '../utils/guild';
 
 /**
  * The core transcript component.
@@ -13,52 +15,58 @@ import type { AllGuildTextableChannels } from 'seyfert';
  * @param props Messages, channel details, callbacks, etc.
  * @returns
  */
-export default async function DiscordMessages({ messages, channel, callbacks, ...options }: RenderMessageContext) {
+export default async function DiscordMessages({ context }: { context: RenderMessageContext }) {
+
+  const { messages, channel, guild, ...options } = context;
+
+
   return (
     <DiscordMessagesComponent style={{ minHeight: '100vh' }}>
       {/* header */}
       <DiscordTranscriptHeader
         guild={
-          channel.isDM() || channel.isDirectory() ? 'Direct Messages' : (channel as AllGuildTextableChannels).guild.name
+          // channel.isDM() || channel.isDirectory() ? 'Direct Messages' : (channel as AllGuildTextableChannels).guild.name
+          // (channelUtils.isDM(channel) || channelUtils.isDirectory(channel)) ? 'Direct Messages' : channel.guild
+          guild?.name ?? 'Direct Messages'
         }
         channel={
-          channel.isDM()
+          channelUtils.isDM(channel)
             ? channel.type === ChannelType.DM
               ? (channel.recipients?.find((r) => r.id !== channel.id)?.username ?? 'Unknown Recipient')
               : 'Unknown Recipient'
-            : channel.isDirectory()
+            : channelUtils.isDirectory(channel)
               ? 'Unknown Directory'
               : (channel as AllGuildTextableChannels).name
         }
         icon={
-          channel.isDM() || channel.isDirectory()
+          channelUtils.isDM(channel) || channelUtils.isDirectory(channel)
             ? undefined
-            : ((await (channel as AllGuildTextableChannels).guild()).iconURL({ size: 128 }) ?? undefined)
+            : ((context.guild ? guildUtils.iconURL(context.guild, { size: 128 }) : undefined) ?? undefined)
         }
       >
-        {channel.isThread() ? (
-          `Thread channel in ${channel.parentId ?? 'Unknown Channel'}`
-        ) : channel.isDM() ? (
+        {channelUtils.isThread(channel) ? (
+          `Thread channel in ${channel.parent_id ?? 'Unknown Channel'}`
+        ) : channelUtils.isDM(channel) ? (
           `Direct Messages`
-        ) : channel.isVoice() ? (
+        ) : channelUtils.isVoice(channel) ? (
           `Voice Text Channel for ${channel.name}`
         ) : channel.type === ChannelType.GuildCategory ? (
           `Category Channel`
         ) : 'topic' in channel && channel.topic ? (
           <MessageContent
             content={channel.topic}
-            context={{ messages, channel, callbacks, type: RenderType.REPLY, ...options }}
+            context={{ type: RenderType.REPLY, ...context }}
           />
-        ) : channel.isDirectory() ? (
+        ) : channelUtils.isDirectory(channel) ? (
           `This is the start of the directory.`
         ) : (
-          `This is the start of #${(channel as AllGuildTextableChannels).name} channel.`
+          `This is the start of #${channel.name} channel.`
         )}
       </DiscordTranscriptHeader>
 
       {/* body */}
       {messages.map((message) => (
-        <DiscordMessage message={message} context={{ messages, channel, callbacks, ...options }} key={message.id} />
+        <DiscordMessage message={message} context={context} key={message.id} />
       ))}
 
       {/* footer */}

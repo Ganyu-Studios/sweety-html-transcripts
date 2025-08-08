@@ -1,12 +1,14 @@
 import { DiscordReaction, DiscordReactions, DiscordSystemMessage } from '@penwin/discord-components-react-render';
+import { APIMessageComponentEmoji, APIRole, APIUser, MessageType } from 'discord-api-types/v10';
 import React from 'react';
+import { RenderMessageContext } from '..';
+import { APIMessageData, GuildMemberData } from '../../utils/channel';
+import { userUtils } from '../../utils/user';
 import { convertToHEX, parseDiscordEmoji } from '../../utils/utils';
-import type { GuildMember, Message, User } from 'seyfert';
-import type { APIMessageComponentEmoji } from 'seyfert/lib/types';
-import { MessageType } from 'seyfert/lib/types';
 
-export default async function SystemMessage({ message }: { message: Message }) {
-  const role = await message.member?.roles.highest();
+export default async function SystemMessage({ message, context }: { message: APIMessageData, context: RenderMessageContext }) {
+  const member = await context.adapter.resolveGuildMember(message.guild_id!, message.author.id);
+  const role = await context.adapter.resolveHighestGuildMemberRole(member!, message.guild_id!);
 
   switch (message.type) {
     case MessageType.RecipientAdd:
@@ -20,8 +22,8 @@ export default async function SystemMessage({ message }: { message: Message }) {
     case MessageType.ChannelPinnedMessage:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="pin">
-          <Highlight color={convertToHEX(role?.color)}>{message.author.tag}</Highlight> pinned{' '}
-          <i data-goto={message.messageReference?.messageId}>a message</i> to this channel.
+          <Highlight color={convertToHEX(role?.color)}>{userUtils.tag(message.author)}</Highlight> pinned{' '}
+          <i data-goto={message.message_reference?.message_id}>a message</i> to this channel.
           {/* reactions */}
           {message.reactions && message.reactions.length > 0 && (
             <DiscordReactions slot="reactions">
@@ -44,15 +46,15 @@ export default async function SystemMessage({ message }: { message: Message }) {
     case MessageType.GuildBoostTier3:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="boost">
-          <Highlight color={convertToHEX(role?.color)}>{message.author.tag}</Highlight> boosted the server!
+          <Highlight color={convertToHEX(role?.color)}>{userUtils.tag(message.author)}</Highlight> boosted the server!
         </DiscordSystemMessage>
       );
 
     case MessageType.ThreadStarterMessage:
       return (
         <DiscordSystemMessage id={`ms-${message.id}`} key={message.id} type="thread">
-          <Highlight color={convertToHEX(role?.color)}>{message.author.tag}</Highlight> started a thread:{' '}
-          <i data-goto={message.messageReference?.messageId}>{message.content}</i>
+          <Highlight color={convertToHEX(role?.color)}>{userUtils.tag(message.author)}</Highlight> started a thread:{' '}
+          <i data-goto={message.message_reference?.message_id}>{message.content}</i>
         </DiscordSystemMessage>
       );
 
@@ -108,19 +110,20 @@ const allJoinMessages = [
 export async function JoinMessage({
   member,
   fallbackUser,
+  highestRole,
 }: {
-  member: GuildMember | null | undefined;
-  fallbackUser: User;
+  member: GuildMemberData | null | undefined;
+  fallbackUser: APIUser;
+  highestRole?: APIRole;
 }) {
   const randomMessage = allJoinMessages[Math.floor(Math.random() * allJoinMessages.length)];
-  const role = await member?.roles.highest();
 
   return randomMessage
     .split('{user}')
     .flatMap((item, i) => [
       item,
-      <Highlight color={convertToHEX(role?.color)} key={i}>
-        {member?.nick ?? fallbackUser.tag}
+      <Highlight color={convertToHEX(highestRole?.color)} key={i}>
+        {member?.nick ?? userUtils.tag(fallbackUser)}
       </Highlight>,
     ])
     .slice(0, -1);

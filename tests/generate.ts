@@ -4,6 +4,7 @@ import { Client, type ParseClient } from 'seyfert';
 import { GatewayIntentBits } from 'seyfert/lib/types';
 
 import { createTranscript } from '../src';
+import { SeyfertTranscript, SeyfertTranscriptAdapter } from '../src/adapters/seyfert';
 
 const client = new Client({
   getRC() {
@@ -38,10 +39,21 @@ client.events.values.READY = {
 
       console.info(`Generating transcript for channel ${channel.name}...`);
 
-      const attachment = await createTranscript(channel, {
-        // the options for the transcript
+      // const attachment = await createTranscript(channel, {
+      //   // the options for the transcript
+      //   limit: 10,
+      // });
+      // const attachment = await createTranscript({
+      //   channel: channel,
+      //   adapter: new SeyfertTranscriptAdapter(client),
+      //   // the options for the transcript
+      //   limit: 10,
+      // });
+
+      const attachment = await SeyfertTranscript.create({
+        channel,
         limit: 10,
-      });
+      })
 
       console.info(`Transcript generated for channel ${channel.name}.`);
 
