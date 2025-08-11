@@ -1,4 +1,4 @@
-import { DiscordAttachments, DiscordFileAttachment, DiscordMediaGallery, DiscordMediaGalleryItem, DiscordTextFileAttachmentPreviewer, DiscordVoiceMessage } from '@penwin/discord-components-react-render';
+import { DiscordAttachments, DiscordAudioAttachment, DiscordFileAttachment, DiscordMediaGallery, DiscordMediaGalleryItem, DiscordTextFileAttachmentPreviewer, DiscordVoiceMessage } from '@penwin/discord-components-react-render';
 import { APIAttachment, APIMessageSnapshot, MessageFlags } from 'discord-api-types/v10';
 import React from 'react';
 import type { RenderMessageContext } from '..';
@@ -121,6 +121,9 @@ export async function Attachment({
 }) {
   let url = attachment.url;
 
+  const type = getAttachmentType(attachment);
+  const attach = ('data' in attachment ? attachment.data : attachment) as APIAttachment;
+
   if (isVoiceMessage) {
     return (
       <DiscordVoiceMessage
@@ -129,17 +132,7 @@ export async function Attachment({
         waveform={attachment.waveform}
       />
     )
-
-
   }
-
-
-  // const name = attachment.filename;
-  // const width = attachment.width;
-  // const height = attachment.height;
-
-  const type = getAttachmentType(attachment);
-  const attach = ('data' in attachment ? attachment.data : attachment) as APIAttachment;
 
   if (type === 'image' || type === 'video') {
     // download it to a data url
@@ -154,8 +147,8 @@ export async function Attachment({
         key={attachment.id}
         description={attachment.description}
         mime-type={attachment.content_type}
-        width={attachment.width}
-        height={attachment.height}
+        width={attachment.width ?? void 0}
+        height={attachment.height ?? void 0}
       />
     )
 
@@ -164,6 +157,16 @@ export async function Attachment({
   const mime = attachment.content_type?.split(';')[0]!;
   const format = programmingLanguageMimeMap.get(mime);
   const { size, unit } = formatBytes(attachment.size);
+
+  if (type === "audio") {
+    return <DiscordAudioAttachment
+      key={attachment.id}
+      href={url}
+      bytes={size}
+      bytes-unit={unit}
+      name={attachment.filename}
+    />
+  }
 
   if (type === 'file') {
     if (format && size <= 1024 * 1024) {

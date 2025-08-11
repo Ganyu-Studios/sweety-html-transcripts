@@ -118,6 +118,7 @@ export default async function DiscordMessage({
           guild-icon={forwardedGuild ? guildUtils.iconURL(forwardedGuild, { size: 32, extension: 'png' }) : undefined}
           channel-name={(forwardedChannel && 'name' in forwardedChannel) ? forwardedChannel.name ?? void 0 : undefined}
           timestamp={snpashot.message.timestamp}
+          is-same-guild={forwardedGuild?.id === context.guild?.id}
         >
           <DiscordMessage snapshot={snpashot} context={context} snapshotId={index} />
         </DiscordForwardedMessage>
