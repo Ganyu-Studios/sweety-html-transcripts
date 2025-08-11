@@ -13,6 +13,10 @@ class GuildUtils {
 
     return cdn.guildTagBadge(guildId, guildTagBadge, options);
   }
+
+  roleIcon(roleId: string, icon: string, options?: CDNUrlOptions) {
+    return cdn.roleIcon(roleId, icon, options);
+  }
 }
 
 export const guildUtils = new GuildUtils();
