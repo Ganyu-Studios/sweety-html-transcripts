@@ -188,6 +188,8 @@ export async function Component({ component, id, context }: { component: APIMess
         const roles = await context.adapter.resolveGuildRoles(context.guild?.id);
 
         for (const role of roles) {
+          if (role.id === context.guild?.id) continue;
+
           data.push(({
             identifier: role.id,
             name: role.name,
