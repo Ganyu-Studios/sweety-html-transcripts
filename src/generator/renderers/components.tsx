@@ -248,8 +248,8 @@ export async function Component({ component, id, context }: { component: APIMess
         <DiscordSelectMenuPortal
           key={id}
           type={isMentionable ? 'mentionable' : isUser ? 'user' : isRole ? 'role' : 'channel'}
-          defaultIdentifier={component.default_values?.[0].id}
-          defaultType={component.default_values?.[0].type}
+          default-identifier={component.default_values?.[0].id}
+          default-type={component.default_values?.[0].type}
         />
       </>
     }
