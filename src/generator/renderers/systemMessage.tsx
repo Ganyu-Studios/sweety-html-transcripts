@@ -22,7 +22,7 @@ export default async function SystemMessage({ message, context }: { message: API
     case MessageType.ChannelPinnedMessage:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="pin">
-          <Highlight color={convertToHEX(role?.color)}>{userUtils.tag(message.author)}</Highlight> pinned{' '}
+          <Highlight color={convertToHEX(role?.color)}>{userUtils.displayName(message.author)}</Highlight> pinned{' '}
           <i data-goto={message.message_reference?.message_id}>a message</i> to this channel.
           {/* reactions */}
           {message.reactions && message.reactions.length > 0 && (
@@ -46,14 +46,14 @@ export default async function SystemMessage({ message, context }: { message: API
     case MessageType.GuildBoostTier3:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="boost">
-          <Highlight color={convertToHEX(role?.color)}>{userUtils.tag(message.author)}</Highlight> boosted the server!
+          <Highlight color={convertToHEX(role?.color)}>{userUtils.displayName(message.author)}</Highlight> boosted the server!
         </DiscordSystemMessage>
       );
 
     case MessageType.ThreadStarterMessage:
       return (
         <DiscordSystemMessage id={`ms-${message.id}`} key={message.id} type="thread">
-          <Highlight color={convertToHEX(role?.color)}>{userUtils.tag(message.author)}</Highlight> started a thread:{' '}
+          <Highlight color={convertToHEX(role?.color)}>{userUtils.displayName(message.author)}</Highlight> started a thread:{' '}
           <i data-goto={message.message_reference?.message_id}>{message.content}</i>
         </DiscordSystemMessage>
       );
@@ -123,7 +123,7 @@ export async function JoinMessage({
     .flatMap((item, i) => [
       item,
       <Highlight color={convertToHEX(highestRole?.color)} key={i}>
-        {member?.nick ?? userUtils.tag(fallbackUser)}
+        {member?.nick ?? userUtils.displayName(fallbackUser)}
       </Highlight>,
     ])
     .slice(0, -1);

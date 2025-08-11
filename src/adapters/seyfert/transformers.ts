@@ -92,26 +92,25 @@ export class TranscriptDMChannel extends DMChannel {
   constructor(client: UsingClient, public data: APIChannelBase<ChannelType>) { super(client, data); } toJSON() { return this.data; }
 }
 
-Transformers.DirectoryChannel = (client, data) => new TranscriptDirectoryChannel(client, data);
-Transformers.StageChannel = (client, data) => new TranscriptStageChannel(client, data);
-Transformers.NewsChannel = (client, data) => new TranscriptNewsChannel(client, data);
+Transformers.DirectoryChannel = (...args) => new TranscriptDirectoryChannel(...args);
+Transformers.StageChannel = (...args) => new TranscriptStageChannel(...args);
+Transformers.NewsChannel = (...args) => new TranscriptNewsChannel(...args);
 Transformers.CategoryChannel = (client, data) => new TranscriptCategoryChannel(client, data);
-Transformers.ThreadChannel = (client, data) => new TranscriptThreadChannel(client, data);
-Transformers.ForumChannel = (client, data) => new TranscriptForumChannel(client, data);
-Transformers.MediaChannel = (client, data) => new TranscriptMediaChannel(client, data);
-Transformers.VoiceChannel = (client, data) => new TranscriptVoiceChannel(client, data);
-Transformers.BaseChannel = (client, data) => new TranscriptBaseChannel(client, data);
-Transformers.BaseGuildChannel = (client, data) => new TranscriptBaseGuildChannel(client, data);
-Transformers.TextGuildChannel = (client, data) => new TranscriptTextGuildChannel(client, data);
+Transformers.ThreadChannel = (...args) => new TranscriptThreadChannel(...args);
+Transformers.ForumChannel = (...args) => new TranscriptForumChannel(...args);
+Transformers.MediaChannel = (...args) => new TranscriptMediaChannel(...args);
+Transformers.VoiceChannel = (...args) => new TranscriptVoiceChannel(...args);
+Transformers.BaseChannel = (...args) => new TranscriptBaseChannel(...args);
+Transformers.BaseGuildChannel = (...args) => new TranscriptBaseGuildChannel(...args);
+Transformers.TextGuildChannel = (...args) => new TranscriptTextGuildChannel(...args);
 
-Transformers.DMChannel = (client, data) => new TranscriptDMChannel(client, data);
+Transformers.DMChannel = (...args) => new TranscriptDMChannel(...args);
 
 Transformers.Message = (...args) => new TranscriptMessage(...args);
 Transformers.GuildRole = (...args) => new TranscriptGuildRole(...args);
 Transformers.Guild = (...args) => new TranscriptGuild(...args);
 Transformers.User = (...args) => new TranscriptUser(...args);
 Transformers.GuildMember = (...args) => new TranscriptGuildMember(...args);
-
 
 declare module "seyfert" {
   interface CustomStructures {

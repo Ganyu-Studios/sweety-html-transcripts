@@ -4,8 +4,10 @@ import {
   DiscordEmbedField,
   DiscordEmbedFields,
   DiscordEmbedFooter,
+  DiscordMediaGallery,
+  DiscordMediaGalleryItem,
 } from '@penwin/discord-components-react-render';
-import { APIEmbed } from 'discord-api-types/v10';
+import { APIEmbed, APIMessageSnapshot, EmbedType } from 'discord-api-types/v10';
 import React from 'react';
 import type { RenderMessageContext } from '..';
 import { APIMessageData } from '../../utils/channel';
@@ -15,15 +17,39 @@ import MessageContent, { RenderType } from './content';
 
 type RenderEmbedContext = RenderMessageContext & {
   index: number;
-  message: APIMessageData;
+  message: APIMessageData | (APIMessageSnapshot['message'] & { id?: string });
 };
 
+interface EmbeddedMediaData {
+  url: string;
+  proxy_url?: string;
+  height?: number;
+  width?: number;
+  content_type?: string;
+}
+
 export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; context: RenderEmbedContext }) {
+  if (embed.type === EmbedType.Image || embed.type === EmbedType.Video || embed.type === EmbedType.GIFV) {
+    const data = embed.thumbnail as EmbeddedMediaData;
+
+    return <DiscordMediaGallery slot="embeds">
+      <DiscordMediaGalleryItem
+        media={data.proxy_url ?? data.url}
+        mime-type={data.content_type}
+        width={data.width}
+        height={data.height}
+      />
+    </DiscordMediaGallery>
+  };
+
+
+  const key = context.message.id ? `${context.message.id}-e-${context.index}` : void 0;
+
   return (
     <DiscordEmbedComponent
       embedTitle={embed.title ?? undefined}
       slot="embeds"
-      key={`${context.message.id}-e-${context.index}`}
+      key={key}
       authorImage={embed.author?.proxy_icon_url ?? embed.author?.icon_url}
       authorName={embed.author?.name}
       authorUrl={embed.author?.url}

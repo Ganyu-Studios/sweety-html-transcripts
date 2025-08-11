@@ -8,6 +8,11 @@ class GuildUtils {
 
     return cdn.guildIcon(guild.id, guild.icon, options);
   }
+
+  guildTagBadge(guildId: string, guildTagBadge: string, options?: CDNUrlOptions) {
+
+    return cdn.guildTagBadge(guildId, guildTagBadge, options);
+  }
 }
 
 export const guildUtils = new GuildUtils();

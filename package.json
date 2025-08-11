@@ -35,7 +35,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.31.0",
-    "@penwin/discord-components-core": "^4.1.4",
+    "@penwin/discord-components-core": "^4.3.0",
     "@types/debug": "^4.1.12",
     "@types/node": "^24.0.15",
     "@types/react": "^19.1.8",
@@ -57,7 +57,7 @@
   "dependencies": {
     "@derockdev/discord-components-core": "^3.6.1",
     "@derockdev/discord-components-react": "^3.6.1",
-    "@penwin/discord-components-react-render": "^4.1.4",
+    "@penwin/discord-components-react-render": "^4.3.0",
     "discord-markdown-parser": "~1.2.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",

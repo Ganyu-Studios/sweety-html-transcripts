@@ -16,6 +16,7 @@ import DiscordMessages from './transcript';
 const resolveVersion = (version: string) => version.replace('^', '').replace('~', '');
 const discordComponentsVersion = resolveVersion(devDependencies['@penwin/discord-components-core'])
 
+
 export type RenderMessageContext = {
   adapter: TranscriptAdapter<unknown>;
   messages: APIMessageData[];
@@ -34,13 +35,35 @@ export type RenderMessageContext = {
   saveImages: boolean;
   favicon: 'guild' | string;
   hydrate: boolean;
+  /** @default false */
+  lightTheme?: boolean;
+
+  selectMenus?: {
+    /** @default true */
+    includeUsers?: boolean;
+    /** @default true */
+    includeRoles?: boolean;
+    /** @default true */
+    includeChannels?: boolean;
+    /** @default 25 */
+    channelLimits?: number;
+  }
 };
 
 export default async function render(context: RenderMessageContext) {
 
+  context.lightTheme ??= false;
+  context.selectMenus ??= {};
+  context.selectMenus.includeUsers ??= true;
+  context.selectMenus.includeRoles ??= true;
+  context.selectMenus.includeChannels ??= true;
+  context.selectMenus.channelLimits ??= 25;
+
   const { adapter, messages, channel, callbacks, ...options } = context;
 
   const profiles = await buildProfiles(context);
+
+  adapter.renderContext.profiles = profiles;
 
   // NOTE: this renders a STATIC site with no interactivity
   // if interactivity is needed, switch to renderToPipeableStream and use hydrateRoot on client.
@@ -57,7 +80,6 @@ export default async function render(context: RenderMessageContext) {
           type="image/png"
           href={
             options.favicon === 'guild'
-              // ? channel.isDM() || channel.isDirectory()
               ? channelUtils.isDM(channel) || channelUtils.isDirectory(channel)
                 ? undefined
                 : (
@@ -120,6 +142,11 @@ export default async function render(context: RenderMessageContext) {
       beforeHydrate: async (document) => {
         document.defaultView.$discordMessage = {
           profiles,
+        };
+        document.defaultView.$discordSelectMenu = {
+          users: !adapter.renderContext.selectMenu.users?.injectedScript ? adapter.renderContext.selectMenu.users?.data ?? [] : [],
+          roles: !adapter.renderContext.selectMenu.roles?.injectedScript ? adapter.renderContext.selectMenu.roles?.data ?? [] : [],
+          channels: !adapter.renderContext.selectMenu.channels?.injectedScript ? adapter.renderContext.selectMenu.channels?.data ?? [] : [],
         };
       },
     });

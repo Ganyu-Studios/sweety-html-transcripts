@@ -1,4 +1,4 @@
-import { ImageSize, ImageFormat } from "discord-api-types/v10";
+import { ImageFormat, ImageSize } from "discord-api-types/v10";
 
 export const CDN_URL = 'https://cdn.discordapp.com';
 

@@ -1,4 +1,6 @@
+import { ChannelSelectMenuOptionData, RoleSelectMenuOptionData, UserSelectMenuOptionData } from "@penwin/discord-components-core";
 import { APIGuild, APIMessage, APIRole, APIUser, GatewayGuildCreateDispatchData } from "discord-api-types/v10";
+import { Profile } from "../utils/buildProfiles";
 import { AllAPIChannel, APIMessageData, GuildMemberData } from "../utils/channel";
 
 export type Awaitable<T> = Promise<T> | T;
@@ -18,6 +20,7 @@ export abstract class TranscriptAdapter<Client> {
   abstract createTranscriptAttachment(html: string, filename: string): Awaitable<unknown>;
   abstract resolveGuildRoles(guildId: string): Awaitable<APIRole[]>;
   abstract resolveGuildMember(guildId: string, userId: string): Awaitable<GuildMemberData | null>;
+  abstract resolveGuildChannels(guildId: string): Awaitable<AllAPIChannel[]>;
 
   async resolveGuildMemberRoles(member: Pick<GuildMemberData, 'roles'>, guildId: string) {
     const guildRoles = await this.resolveGuildRoles(guildId);
@@ -29,5 +32,13 @@ export abstract class TranscriptAdapter<Client> {
     return roles.sort((a, b) => b.position - a.position)[0];
   }
 
+  renderContext = {
+    selectMenu: {
+      users: <{ data: UserSelectMenuOptionData[], injectedScript: boolean } | null>null,
+      roles: <{ data: RoleSelectMenuOptionData[], injectedScript: boolean } | null>null,
+      channels: <{ data: ChannelSelectMenuOptionData[], injectedScript: boolean } | null>null,
+    },
+    profiles: <Record<string, Profile>>{},
+  }
 
 }

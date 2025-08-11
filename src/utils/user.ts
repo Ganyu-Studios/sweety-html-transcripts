@@ -36,7 +36,8 @@ class UserUtils {
     return cdn.avatarDecoration(user.avatar_decoration_data.asset);
   }
 
-  tag(user: Pick<APIUser, 'username' | 'discriminator' | 'global_name'>) {
+  displayName(user: Pick<APIUser, 'username' | 'discriminator' | 'global_name'>) {
+    if (user.discriminator === '0') return user.global_name ?? user.username;
     return user.global_name ?? `${user.username}#${user.discriminator}`;
   }
 

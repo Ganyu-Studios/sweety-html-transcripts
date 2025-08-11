@@ -1,12 +1,10 @@
-import { DiscordFileAttachment, DiscordAttachments, DiscordTextFileAttachmentPreviewer, DiscordMediaGallery, DiscordMediaGalleryItem } from '@penwin/discord-components-react-render';
+import { DiscordAttachments, DiscordFileAttachment, DiscordMediaGallery, DiscordMediaGalleryItem, DiscordTextFileAttachmentPreviewer, DiscordVoiceMessage } from '@penwin/discord-components-react-render';
+import { APIAttachment, APIMessageSnapshot, MessageFlags } from 'discord-api-types/v10';
 import React from 'react';
-// import type { Attachment as AttachmentType, Message } from 'seyfert';
 import type { RenderMessageContext } from '..';
 import type { AttachmentTypes } from '../../types';
-import { formatBytes } from '../../utils/utils';
-// import { ReplaceRegex, toSnakeCase } from 'seyfert/lib/common';
 import { APIMessageData } from '../../utils/channel';
-import { APIAttachment } from 'discord-api-types/v10';
+import { formatBytes } from '../../utils/utils';
 
 function getAttachmentType(attachment: Pick<APIAttachment, 'content_type'>): AttachmentTypes {
   const type = attachment.content_type?.split('/')?.[0] ?? 'unknown';
@@ -20,19 +18,25 @@ function getAttachmentType(attachment: Pick<APIAttachment, 'content_type'>): Att
  * @param context
  * @returns
  */
-export async function Attachments(props: { message: APIMessageData; context: RenderMessageContext }) {
+export async function Attachments(props: { message: APIMessageData | APIMessageSnapshot['message']; context: RenderMessageContext }) {
   if (props.message.attachments.length === 0) return <></>;
 
-  const grouped = { mediaGallery: [] as typeof props.message.attachments, other: [] as typeof props.message.attachments };
+  type Attachments = typeof props.message.attachments;
+  const grouped = {
+    mediaGallery: [] as Attachments,
+    other: [] as Attachments,
+  };
 
   for (const attachment of props.message.attachments) {
     const type = getAttachmentType(attachment);
-    if (type === 'image' || type === 'video' || type === 'audio') {
+    if (type === 'image' || type === 'video') {
       grouped.mediaGallery.push(attachment);
     } else {
       grouped.other.push(attachment);
     }
   }
+
+  const isVoiceMessage = props.message.flags ? (props.message.flags & MessageFlags.IsVoiceMessage) === MessageFlags.IsVoiceMessage : false;
 
   return (
     <DiscordAttachments slot="attachments">
@@ -40,12 +44,12 @@ export async function Attachments(props: { message: APIMessageData; context: Ren
         grouped.mediaGallery.length > 0 &&
         <DiscordMediaGallery>
           {grouped.mediaGallery.map((attachment, id) => (
-            <Attachment attachment={attachment as never} message={props.message} context={props.context} key={id} />
+            <Attachment attachment={attachment} message={props.message} context={props.context} key={id} />
           ))}
         </DiscordMediaGallery>
       }
       {grouped.other.map((attachment, id) => (
-        <Attachment attachment={attachment as never} message={props.message} context={props.context} key={id} />
+        <Attachment attachment={attachment} message={props.message} context={props.context} key={id} isVoiceMessage={isVoiceMessage} />
       ))}
     </DiscordAttachments>
   );
@@ -108,12 +112,28 @@ export async function Attachment({
   attachment,
   context,
   message,
+  isVoiceMessage,
 }: {
   attachment: APIAttachment;
   context: RenderMessageContext;
-  message: APIMessageData;
+  message: APIMessageData | APIMessageSnapshot['message'];
+  isVoiceMessage?: boolean;
 }) {
   let url = attachment.url;
+
+  if (isVoiceMessage) {
+    return (
+      <DiscordVoiceMessage
+        key={attachment.id}
+        href={attachment.url}
+        waveform={attachment.waveform}
+      />
+    )
+
+
+  }
+
+
   // const name = attachment.filename;
   // const width = attachment.width;
   // const height = attachment.height;
@@ -134,7 +154,8 @@ export async function Attachment({
         key={attachment.id}
         description={attachment.description}
         mime-type={attachment.content_type}
-      // spoiler={attachment}
+        width={attachment.width}
+        height={attachment.height}
       />
     )
 

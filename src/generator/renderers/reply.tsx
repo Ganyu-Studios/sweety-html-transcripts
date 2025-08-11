@@ -25,7 +25,7 @@ export default async function MessageReply({ message, context }: { message: APIM
   const role = await context.adapter.resolveHighestGuildMemberRole(referencedMember, message.guild_id!);
 
   const roleColor = role?.color ?? referencedMessage.author.accent_color;
-  const authorName = referencedMessage.author.bot ? referencedMessage.author.username : userUtils.tag(referencedMessage.author);
+  const authorName = referencedMessage.author.bot ? referencedMessage.author.username : userUtils.displayName(referencedMessage.author);
 
   return (
     <DiscordReply

@@ -36,6 +36,10 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
     return this.client.messages.list(channelId, options).then(messages => messages.map(message => message.data as APIMessageData)).catch(() => []);
   }
 
+  override resolveGuildChannels(guildId: string): Awaitable<AllAPIChannel[]> {
+    return this.client.guilds.channels.list(guildId).then(channels => channels.map(channel => channel.data as AllAPIChannel)).catch(() => []);
+  }
+
   override createTranscriptAttachment(html: string, filename: string) {
     return new AttachmentBuilder()
       .setFile('buffer', Buffer.from(html))

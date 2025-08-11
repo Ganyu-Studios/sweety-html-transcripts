@@ -1,13 +1,15 @@
 import {
   DiscordAttachments,
   DiscordCommand,
+  DiscordForwardedMessage,
   DiscordMessage as DiscordMessageComponent,
   DiscordReaction,
   DiscordReactions,
   DiscordThread,
-  DiscordThreadMessage
+  DiscordThreadMessage,
+  DiscordComponentsColumn
 } from '@penwin/discord-components-react-render';
-import { APIMessageComponentEmoji, ChannelType, InteractionType } from 'discord-api-types/v10';
+import { APIMessageComponentEmoji, APIMessageSnapshot, ChannelType, InteractionType, MessageReferenceType } from 'discord-api-types/v10';
 import React from 'react';
 import type { RenderMessageContext } from '..';
 import { APIMessageData } from '../../utils/channel';
@@ -18,43 +20,71 @@ import MessageContent, { RenderType } from './content';
 import { DiscordEmbed } from './embed';
 import MessageReply from './reply';
 import DiscordSystemMessage from './systemMessage';
+import { messageUtils } from '../../utils/message';
+import { guildUtils } from '../../utils/guild';
 
 export default async function DiscordMessage({
   message,
+  snapshot,
+  snapshotId,
   context,
 }: {
-  message: APIMessageData;
   context: RenderMessageContext;
-}) {
+} & (
+    { message: APIMessageData, snapshot?: undefined, snapshotId?: undefined } |
+    { snapshot: APIMessageSnapshot, message?: undefined, snapshotId: string | number }
+  )) {
 
   const { adapter } = context;
 
-  if ('system' in message) return <DiscordSystemMessage message={message} context={context} />;
+  if (message && 'system' in message) return <DiscordSystemMessage message={message as APIMessageData} context={context} />;
 
-  const isCrosspost = message.message_reference && message.message_reference.guild_id !== message.guild_id;
+  const isCrosspost = message?.message_reference && message.message_reference.type !== MessageReferenceType.Forward && message.message_reference.guild_id !== message.guild_id;
 
   const threadMessage =
-    message.thread &&
+    message?.thread &&
       (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)
       ? await adapter.resolveMessage(message.thread.id, message.thread.last_message_id!)
       : null;
 
+  const displayMessage = (message ?? snapshot.message) as (APIMessageData | APIMessageSnapshot['message']) & { webhook_id?: string };
+
+  const componets = displayMessage?.components && displayMessage.components.length > 0 && (
+    <DiscordAttachments slot="components">
+      <DiscordComponentsColumn>
+        {displayMessage.components.map((component, id) => (
+          <Component key={id} component={component} id={id} context={context} />
+        ))}
+      </DiscordComponentsColumn>
+    </DiscordAttachments>
+  )
+
+  const id = message ? `m-${message.id}` : `sn-${snapshotId}`;
+
+  const isForward = message && messageUtils.isForward(message);
+
+  const [forwardedGuild, forwardedChannel] = await Promise.all([
+    isForward && message.message_reference?.guild_id ? adapter.resolveGuild(message.message_reference.guild_id) : null,
+    isForward && message.message_reference?.guild_id ? adapter.resolveChannel(message.message_reference.channel_id) : null,
+  ])
+
 
   return (
     <DiscordMessageComponent
-      id={`m-${message.id}`}
-      timestamp={message.timestamp}
-      key={message.id}
-      edited={message.edited_timestamp !== null}
+      id={id}
+      timestamp={displayMessage.timestamp}
+      raw-timestamp={displayMessage.timestamp}
+      key={id}
+      edited={displayMessage.edited_timestamp !== null}
       server={isCrosspost ?? undefined}
-      highlight={message.mention_roles.includes('@everyone') || message.mention_roles.includes('@here')}
-      profile={message.author.id}
+      highlight={message?.mention_roles?.includes('@everyone') || message?.mention_roles?.includes('@here')}
+      profile={message?.author?.id}
     >
       {/* reply */}
-      <MessageReply message={message} context={context} />
+      {message && <MessageReply message={message} context={context} />}
 
       {/* slash command */}
-      {message.interaction_metadata?.type === InteractionType.ApplicationCommand && (
+      {message?.interaction_metadata?.type === InteractionType.ApplicationCommand && (
         <DiscordCommand
           slot="reply"
           profile={message.interaction_metadata.user.id}
@@ -64,32 +94,37 @@ export default async function DiscordMessage({
       )}
 
       {/* message content */}
-      {message.content && (
+      {displayMessage.content && (
         <MessageContent
-          content={message.content}
-          context={{ ...context, type: message.webhook_id ? RenderType.WEBHOOK : RenderType.NORMAL }}
+          content={displayMessage.content}
+          context={{ ...context, type: displayMessage.webhook_id ? RenderType.WEBHOOK : RenderType.NORMAL }}
         />
       )}
 
-      {/* attachments */}
-      <Attachments message={message} context={context} />
+      <Attachments
+        message={displayMessage}
+        context={context}
+      />
 
       {/* message embeds */}
-      {message.embeds.map((embed, id) => (
-        <DiscordEmbed embed={embed} context={{ ...context, index: id, message }} key={id} />
+      {displayMessage.embeds.map((embed, id) => (
+        <DiscordEmbed embed={embed} context={{ ...context, index: id, message: displayMessage }} key={id} />
       ))}
 
-      {/* components */}
-      {message.components && message.components.length > 0 && (
-        <DiscordAttachments slot="components">
-          {message.components.map((component, id) => (
-            <Component key={id} component={component} id={id} />
-          ))}
-        </DiscordAttachments>
+      {componets}
+
+      {message?.message_snapshots?.map((snpashot, index) =>
+        <DiscordForwardedMessage key={index}
+          guild-icon={forwardedGuild ? guildUtils.iconURL(forwardedGuild, { size: 32, extension: 'png' }) : undefined}
+          channel-name={(forwardedChannel && 'name' in forwardedChannel) ? forwardedChannel.name ?? void 0 : undefined}
+          timestamp={snpashot.message.timestamp}
+        >
+          <DiscordMessage snapshot={snpashot} context={context} snapshotId={index} />
+        </DiscordForwardedMessage>
       )}
 
       {/* reactions */}
-      {message.reactions && message.reactions.length > 0 && (
+      {message?.reactions && message?.reactions.length > 0 && (
         <DiscordReactions slot="reactions">
           {message.reactions.map((reaction, id) => (
             <DiscordReaction
@@ -103,7 +138,7 @@ export default async function DiscordMessage({
       )}
 
       {/* threads */}
-      {message.thread &&
+      {message?.thread &&
         (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread) && (
           <DiscordThread
             slot="thread"

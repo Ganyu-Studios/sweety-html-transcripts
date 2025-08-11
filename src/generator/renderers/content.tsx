@@ -1,27 +1,27 @@
 import {
   DiscordBold,
+  DiscordCode,
   DiscordCodeBlock,
   DiscordCustomEmoji,
-  DiscordCode,
+  DiscordHeader,
   DiscordItalic,
+  DiscordLink,
   DiscordMention,
   DiscordQuote,
   DiscordSpoiler,
+  DiscordSubscript,
   DiscordTime,
   DiscordUnderlined,
-  DiscordSubscript,
-  DiscordLink,
 } from '@penwin/discord-components-react-render';
 import parse, { type RuleTypesExtended } from 'discord-markdown-parser';
 import React from 'react';
-import type { ASTNode } from 'simple-markdown';
+import type { ASTNode, SingleASTNode } from 'simple-markdown';
 import { ASTNode as MessageASTNodes } from 'simple-markdown';
-import type { SingleASTNode } from 'simple-markdown';
 import type { RenderMessageContext } from '../';
+import { channelUtils } from '../../utils/channel';
 import { convertToHEX, parseDiscordEmoji } from '../../utils/utils';
-import type { AllGuildTextableChannels } from 'seyfert';
-import type { APIMessageComponentEmoji } from 'seyfert/lib/types';
-import { ChannelType } from 'seyfert/lib/types';
+import { APIMessageComponentEmoji, ChannelType } from 'discord-api-types/v10';
+import { userUtils } from '../../utils/user';
 
 export enum RenderType {
   EMBED,
@@ -136,8 +136,8 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
       const channel = await context.callbacks.resolveChannel(id);
 
       return (
-        <DiscordMention type={channel ? (channel.isDM() ? 'channel' : getChannelType(channel.type)) : 'channel'}>
-          {channel ? (channel.isDM() ? 'DM Channel' : (channel as AllGuildTextableChannels).name) : `<#${id}>`}
+        <DiscordMention type={channel ? (channelUtils.isDM(channel) ? 'channel' : getChannelType(channel.type)) : 'channel'}>
+          {channel ? (channelUtils.isDM(channel) ? 'DM Channel' : (channel as typeof channel & { name: string }).name) : `<#${id}>`}
         </DiscordMention>
       );
     }
@@ -153,11 +153,17 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
       );
     }
 
+    case 'heading': {
+      return <DiscordHeader level={node.level}>
+        <MessageASTNodes nodes={node.content} context={context} />
+      </DiscordHeader>;
+    }
+
     case 'user': {
       const id = node.id as string;
       const user = await context.callbacks.resolveUser(id);
 
-      return <DiscordMention type="user">{user ? user.username : `<@${id}>`}</DiscordMention>;
+      return <DiscordMention type="user">{user ? userUtils.displayName(user) : `<@${id}>`}</DiscordMention>;
     }
 
     case 'here':

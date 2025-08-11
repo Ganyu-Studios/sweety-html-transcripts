@@ -7,6 +7,9 @@ import { ChannelType } from 'seyfert/lib/types';
 import type { AllGuildTextableChannels } from 'seyfert';
 import { channelUtils } from '../utils/channel';
 import { guildUtils } from '../utils/guild';
+import { name as packageName, repository } from '../../package.json';
+
+const github = repository?.url?.split(/\+|\.git/)?.[1].trim() ?? repository.url;
 
 /**
  * The core transcript component.
@@ -79,8 +82,8 @@ export default async function DiscordMessages({ context }: { context: RenderMess
         {options.poweredBy ? (
           <span style={{ textAlign: 'center' }}>
             Powered by{' '}
-            <a href="https://github.com/Ganyu-Studios/seyfert-html-transcripts" style={{ color: 'lightblue' }}>
-              seyfert-html-transcripts
+            <a href={github} style={{ color: 'lightblue' }}>
+              {packageName}
             </a>
             .
           </span>

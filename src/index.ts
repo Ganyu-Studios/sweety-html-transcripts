@@ -10,6 +10,7 @@ import {
   type ObjectType,
 } from './types';
 import { APIMessageData, channelUtils } from './utils/channel';
+import { name as packageName } from '../package.json';
 
 // re-exports
 export { TranscriptImageDownloader } from './downloader/images';
@@ -46,7 +47,7 @@ export async function generateFromMessages<Adapter extends TranscriptAdapter<unk
   if (options.saveImages) {
     if (options.callbacks?.resolveImageSrc) {
       console.warn(
-        `[seyfert-html-transcripts] You have specified both saveImages and resolveImageSrc, please only specify one. resolveImageSrc will be used.`
+        `[${packageName}] You have specified both saveImages and resolveImageSrc, please only specify one. resolveImageSrc will be used.`
       );
     } else {
       resolveImageSrc = new TranscriptImageDownloader().build();
