@@ -2,17 +2,26 @@ import { DiscordReply } from '@penwin/discord-components-react-render';
 import React from 'react';
 import { UserFlags } from 'seyfert/lib/types';
 import type { RenderMessageContext } from '..';
-import { APIMessageData, channelUtils } from '../../utils/channel';
+import type { APIMessageData } from '../../utils/channel';
+import { channelUtils } from '../../utils/channel';
 import { convertToHEX } from '../../utils/utils';
 import MessageContent, { RenderType } from './content';
 import { userUtils } from '../../utils/user';
 
-export default async function MessageReply({ message, context }: { message: APIMessageData; context: RenderMessageContext }) {
+export default async function MessageReply({
+  message,
+  context,
+}: {
+  message: APIMessageData;
+  context: RenderMessageContext;
+}) {
   if (!message.message_reference) return null;
 
   if (message.message_reference.guild_id !== message.guild_id) return null;
 
-  const referencedMessage = message.message_reference.message_id ? await context.adapter.resolveMessage(message.message_reference.channel_id, message.message_reference.message_id) : null;
+  const referencedMessage = message.message_reference.message_id
+    ? await context.adapter.resolveMessage(message.message_reference.channel_id, message.message_reference.message_id)
+    : null;
   if (!referencedMessage) return <DiscordReply slot="reply">Message could not be loaded.</DiscordReply>;
 
   const isCrosspost =
@@ -25,7 +34,9 @@ export default async function MessageReply({ message, context }: { message: APIM
   const role = await context.adapter.resolveHighestGuildMemberRole(referencedMember, message.guild_id!);
 
   const roleColor = role?.color ?? referencedMessage.author.accent_color;
-  const authorName = referencedMessage.author.bot ? referencedMessage.author.username : userUtils.displayName(referencedMessage.author);
+  const authorName = referencedMessage.author.bot
+    ? referencedMessage.author.username
+    : userUtils.displayName(referencedMessage.author);
 
   return (
     <DiscordReply

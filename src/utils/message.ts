@@ -1,5 +1,5 @@
-import { MessageReferenceType } from "discord-api-types/v10";
-import { APIMessageData } from "./channel";
+import { MessageReferenceType } from 'discord-api-types/v10';
+import type { APIMessageData } from './channel';
 
 class MessageUtils {
   isForward(message: Pick<APIMessageData, 'message_reference'>) {

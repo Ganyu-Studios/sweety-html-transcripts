@@ -1,7 +1,7 @@
-import { APIMessage } from 'discord-api-types/v10';
-import { TranscriptAdapter } from './adapters/core';
+import type { APIMessage } from 'discord-api-types/v10';
+import type { TranscriptAdapter } from './adapters/core';
 import type { RenderMessageContext } from './generator';
-import { AllAPIChannel } from './utils/channel';
+import type { AllAPIChannel } from './utils/channel';
 
 export type AttachmentTypes = 'audio' | 'video' | 'image' | 'file';
 
@@ -11,13 +11,19 @@ export enum ExportReturnType {
   Attachment = 'attachment',
 }
 
-export type ObjectType<T extends ExportReturnType, Adapter extends TranscriptAdapter<unknown>> = T extends ExportReturnType.Buffer
+export type ObjectType<
+  T extends ExportReturnType,
+  Adapter extends TranscriptAdapter<unknown>,
+> = T extends ExportReturnType.Buffer
   ? Buffer
   : T extends ExportReturnType.String
-  ? string
-  : ReturnType<Adapter['createTranscriptAttachment']>;
+    ? string
+    : ReturnType<Adapter['createTranscriptAttachment']>;
 
-export type GenerateFromMessagesOptions<T extends ExportReturnType, Adapter extends TranscriptAdapter<unknown>> = Partial<{
+export type GenerateFromMessagesOptions<
+  T extends ExportReturnType,
+  Adapter extends TranscriptAdapter<unknown>,
+> = Partial<{
   /**
    * The type of object to return
    * @default ExportReturnType.ATTACHMENT
@@ -66,12 +72,13 @@ export type GenerateFromMessagesOptions<T extends ExportReturnType, Adapter exte
    * @default false - the returned html will be hydrated client-side
    */
   hydrate: boolean;
-}> & RequiredTranscriptData<Adapter>;
+}> &
+  RequiredTranscriptData<Adapter>;
 
 export type RequiredTranscriptData<Adapter extends TranscriptAdapter<unknown>> = {
   adapter: Adapter;
   channel: AllAPIChannel;
-}
+};
 
 export type CreateTranscriptOptions<T extends ExportReturnType, Adapter extends TranscriptAdapter<unknown>> = Partial<
   GenerateFromMessagesOptions<T, Adapter> & {
@@ -86,4 +93,5 @@ export type CreateTranscriptOptions<T extends ExportReturnType, Adapter extends 
      */
     filter: (message: APIMessage) => boolean;
   }
-> & RequiredTranscriptData<Adapter>;
+> &
+  RequiredTranscriptData<Adapter>;

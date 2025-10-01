@@ -1,4 +1,7 @@
-import { DiscordTranscriptHeader, DiscordMessages as DiscordMessagesComponent } from '@penwin/discord-components-react-render';
+import {
+  DiscordTranscriptHeader,
+  DiscordMessages as DiscordMessagesComponent,
+} from '@penwin/discord-components-react-render';
 import React from 'react';
 import type { RenderMessageContext } from '.';
 import MessageContent, { RenderType } from './renderers/content';
@@ -19,9 +22,7 @@ const github = repository?.url?.split(/\+|\.git/)?.[1].trim() ?? repository.url;
  * @returns
  */
 export default async function DiscordMessages({ context }: { context: RenderMessageContext }) {
-
   const { messages, channel, guild, ...options } = context;
-
 
   return (
     <DiscordMessagesComponent style={{ minHeight: '100vh' }}>
@@ -56,10 +57,7 @@ export default async function DiscordMessages({ context }: { context: RenderMess
         ) : channel.type === ChannelType.GuildCategory ? (
           `Category Channel`
         ) : 'topic' in channel && channel.topic ? (
-          <MessageContent
-            content={channel.topic}
-            context={{ type: RenderType.REPLY, ...context }}
-          />
+          <MessageContent content={channel.topic} context={{ type: RenderType.REPLY, ...context }} />
         ) : channelUtils.isDirectory(channel) ? (
           `This is the start of the directory.`
         ) : (
@@ -76,8 +74,8 @@ export default async function DiscordMessages({ context }: { context: RenderMess
       <div style={{ textAlign: 'center', width: '100%' }}>
         {options.footerText
           ? options.footerText
-            .replaceAll('{number}', messages.length.toString())
-            .replaceAll('{s}', messages.length > 1 ? 's' : '')
+              .replaceAll('{number}', messages.length.toString())
+              .replaceAll('{s}', messages.length > 1 ? 's' : '')
           : `Exported ${messages.length} message${messages.length > 1 ? 's' : ''}.`}{' '}
         {options.poweredBy ? (
           <span style={{ textAlign: 'center' }}>

@@ -1,9 +1,18 @@
-import { DiscordAttachments, DiscordAudioAttachment, DiscordFileAttachment, DiscordMediaGallery, DiscordMediaGalleryItem, DiscordTextFileAttachmentPreviewer, DiscordVoiceMessage } from '@penwin/discord-components-react-render';
-import { APIAttachment, APIMessageSnapshot, MessageFlags } from 'discord-api-types/v10';
+import {
+  DiscordAttachments,
+  DiscordAudioAttachment,
+  DiscordFileAttachment,
+  DiscordMediaGallery,
+  DiscordMediaGalleryItem,
+  DiscordTextFileAttachmentPreviewer,
+  DiscordVoiceMessage,
+} from '@penwin/discord-components-react-render';
+import type { APIAttachment, APIMessageSnapshot } from 'discord-api-types/v10';
+import { MessageFlags } from 'discord-api-types/v10';
 import React from 'react';
 import type { RenderMessageContext } from '..';
 import type { AttachmentTypes } from '../../types';
-import { APIMessageData } from '../../utils/channel';
+import type { APIMessageData } from '../../utils/channel';
 import { formatBytes } from '../../utils/utils';
 
 function getAttachmentType(attachment: Pick<APIAttachment, 'content_type'>): AttachmentTypes {
@@ -18,7 +27,10 @@ function getAttachmentType(attachment: Pick<APIAttachment, 'content_type'>): Att
  * @param context
  * @returns
  */
-export async function Attachments(props: { message: APIMessageData | APIMessageSnapshot['message']; context: RenderMessageContext }) {
+export async function Attachments(props: {
+  message: APIMessageData | APIMessageSnapshot['message'];
+  context: RenderMessageContext;
+}) {
   if (props.message.attachments.length === 0) return <></>;
 
   type Attachments = typeof props.message.attachments;
@@ -36,20 +48,27 @@ export async function Attachments(props: { message: APIMessageData | APIMessageS
     }
   }
 
-  const isVoiceMessage = props.message.flags ? (props.message.flags & MessageFlags.IsVoiceMessage) === MessageFlags.IsVoiceMessage : false;
+  const isVoiceMessage = props.message.flags
+    ? (props.message.flags & MessageFlags.IsVoiceMessage) === MessageFlags.IsVoiceMessage
+    : false;
 
   return (
     <DiscordAttachments slot="attachments">
-      {
-        grouped.mediaGallery.length > 0 &&
+      {grouped.mediaGallery.length > 0 && (
         <DiscordMediaGallery>
           {grouped.mediaGallery.map((attachment, id) => (
             <Attachment attachment={attachment} message={props.message} context={props.context} key={id} />
           ))}
         </DiscordMediaGallery>
-      }
+      )}
       {grouped.other.map((attachment, id) => (
-        <Attachment attachment={attachment} message={props.message} context={props.context} key={id} isVoiceMessage={isVoiceMessage} />
+        <Attachment
+          attachment={attachment}
+          message={props.message}
+          context={props.context}
+          key={id}
+          isVoiceMessage={isVoiceMessage}
+        />
       ))}
     </DiscordAttachments>
   );
@@ -125,13 +144,7 @@ export async function Attachment({
   const attach = ('data' in attachment ? attachment.data : attachment) as APIAttachment;
 
   if (isVoiceMessage) {
-    return (
-      <DiscordVoiceMessage
-        key={attachment.id}
-        href={attachment.url}
-        waveform={attachment.waveform}
-      />
-    )
+    return <DiscordVoiceMessage key={attachment.id} href={attachment.url} waveform={attachment.waveform} />;
   }
 
   if (type === 'image' || type === 'video') {
@@ -150,28 +163,31 @@ export async function Attachment({
         width={attachment.width ?? void 0}
         height={attachment.height ?? void 0}
       />
-    )
-
+    );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
   const mime = attachment.content_type?.split(';')[0]!;
   const format = programmingLanguageMimeMap.get(mime);
   const { size, unit } = formatBytes(attachment.size);
 
-  if (type === "audio") {
-    return <DiscordAudioAttachment
-      key={attachment.id}
-      href={url}
-      bytes={size}
-      bytes-unit={unit}
-      name={attachment.filename}
-    />
+  if (type === 'audio') {
+    return (
+      <DiscordAudioAttachment
+        key={attachment.id}
+        href={url}
+        bytes={size}
+        bytes-unit={unit}
+        name={attachment.filename}
+      />
+    );
   }
 
   if (type === 'file') {
     if (format && size <= 1024 * 1024) {
-
-      const content = await fetch(attach.url).then(res => res.text()).catch(() => null);
+      const content = await fetch(attach.url)
+        .then((res) => res.text())
+        .catch(() => null);
 
       if (content) {
         return (
@@ -184,11 +200,10 @@ export async function Attachment({
             key={attachment.id}
             content={content}
           />
-        )
+        );
       }
     }
   }
-
 
   return (
     <DiscordFileAttachment

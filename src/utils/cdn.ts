@@ -1,11 +1,12 @@
-import { ImageFormat, ImageSize } from "discord-api-types/v10";
+import type { ImageSize } from 'discord-api-types/v10';
+import { ImageFormat } from 'discord-api-types/v10';
 
 export const CDN_URL = 'https://cdn.discordapp.com';
 
 export enum StickerExtension {
-  PNG = "png",
-  JSON = "json",
-  GIF = "gif",
+  PNG = 'png',
+  JSON = 'json',
+  GIF = 'gif',
 }
 
 export interface CDNUrlOptions {
@@ -15,7 +16,7 @@ export interface CDNUrlOptions {
 }
 
 export class BaseCDN {
-  constructor(public readonly baseURL: string) { }
+  constructor(public readonly baseURL: string) {}
 
   makeURL(route: string[], options: CDNUrlOptions = {}) {
     const lastRoute = route.at(-1)!;
@@ -70,7 +71,6 @@ export class BaseCDN {
   guildTagBadge(guildId: string, guildTagBadge: string, options?: CDNUrlOptions) {
     return this.makeURL(['guild-tag-badges', guildId, guildTagBadge], options);
   }
-
 }
 
 export const cdn = new BaseCDN(CDN_URL);

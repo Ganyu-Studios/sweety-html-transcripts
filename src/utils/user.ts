@@ -1,9 +1,9 @@
-import { APIUser, Snowflake } from "discord-api-types/v10";
-import { cdn, CDNUrlOptions } from "./cdn";
-import { GuildMemberData } from "./channel";
+import type { APIUser, Snowflake } from 'discord-api-types/v10';
+import type { CDNUrlOptions } from './cdn';
+import { cdn } from './cdn';
+import type { GuildMemberData } from './channel';
 
 class UserUtils {
-
   calculateUserDefaultAvatarIndex(userId: Snowflake, discriminator: string) {
     if (discriminator === '0') return Number(BigInt(userId) >> 22n) % 6;
     return Number(discriminator) % 5;
@@ -21,9 +21,24 @@ class UserUtils {
     return cdn.userAvatar(user.id, user.avatar, options);
   }
 
-  memberAvatarURL(member: Pick<GuildMemberData, 'avatar'>, user: Pick<APIUser, 'id' | 'avatar' | 'discriminator'>, guildId: string, options: CDNUrlOptions & { exclude: true }): string | null;
-  memberAvatarURL(member: Pick<GuildMemberData, 'avatar'>, user: Pick<APIUser, 'id' | 'avatar' | 'discriminator'>, guildId: string, options?: CDNUrlOptions & { exclude?: false }): string;
-  memberAvatarURL(member: Pick<GuildMemberData, 'avatar'>, user: Pick<APIUser, 'id' | 'avatar' | 'discriminator'>, guildId: string, options?: CDNUrlOptions & { exclude?: boolean }): string | null {
+  memberAvatarURL(
+    member: Pick<GuildMemberData, 'avatar'>,
+    user: Pick<APIUser, 'id' | 'avatar' | 'discriminator'>,
+    guildId: string,
+    options: CDNUrlOptions & { exclude: true }
+  ): string | null;
+  memberAvatarURL(
+    member: Pick<GuildMemberData, 'avatar'>,
+    user: Pick<APIUser, 'id' | 'avatar' | 'discriminator'>,
+    guildId: string,
+    options?: CDNUrlOptions & { exclude?: false }
+  ): string;
+  memberAvatarURL(
+    member: Pick<GuildMemberData, 'avatar'>,
+    user: Pick<APIUser, 'id' | 'avatar' | 'discriminator'>,
+    guildId: string,
+    options?: CDNUrlOptions & { exclude?: boolean }
+  ): string | null {
     if (!member.avatar) {
       return options?.exclude ? null : this.avatarURL(user, options);
     }
@@ -40,7 +55,6 @@ class UserUtils {
     if (user.discriminator === '0') return user.global_name ?? user.username;
     return user.global_name ?? `${user.username}#${user.discriminator}`;
   }
-
 }
 
 export const userUtils = new UserUtils();

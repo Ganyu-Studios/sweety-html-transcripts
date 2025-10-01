@@ -1,12 +1,19 @@
 import { DiscordReaction, DiscordReactions, DiscordSystemMessage } from '@penwin/discord-components-react-render';
-import { APIMessageComponentEmoji, APIRole, APIUser, MessageType } from 'discord-api-types/v10';
+import type { APIMessageComponentEmoji, APIRole, APIUser } from 'discord-api-types/v10';
+import { MessageType } from 'discord-api-types/v10';
 import React from 'react';
-import { RenderMessageContext } from '..';
-import { APIMessageData, GuildMemberData } from '../../utils/channel';
+import type { RenderMessageContext } from '..';
+import type { APIMessageData, GuildMemberData } from '../../utils/channel';
 import { userUtils } from '../../utils/user';
 import { convertToHEX, parseDiscordEmoji } from '../../utils/utils';
 
-export default async function SystemMessage({ message, context }: { message: APIMessageData, context: RenderMessageContext }) {
+export default async function SystemMessage({
+  message,
+  context,
+}: {
+  message: APIMessageData;
+  context: RenderMessageContext;
+}) {
   const member = await context.adapter.resolveGuildMember(message.guild_id!, message.author.id);
   const role = await context.adapter.resolveHighestGuildMemberRole(member!, message.guild_id!);
 
@@ -46,15 +53,16 @@ export default async function SystemMessage({ message, context }: { message: API
     case MessageType.GuildBoostTier3:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="boost">
-          <Highlight color={convertToHEX(role?.color)}>{userUtils.displayName(message.author)}</Highlight> boosted the server!
+          <Highlight color={convertToHEX(role?.color)}>{userUtils.displayName(message.author)}</Highlight> boosted the
+          server!
         </DiscordSystemMessage>
       );
 
     case MessageType.ThreadStarterMessage:
       return (
         <DiscordSystemMessage id={`ms-${message.id}`} key={message.id} type="thread">
-          <Highlight color={convertToHEX(role?.color)}>{userUtils.displayName(message.author)}</Highlight> started a thread:{' '}
-          <i data-goto={message.message_reference?.message_id}>{message.content}</i>
+          <Highlight color={convertToHEX(role?.color)}>{userUtils.displayName(message.author)}</Highlight> started a
+          thread: <i data-goto={message.message_reference?.message_id}>{message.content}</i>
         </DiscordSystemMessage>
       );
 

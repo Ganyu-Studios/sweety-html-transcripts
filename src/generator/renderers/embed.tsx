@@ -7,10 +7,11 @@ import {
   DiscordMediaGallery,
   DiscordMediaGalleryItem,
 } from '@penwin/discord-components-react-render';
-import { APIEmbed, APIMessageSnapshot, EmbedType } from 'discord-api-types/v10';
+import type { APIEmbed, APIMessageSnapshot } from 'discord-api-types/v10';
+import { EmbedType } from 'discord-api-types/v10';
 import React from 'react';
 import type { RenderMessageContext } from '..';
-import { APIMessageData } from '../../utils/channel';
+import type { APIMessageData } from '../../utils/channel';
 import { calculateInlineIndex } from '../../utils/embeds';
 import { convertToHEX } from '../../utils/utils';
 import MessageContent, { RenderType } from './content';
@@ -32,16 +33,17 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
   if (embed.type === EmbedType.Image || embed.type === EmbedType.Video || embed.type === EmbedType.GIFV) {
     const data = embed.thumbnail as EmbeddedMediaData;
 
-    return <DiscordMediaGallery slot="embeds">
-      <DiscordMediaGalleryItem
-        media={data.proxy_url ?? data.url}
-        mime-type={data.content_type}
-        width={data.width}
-        height={data.height}
-      />
-    </DiscordMediaGallery>
-  };
-
+    return (
+      <DiscordMediaGallery slot="embeds">
+        <DiscordMediaGalleryItem
+          media={data.proxy_url ?? data.url}
+          mime-type={data.content_type}
+          width={data.width}
+          height={data.height}
+        />
+      </DiscordMediaGallery>
+    );
+  }
 
   const key = context.message.id ? `${context.message.id}-e-${context.index}` : void 0;
 

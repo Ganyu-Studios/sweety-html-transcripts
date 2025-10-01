@@ -1,8 +1,8 @@
-import { APIGuild } from "discord-api-types/v10";
-import { cdn, CDNUrlOptions } from "./cdn";
+import type { APIGuild } from 'discord-api-types/v10';
+import type { CDNUrlOptions } from './cdn';
+import { cdn } from './cdn';
 
 class GuildUtils {
-
   iconURL(guild: Pick<APIGuild, 'id' | 'icon'>, options?: CDNUrlOptions): string | undefined {
     if (!guild.icon) return;
 
@@ -10,7 +10,6 @@ class GuildUtils {
   }
 
   guildTagBadge(guildId: string, guildTagBadge: string, options?: CDNUrlOptions) {
-
     return cdn.guildTagBadge(guildId, guildTagBadge, options);
   }
 

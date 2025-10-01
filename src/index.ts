@@ -1,6 +1,6 @@
-import { APIMessage } from 'discord-api-types/v10';
+import type { APIMessage } from 'discord-api-types/v10';
 import { Collection } from 'seyfert';
-import { TranscriptAdapter } from './adapters/core';
+import type { TranscriptAdapter } from './adapters/core';
 import { TranscriptImageDownloader, type ResolveImageCallback } from './downloader/images';
 import DiscordMessages from './generator';
 import {
@@ -9,13 +9,19 @@ import {
   type GenerateFromMessagesOptions,
   type ObjectType,
 } from './types';
-import { APIMessageData, channelUtils } from './utils/channel';
+import type { APIMessageData } from './utils/channel';
+import { channelUtils } from './utils/channel';
 import { name as packageName } from '../package.json';
 
 // re-exports
 export { TranscriptImageDownloader } from './downloader/images';
 export { default as DiscordMessages } from './generator/transcript';
 export * from './types';
+
+// adapter exports
+export * from "./adapters/core";
+export * from "./adapters/discordjs/index";
+export * from "./adapters/seyfert/index"
 
 /**
  *
@@ -24,14 +30,13 @@ export * from './types';
  * @param options  The options to use when generating the transcript
  * @returns        The generated transcript
  */
-export async function generateFromMessages<Adapter extends TranscriptAdapter<unknown>, T extends ExportReturnType = ExportReturnType.Attachment>(
-  messages: APIMessageData[],
-  options: GenerateFromMessagesOptions<T, Adapter>
-): Promise<ObjectType<T, Adapter>> {
-
+export async function generateFromMessages<
+  Adapter extends TranscriptAdapter<unknown>,
+  T extends ExportReturnType = ExportReturnType.Attachment,
+>(messages: APIMessageData[], options: GenerateFromMessagesOptions<T, Adapter>): Promise<ObjectType<T, Adapter>> {
   const { adapter, channel } = options;
 
-  const guild = "guild_id" in channel && channel.guild_id ? await adapter.resolveGuild(channel.guild_id) : null;
+  const guild = 'guild_id' in channel && channel.guild_id ? await adapter.resolveGuild(channel.guild_id) : null;
 
   // turn messages into an array
   const transformedMessages = messages instanceof Collection ? Array.from(messages.values()) : messages;
@@ -40,7 +45,6 @@ export async function generateFromMessages<Adapter extends TranscriptAdapter<unk
     if (typeof message.guild_id === 'undefined' && guild) message.guild_id = guild.id;
     return message;
   });
-
 
   // figure out how the user wants images saved
   let resolveImageSrc: ResolveImageCallback = options.callbacks?.resolveImageSrc ?? ((attachment) => attachment.url);
@@ -58,15 +62,15 @@ export async function generateFromMessages<Adapter extends TranscriptAdapter<unk
   // render the messages
   const html = await DiscordMessages({
     adapter,
-    messages: allMessages,
     channel,
-    saveImages: options.saveImages ?? false,
     guild,
+    messages: allMessages,
+    saveImages: options.saveImages ?? false,
     callbacks: {
       resolveImageSrc,
       resolveChannel: async (id) => adapter.resolveChannel(id),
       resolveUser: async (id) => adapter.resolveUser(id),
-      resolveRole: async (id) => guild ? adapter.resolveRole(guild.id, id) : null,
+      resolveRole: async (id) => (guild ? adapter.resolveRole(guild.id, id) : null),
 
       ...(options.callbacks ?? {}),
     },
@@ -85,7 +89,10 @@ export async function generateFromMessages<Adapter extends TranscriptAdapter<unk
     return html as unknown as ObjectType<T, Adapter>;
   }
 
-  return adapter.createTranscriptAttachment(html, options.filename ?? `transcript-${channel.id}.html`) as ObjectType<T, Adapter>;
+  return adapter.createTranscriptAttachment(html, options.filename ?? `transcript-${channel.id}.html`) as ObjectType<
+    T,
+    Adapter
+  >;
 }
 
 /**
@@ -94,14 +101,15 @@ export async function generateFromMessages<Adapter extends TranscriptAdapter<unk
  * @param options The options to use when creating the transcript
  * @returns       The generated transcript
  */
-export async function createTranscript<Adapter extends TranscriptAdapter<unknown>, T extends ExportReturnType = ExportReturnType.Attachment>(
-  options: CreateTranscriptOptions<T, Adapter>
-): Promise<ObjectType<T, Adapter>> {
-
+export async function createTranscript<
+  Adapter extends TranscriptAdapter<unknown>,
+  T extends ExportReturnType = ExportReturnType.Attachment,
+>(options: CreateTranscriptOptions<T, Adapter>): Promise<ObjectType<T, Adapter>> {
   const { channel, adapter } = options;
 
   // validate type
-  if (!channelUtils.isGuildTextable(channel)) throw new TypeError(`Provided channel must be text-based, received ${channel.type}`);
+  if (!channelUtils.isGuildTextable(channel))
+    throw new TypeError(`Provided channel must be text-based, received ${channel.type}`);
 
   // fetch messages
   let allMessages: APIMessage[] = [];
@@ -143,4 +151,3 @@ export default {
   createTranscript,
   generateFromMessages,
 };
-

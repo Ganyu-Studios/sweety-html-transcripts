@@ -1,21 +1,21 @@
 import { renderToString } from '@derockdev/discord-components-core/hydrate';
-import { APIGuild, APIRole, APIUser } from 'discord-api-types/v10';
+import type { APIGuild, APIRole, APIUser } from 'discord-api-types/v10';
 import React from 'react';
 import { prerenderToNodeStream } from 'react-dom/static';
 import type { Awaitable } from 'seyfert/lib/common';
 import { devDependencies } from '../../package.json';
-import { TranscriptAdapter } from '../adapters/core';
+import type { TranscriptAdapter } from '../adapters/core';
 import type { ResolveImageCallback } from '../downloader/images';
 import { revealSpoiler, scrollToMessage } from '../static/client';
 import { buildProfiles } from '../utils/buildProfiles';
-import { AllAPIChannel, APIMessageData, channelUtils } from '../utils/channel';
+import type { AllAPIChannel, APIMessageData } from '../utils/channel';
+import { channelUtils } from '../utils/channel';
 import { guildUtils } from '../utils/guild';
 import { streamToString } from '../utils/utils';
 import DiscordMessages from './transcript';
 
 const resolveVersion = (version: string) => version.replace('^', '').replace('~', '');
-const discordComponentsVersion = resolveVersion(devDependencies['@penwin/discord-components-core'])
-
+const discordComponentsVersion = resolveVersion(devDependencies['@penwin/discord-components-core']);
 
 export type RenderMessageContext = {
   adapter: TranscriptAdapter<unknown>;
@@ -47,11 +47,10 @@ export type RenderMessageContext = {
     includeChannels?: boolean;
     /** @default 25 */
     channelLimits?: number;
-  }
+  };
 };
 
 export default async function render(context: RenderMessageContext) {
-
   context.lightTheme ??= false;
   context.selectMenus ??= {};
   context.selectMenus.includeUsers ??= true;
@@ -59,7 +58,7 @@ export default async function render(context: RenderMessageContext) {
   context.selectMenus.includeChannels ??= true;
   context.selectMenus.channelLimits ??= 25;
 
-  const { adapter, messages, channel, callbacks, ...options } = context;
+  const { adapter, channel, ...options } = context;
 
   const profiles = await buildProfiles(context);
 
@@ -82,15 +81,16 @@ export default async function render(context: RenderMessageContext) {
             options.favicon === 'guild'
               ? channelUtils.isDM(channel) || channelUtils.isDirectory(channel)
                 ? undefined
-                : (
-                  (context.guild ?
-                    guildUtils.iconURL(context.guild, { size: 16, extension: 'png' }) : undefined) ??
+                : ((context.guild ? guildUtils.iconURL(context.guild, { size: 16, extension: 'png' }) : undefined) ??
                   undefined)
               : options.favicon
           }
         />
 
-        <link rel="stylesheet" href={`https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${discordComponentsVersion}/dist/bundle/styles/base.css`} />
+        <link
+          rel="stylesheet"
+          href={`https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${discordComponentsVersion}/dist/bundle/styles/base.css`}
+        />
 
         {/* title */}
         <title>
@@ -144,9 +144,15 @@ export default async function render(context: RenderMessageContext) {
           profiles,
         };
         document.defaultView.$discordSelectMenu = {
-          users: !adapter.renderContext.selectMenu.users?.injectedScript ? adapter.renderContext.selectMenu.users?.data ?? [] : [],
-          roles: !adapter.renderContext.selectMenu.roles?.injectedScript ? adapter.renderContext.selectMenu.roles?.data ?? [] : [],
-          channels: !adapter.renderContext.selectMenu.channels?.injectedScript ? adapter.renderContext.selectMenu.channels?.data ?? [] : [],
+          users: !adapter.renderContext.selectMenu.users?.injectedScript
+            ? (adapter.renderContext.selectMenu.users?.data ?? [])
+            : [],
+          roles: !adapter.renderContext.selectMenu.roles?.injectedScript
+            ? (adapter.renderContext.selectMenu.roles?.data ?? [])
+            : [],
+          channels: !adapter.renderContext.selectMenu.channels?.injectedScript
+            ? (adapter.renderContext.selectMenu.channels?.data ?? [])
+            : [],
         };
       },
     });

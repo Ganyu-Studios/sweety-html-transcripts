@@ -1,19 +1,57 @@
-import { APIBasePartialChannel, APIChannel, APIDMChannel, APIGuildCategoryChannel, APIGuildForumChannel, APIGuildMediaChannel, APIGuildMember, APIGuildStageVoiceChannel, APIGuildVoiceChannel, APIInteractionDataResolvedGuildMember, APIMessage, APINewsChannel, APITextChannel, APIThreadChannel, ChannelType, GatewayGuildMemberAddDispatchData, GatewayGuildMemberUpdateDispatchData, GatewayMessageCreateDispatchData } from "discord-api-types/v10";
+import type {
+  APIBasePartialChannel,
+  APIChannel,
+  APIDMChannel,
+  APIGuildCategoryChannel,
+  APIGuildForumChannel,
+  APIGuildMediaChannel,
+  APIGuildMember,
+  APIGuildStageVoiceChannel,
+  APIGuildVoiceChannel,
+  APIInteractionDataResolvedGuildMember,
+  APIMessage,
+  APINewsChannel,
+  APITextChannel,
+  APIThreadChannel,
+  GatewayGuildMemberAddDispatchData,
+  GatewayGuildMemberUpdateDispatchData,
+  GatewayMessageCreateDispatchData,
+} from 'discord-api-types/v10';
+import { ChannelType } from 'discord-api-types/v10';
 
 export type APIAllGuildTextableChannels = APITextChannel | APIGuildVoiceChannel | APINewsChannel | APIThreadChannel;
-export type APIAllTextableChannels = APITextChannel | APIGuildVoiceChannel | APIDMChannel | APINewsChannel | APIThreadChannel;
+export type APIAllTextableChannels =
+  | APITextChannel
+  | APIGuildVoiceChannel
+  | APIDMChannel
+  | APINewsChannel
+  | APIThreadChannel;
 export type APIDirectoryChannel = APIBasePartialChannel & { type: ChannelType.GuildDirectory };
 export type AllAPIChannel = APIChannel | APIDirectoryChannel;
-export type AllAPIGuildChannels = APIAllGuildTextableChannels | APIGuildStageVoiceChannel | APIGuildMediaChannel | APIGuildForumChannel | APIThreadChannel | APIGuildCategoryChannel | APINewsChannel | APIDirectoryChannel;
+export type AllAPIGuildChannels =
+  | APIAllGuildTextableChannels
+  | APIGuildStageVoiceChannel
+  | APIGuildMediaChannel
+  | APIGuildForumChannel
+  | APIThreadChannel
+  | APIGuildCategoryChannel
+  | APINewsChannel
+  | APIDirectoryChannel;
 
-export type APIMessageData = APIMessage & { guild_id?: string, member?: APIGuildMember } | GatewayMessageCreateDispatchData;
+export type APIMessageData =
+  | (APIMessage & { guild_id?: string; member?: APIGuildMember })
+  | GatewayMessageCreateDispatchData;
 
-export type GuildMemberData = APIGuildMember | Omit<APIGuildMember, 'user'> | GatewayGuildMemberUpdateDispatchData | GatewayGuildMemberAddDispatchData | APIInteractionDataResolvedGuildMember;
+export type GuildMemberData =
+  | APIGuildMember
+  | Omit<APIGuildMember, 'user'>
+  | GatewayGuildMemberUpdateDispatchData
+  | GatewayGuildMemberAddDispatchData
+  | APIInteractionDataResolvedGuildMember;
 
 type AllChannelTypePicked = AllAPIChannel;
 
 class BaseChannelUtils {
-
   isStage(channel: AllChannelTypePicked): channel is APIGuildStageVoiceChannel {
     return channel.type === ChannelType.GuildStageVoice;
   }
@@ -55,7 +93,13 @@ class BaseChannelUtils {
   }
 
   isTextable(channel: AllChannelTypePicked): channel is APIAllTextableChannels {
-    return this.isDM(channel) || this.isVoice(channel) || this.isNews(channel) || this.isTextGuild(channel) || this.isThread(channel);
+    return (
+      this.isDM(channel) ||
+      this.isVoice(channel) ||
+      this.isNews(channel) ||
+      this.isTextGuild(channel) ||
+      this.isThread(channel)
+    );
   }
 
   isGuildTextable(channel: AllChannelTypePicked): channel is APIAllGuildTextableChannels {

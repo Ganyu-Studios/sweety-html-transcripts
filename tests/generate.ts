@@ -1,10 +1,8 @@
 import 'dotenv/config';
 
-import { ActionRow, Client, MentionableSelectMenu, StringSelectMenu, StringSelectOption, type ParseClient } from 'seyfert';
+import { Client, type ParseClient } from 'seyfert';
 import { GatewayIntentBits } from 'seyfert/lib/types';
-import { ExportReturnType, SeyfertTranscript } from '../src/adapters/seyfert/index';
-import { writeFile } from 'node:fs/promises';
-
+import { SeyfertTranscript } from '../src/adapters/seyfert/index';
 
 const client = new Client({
   getRC() {
@@ -40,19 +38,16 @@ client.events.values.READY = {
       console.info(`Generating transcript for channel ${channel.name}...`);
 
       const attachment = await SeyfertTranscript.create({
-        returnType: ExportReturnType.String,
         channel,
         limit: 20,
-      })
-
-      await writeFile('index.html', attachment);
+      });
 
       console.info(`Transcript generated for channel ${channel.name}.`);
 
-      // await channel.messages.write({
-      //   content: 'Here is the transcript',
-      //   files: [attachment],
-      // });
+      await channel.messages.write({
+        content: 'Here is the transcript',
+        files: [attachment],
+      });
 
       client.gateway.disconnectAll();
       process.exit(0);
@@ -63,5 +58,5 @@ client.events.values.READY = {
 client.start();
 
 declare module 'seyfert' {
-  interface UsingClient extends ParseClient<Client<true>> { }
+  interface UsingClient extends ParseClient<Client<true>> {}
 }

@@ -20,7 +20,8 @@ import { ASTNode as MessageASTNodes } from 'simple-markdown';
 import type { RenderMessageContext } from '../';
 import { channelUtils } from '../../utils/channel';
 import { convertToHEX, parseDiscordEmoji } from '../../utils/utils';
-import { APIMessageComponentEmoji, ChannelType } from 'discord-api-types/v10';
+import type { APIMessageComponentEmoji } from 'discord-api-types/v10';
+import { ChannelType } from 'discord-api-types/v10';
 import { userUtils } from '../../utils/user';
 
 export enum RenderType {
@@ -136,8 +137,14 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
       const channel = await context.callbacks.resolveChannel(id);
 
       return (
-        <DiscordMention type={channel ? (channelUtils.isDM(channel) ? 'channel' : getChannelType(channel.type)) : 'channel'}>
-          {channel ? (channelUtils.isDM(channel) ? 'DM Channel' : (channel as typeof channel & { name: string }).name) : `<#${id}>`}
+        <DiscordMention
+          type={channel ? (channelUtils.isDM(channel) ? 'channel' : getChannelType(channel.type)) : 'channel'}
+        >
+          {channel
+            ? channelUtils.isDM(channel)
+              ? 'DM Channel'
+              : (channel as typeof channel & { name: string }).name
+            : `<#${id}>`}
         </DiscordMention>
       );
     }
@@ -154,9 +161,11 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
     }
 
     case 'heading': {
-      return <DiscordHeader level={node.level}>
-        <MessageASTNodes nodes={node.content} context={context} />
-      </DiscordHeader>;
+      return (
+        <DiscordHeader level={node.level}>
+          <MessageASTNodes nodes={node.content} context={context} />
+        </DiscordHeader>
+      );
     }
 
     case 'user': {

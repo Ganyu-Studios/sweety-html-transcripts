@@ -1,7 +1,8 @@
-import { APIUser } from 'discord-api-types/v10';
+import type { APIUser } from 'discord-api-types/v10';
 import { UserFlags } from 'seyfert/lib/types';
-import { RenderMessageContext } from '../generator';
-import { channelUtils, GuildMemberData } from './channel';
+import type { RenderMessageContext } from '../generator';
+import type { GuildMemberData } from './channel';
+import { channelUtils } from './channel';
 import { userUtils } from './user';
 import { convertToHEX } from './utils';
 import { guildUtils } from './guild';
@@ -25,7 +26,6 @@ export type Profile = {
 };
 
 export async function buildProfiles(context: RenderMessageContext) {
-
   const { adapter, messages } = context;
 
   const profiles: Record<string, Profile> = {};
@@ -52,7 +52,6 @@ export async function buildProfiles(context: RenderMessageContext) {
 
     // threads
     if (message.thread && channelUtils.isThread(message.thread) && message.thread.last_message_id) {
-
       const thread = (await adapter.resolveMessage(message.thread.id, message.thread.last_message_id!))!;
 
       profiles[thread.author.id] = await buildProfile(null, message.guild_id, thread.author, context);
@@ -63,8 +62,12 @@ export async function buildProfiles(context: RenderMessageContext) {
   return profiles;
 }
 
-async function buildProfile(member: GuildMemberData | null | undefined, guildId: string | null | undefined, author: APIUser, context: RenderMessageContext) {
-
+async function buildProfile(
+  member: GuildMemberData | null | undefined,
+  guildId: string | null | undefined,
+  author: APIUser,
+  context: RenderMessageContext
+) {
   if (guildId && !member) member = await context.adapter.resolveGuildMember(guildId, author.id);
 
   const role = await context.adapter.resolveHighestGuildMemberRole(member!, guildId!);
@@ -75,17 +78,25 @@ async function buildProfile(member: GuildMemberData | null | undefined, guildId:
   return {
     id: author.id,
     author: member?.nick ?? authorName,
-    displayName: member?.nick ?? (author.global_name ?? author.username),
+    displayName: member?.nick ?? author.global_name ?? author.username,
     discriminator: author.discriminator,
     username: author.username,
     globalName: author.global_name,
-    avatar: (member && guildId ? userUtils.memberAvatarURL(member, author, guildId, { size: 64 }) : null) ?? userUtils.avatarURL(author, { size: 64 }),
+    avatar:
+      (member && guildId ? userUtils.memberAvatarURL(member, author, guildId, { size: 64 }) : null) ??
+      userUtils.avatarURL(author, { size: 64 }),
     roleColor: roleColor ? convertToHEX(roleColor) : undefined,
     roleIcon: role?.icon ?? undefined,
     roleName: role?.name ?? undefined,
     bot: author.bot,
     verified: (author.public_flags ?? 0 & UserFlags.VerifiedBot) === UserFlags.VerifiedBot,
     clanTag: author.primary_guild?.tag,
-    clanIcon: author.primary_guild?.identity_guild_id && author.primary_guild?.badge && guildUtils.guildTagBadge(author.primary_guild.identity_guild_id, author.primary_guild.badge, { size: 32, extension: 'png' }),
+    clanIcon:
+      author.primary_guild?.identity_guild_id &&
+      author.primary_guild?.badge &&
+      guildUtils.guildTagBadge(author.primary_guild.identity_guild_id, author.primary_guild.badge, {
+        size: 32,
+        extension: 'png',
+      }),
   } satisfies Profile;
 }

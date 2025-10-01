@@ -1,8 +1,8 @@
 import type { WebpOptions } from 'sharp';
 import { request } from 'undici';
 import debug from 'debug';
-import { APIAttachment, APIMessage, APIMessageSnapshot } from 'discord-api-types/v10';
-import { Awaitable } from '../adapters/core';
+import type { APIAttachment, APIMessage, APIMessageSnapshot } from 'discord-api-types/v10';
+import type { Awaitable } from '../adapters/core';
 
 /**
  * Callback used to save an image attachment.
@@ -14,7 +14,7 @@ import { Awaitable } from '../adapters/core';
  */
 export type ResolveImageCallback = (
   attachment: APIAttachment,
-  message: APIMessage | APIMessageSnapshot['message'],
+  message: APIMessage | APIMessageSnapshot['message']
 ) => Awaitable<string | null | undefined>;
 
 /**
