@@ -19,9 +19,9 @@ export { default as DiscordMessages } from './generator/transcript';
 export * from './types';
 
 // adapter exports
-export * from "./adapters/core";
-export * from "./adapters/discordjs/index";
-export * from "./adapters/seyfert/index"
+export * from './adapters/core';
+export * from './adapters/discordjs/index';
+export * from './adapters/seyfert/index';
 
 /**
  *

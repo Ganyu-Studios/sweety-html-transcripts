@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 import { Client, type ParseClient } from 'seyfert';
 import { GatewayIntentBits } from 'seyfert/lib/types';
-import { SeyfertTranscript } from '../src/adapters/seyfert/index';
+import { SeyfertTranscript } from '../src';
 
 const client = new Client({
   getRC() {

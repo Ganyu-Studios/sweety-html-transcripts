@@ -34,10 +34,12 @@ export async function buildProfiles(context: RenderMessageContext) {
   for (const message of messages) {
     // add all users
     const author = message.author;
+    const guildId = ("guildId" in message ? message.guildId : message.guild_id) as string;
+
     if (!profiles[author.id]) {
       // add profile
-      const member = await adapter.resolveGuildMember(message.guild_id!, author.id);
-      profiles[author.id] = await buildProfile(member, message.guild_id, author, context);
+      const member = await adapter.resolveGuildMember(guildId, author.id);
+      profiles[author.id] = await buildProfile(member, guildId, author, context);
     }
 
     // add interaction users
@@ -46,7 +48,7 @@ export async function buildProfiles(context: RenderMessageContext) {
       const user = await adapter.resolveUser(message.interaction_metadata.user.id);
 
       if (user && !profiles[user.id]) {
-        profiles[user.id] = await buildProfile(null, message.guild_id, user, context);
+        profiles[user.id] = await buildProfile(null, guildId, user, context);
       }
     }
 
@@ -54,7 +56,7 @@ export async function buildProfiles(context: RenderMessageContext) {
     if (message.thread && channelUtils.isThread(message.thread) && message.thread.last_message_id) {
       const thread = (await adapter.resolveMessage(message.thread.id, message.thread.last_message_id!))!;
 
-      profiles[thread.author.id] = await buildProfile(null, message.guild_id, thread.author, context);
+      profiles[thread.author.id] = await buildProfile(null, guildId, thread.author, context);
     }
   }
 

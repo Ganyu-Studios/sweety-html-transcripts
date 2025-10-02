@@ -64,7 +64,12 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const messages = await channel.messages.fetch(options).catch(() => null);
     if (!messages) return [];
 
-    return messages.map((message) => message.toJSON() as APIMessage);
+    return messages.map((message) => {
+      return {
+        ...message.toJSON() as APIMessage,
+        author: message.author.toJSON() as APIUser,
+      };
+    });
   }
   override createTranscriptAttachment(html: string, filename: string): AttachmentBuilder {
     return new AttachmentBuilder(Buffer.from(html)).setName(filename);

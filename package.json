@@ -8,10 +8,11 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
-    "test": "tsx ./tests/generate.ts",
     "lint": "prettier --write --cache . && eslint --cache --fix .",
     "typecheck": "tsc -p tsconfig.eslint.json",
-    "vite": "vite"
+    "vite": "vite",
+    "test:seyfert": "tsx ./tests/seyfert-generate.ts",
+    "test:djs": "tsx ./tests/djs-generate.ts"
   },
   "repository": {
     "type": "git",
@@ -38,8 +39,8 @@
     "@penwin/discord-components-core": "^4.3.4",
     "@types/debug": "^4.1.12",
     "@types/node": "^24.6.1",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
     "debug": "^4.4.3",
@@ -59,8 +60,8 @@
     "@penwin/discord-components-react-render": "^4.3.4",
     "discord-markdown-parser": "~1.2.0",
     "discord-api-types": "^0.38.26",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
     "simple-markdown": "^0.7.3",
     "twemoji": "^14.0.2",
     "undici": "^7.16.0"
