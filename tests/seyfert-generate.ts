@@ -17,7 +17,6 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildPresences,
       ].reduce((a, b) => a | b, 0),
     };
   },
@@ -52,6 +51,9 @@ client.events.values.READY = {
 
       client.gateway.disconnectAll();
       process.exit(0);
+    } else {
+      client.logger.error('No channel provided.');
+      process.exit(1);
     }
   },
 };

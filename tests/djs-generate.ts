@@ -5,30 +5,44 @@ import { Client, GatewayIntentBits } from 'discord.js';
 import { DiscordJSTranscript } from '../src';
 
 const client = new Client({
-  intents: [GatewayIntentBits.GuildMessages, GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent],
+  intents: [
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+  ],
 });
 
 client.on('clientReady', async () => {
-  console.log('Fetching channel: ', process.env.CHANNEL!);
-  const channel = await client.channels.fetch(process.env.CHANNEL!);
+  console.info(`Logged in as ${client.user?.username}`);
 
-  if (!channel || !channel.isTextBased()) {
-    console.error('Invalid channel provided.');
+  if (process.env.CHANNEL) {
+    const channel = await client.channels.fetch(process.env.CHANNEL);
+    if (!channel || !channel.isTextBased()) {
+      console.error('Invalid channel provided.');
+      process.exit(1);
+    }
+
+    console.info(`Generating transcript for channel ${(channel as GuildTextBasedChannel).name}...`);
+
+    const attachment = await DiscordJSTranscript.create({
+      channel,
+      limit: 20,
+    });
+
+    console.info(`Transcript generated for channel ${(channel as GuildTextBasedChannel).name}.`);
+
+    await (channel as GuildTextBasedChannel).send({
+      content: 'Here is the transcript',
+      files: [attachment],
+    });
+
+    client.destroy();
+    process.exit(0);
+  } else {
+    console.error('No channel provided.');
     process.exit(1);
   }
-
-  const attachment = await DiscordJSTranscript.create({
-    channel,
-    limit: 20,
-  });
-
-  await (channel as GuildTextBasedChannel).send({
-    content: 'Here is the transcript',
-    files: [attachment],
-  });
-
-  client.destroy();
-  process.exit(0);
 });
 
 client.login(process.env.TOKEN!);
