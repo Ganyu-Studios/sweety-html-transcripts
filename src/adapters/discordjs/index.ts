@@ -1,14 +1,7 @@
 import { AttachmentBuilder } from 'discord.js';
 import { TranscriptAdapter } from '../core';
-import type {
-  APIUser,
-  APIRole,
-  APIGuild,
-  GatewayGuildCreateDispatchData,
-  APIMessage,
-  Client,
-  Channel,
-} from 'discord.js';
+import type { GatewayGuildCreateDispatchData, Client, Channel } from 'discord.js';
+import type { APIUser, APIRole, APIGuild, APIMessage } from 'discord-api-types/v10';
 import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../../utils/channel';
 import type { CreateTranscriptOptions, ExportReturnType } from '../../types';
 import { createTranscript } from '../..';
@@ -73,9 +66,11 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
       });
     });
   }
+
   override createTranscriptAttachment(html: string, filename: string): AttachmentBuilder {
     return new AttachmentBuilder(Buffer.from(html)).setName(filename);
   }
+
   override async resolveGuildRoles(guildId: string): Promise<APIRole[]> {
     const guild = await this.client.guilds.fetch(guildId).catch(() => null);
     if (!guild) return [];
@@ -85,6 +80,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
 
     return roles.map((role) => toSnakeCase<APIRole>({ ...(role.toJSON() as APIRole) }));
   }
+
   override async resolveGuildMember(guildId: string, userId: string): Promise<GuildMemberData | null> {
     const guild = await this.client.guilds.fetch(guildId).catch(() => null);
     if (!guild) return null;
@@ -94,6 +90,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
 
     return toSnakeCase<GuildMemberData>({ ...(member.toJSON() as GuildMemberData) });
   }
+
   override async resolveGuildChannels(guildId: string): Promise<AllAPIChannel[]> {
     const guild = await this.client.guilds.fetch(guildId).catch(() => null);
     if (!guild) return [];
