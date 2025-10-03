@@ -37,7 +37,7 @@ export default async function DiscordMessage({
 )) {
   const { adapter } = context;
 
-  if (message && 'system' in message)
+  if (message && 'system' in message && message.system === true)
     return <DiscordSystemMessage message={message as APIMessageData} context={context} />;
 
   const isCrosspost =
