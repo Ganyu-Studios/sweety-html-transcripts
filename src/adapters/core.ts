@@ -4,7 +4,7 @@ import type {
   UserSelectMenuOptionData,
 } from '@penwin/discord-components-core';
 import type { APIGuild, APIMessage, APIRole, APIUser, GatewayGuildCreateDispatchData } from 'discord-api-types/v10';
-import type { Profile } from '../utils/buildProfiles';
+import type { Profile } from '../utils/profiles';
 import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../utils/channel';
 
 export type Awaitable<T> = Promise<T> | T;

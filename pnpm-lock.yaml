@@ -15,8 +15,8 @@ importers:
         specifier: ^3.6.1
         version: 3.6.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@penwin/discord-components-react-render':
-        specifier: ^4.3.4
-        version: 4.3.4(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        specifier: ^4.3.5
+        version: 4.3.5(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       discord-api-types:
         specifier: ^0.38.26
         version: 0.38.26
@@ -52,14 +52,14 @@ importers:
         specifier: ^9.36.0
         version: 9.36.0
       '@penwin/discord-components-core':
-        specifier: ^4.3.4
-        version: 4.3.4
+        specifier: ^4.3.5
+        version: 4.3.5
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
       '@types/node':
-        specifier: ^24.6.1
-        version: 24.6.1
+        specifier: ^24.6.2
+        version: 24.6.2
       '@types/react':
         specifier: ^19.2.0
         version: 19.2.0
@@ -100,8 +100,8 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
       vite:
-        specifier: ^7.1.7
-        version: 7.1.7(@types/node@24.6.1)(tsx@4.20.6)
+        specifier: ^7.1.9
+        version: 7.1.9(@types/node@24.6.2)(tsx@4.20.6)
 
 packages:
 
@@ -528,12 +528,12 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@penwin/discord-components-core@4.3.4':
-    resolution: {integrity: sha512-RyJYKs4t7VY1GiFo+E438qFfVd5Lo1TvjkSBSAyrC4cJPNF0wumuY09Q4xAc+vmnD5Vl0lF3VFIjbx/Dn/1OwQ==}
+  '@penwin/discord-components-core@4.3.5':
+    resolution: {integrity: sha512-s7AkPaZzt81BjjN9BzXDCUZzyy6OXhqufp89h18xJ+DC98IRRzfiHfVZ2g6oqXi13FThMUdUc6+56N7v2BvAPg==}
     engines: {node: '>=v18'}
 
-  '@penwin/discord-components-react-render@4.3.4':
-    resolution: {integrity: sha512-z8yk3cTj7JGeGTWJXfYY9HdPh+LbGJpFUnI2gMxn0baWNyKu//5w7PsHIZGYolUfkSA5I73Zs/Q4wCh15q3DfA==}
+  '@penwin/discord-components-react-render@4.3.5':
+    resolution: {integrity: sha512-prQMrfOtaetYB+1rRMuXX1mxqiN/fk0rrkmRIUZjiah/Mvip/cvwnxAh0G+3u0y7XElPCe6fkDuob+WyGOm46w==}
     engines: {node: '>=v18'}
     peerDependencies:
       react: 16.8.x || 17.x || 18.x || 19.x
@@ -671,8 +671,8 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@24.6.1':
-    resolution: {integrity: sha512-ljvjjs3DNXummeIaooB4cLBKg2U6SPI6Hjra/9rRIy7CpM0HpLtG9HptkMKAb4HYWy5S7HUvJEuWgr/y0U8SHw==}
+  '@types/node@24.6.2':
+    resolution: {integrity: sha512-d2L25Y4j+W3ZlNAeMKcy7yDsK425ibcAOO2t7aPTz6gNMH0z2GThtwENCDc0d/Pw9wgyRqE5Px1wkV7naz8ang==}
 
   '@types/pako@2.0.3':
     resolution: {integrity: sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q==}
@@ -1281,8 +1281,8 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
-  vite@7.1.7:
-    resolution: {integrity: sha512-VbA8ScMvAISJNJVbRDTJdCwqQoAareR/wutevKanhR2/1EkoXVZVkkORaYm/tNVCjP/UDTKtcw3bAkwOUdedmA==}
+  vite@7.1.9:
+    resolution: {integrity: sha512-4nVGliEpxmhCL8DslSAUdxlB6+SMrhB0a1v5ijlh1xB1nEPuy1mxaHxysVucLHuWryAxLWg6a5ei+U4TLn/rFg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -1679,7 +1679,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@penwin/discord-components-core@4.3.4':
+  '@penwin/discord-components-core@4.3.5':
     dependencies:
       '@lit/context': 1.1.6
       '@popperjs/core': 2.11.8
@@ -1689,7 +1689,7 @@ snapshots:
       pako: 2.1.0
       wavesurfer.js: 7.10.1
 
-  '@penwin/discord-components-react-render@4.3.4(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@penwin/discord-components-react-render@4.3.5(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@lit/react': 1.0.8(@types/react@19.2.0)
       react: 19.2.0
@@ -1780,7 +1780,7 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@24.6.1':
+  '@types/node@24.6.2':
     dependencies:
       undici-types: 7.13.0
 
@@ -1798,7 +1798,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 24.6.1
+      '@types/node': 24.6.2
 
   '@typescript-eslint/eslint-plugin@8.45.0(@typescript-eslint/parser@8.45.0(eslint@9.36.0)(typescript@5.9.3))(eslint@9.36.0)(typescript@5.9.3)':
     dependencies:
@@ -2462,7 +2462,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  vite@7.1.7(@types/node@24.6.1)(tsx@4.20.6):
+  vite@7.1.9(@types/node@24.6.2)(tsx@4.20.6):
     dependencies:
       esbuild: 0.25.8
       fdir: 6.5.0(picomatch@4.0.3)
@@ -2471,7 +2471,7 @@ snapshots:
       rollup: 4.46.2
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 24.6.1
+      '@types/node': 24.6.2
       fsevents: 2.3.3
       tsx: 4.20.6
 

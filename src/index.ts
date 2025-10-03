@@ -114,28 +114,34 @@ export async function createTranscript<
   // fetch messages
   let allMessages: APIMessage[] = [];
   let lastMessageId: string | undefined;
+
   const { limit, filter } = options;
+
   const resolvedLimit = typeof limit === 'undefined' || limit === -1 ? Infinity : limit;
 
   // until there are no more messages, keep fetching
 
   while (true) {
+    // calculate how many messages we still need to fetch
+    const remainingMessages = resolvedLimit - allMessages.length;
+    const fetchLimit = Math.min(100, remainingMessages);
+
     // create fetch options
-    const fetchLimitOptions = { limit: 100, before: lastMessageId };
+    const fetchLimitOptions = { limit: fetchLimit, before: lastMessageId };
     if (!lastMessageId) delete fetchLimitOptions.before;
 
     // fetch messages
     // const messages = await channel.messages.list(fetchLimitOptions);
     const messages = await adapter.listChannelMessages(channel.id, fetchLimitOptions);
-    const filteredMessages = typeof filter === 'function' ? messages.filter(filter) : messages;
+    const filtered = typeof filter === 'function' ? messages.filter(filter) : messages;
 
     // add the messages to the array
-    allMessages.push(...filteredMessages);
+    allMessages.push(...filtered);
     // Get the last key of 'messages', not 'filteredMessages' because you will be refetching the same messages
     lastMessageId = messages.at(-1)?.id;
 
     // if there are no more messages, break
-    if (messages.length < 100) break;
+    if (messages.length < fetchLimit) break;
 
     // if the limit has been reached, break
     if (allMessages.length >= resolvedLimit) break;

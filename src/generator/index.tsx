@@ -7,7 +7,7 @@ import { devDependencies } from '../../package.json';
 import type { TranscriptAdapter } from '../adapters/core';
 import type { ResolveImageCallback } from '../downloader/images';
 import { revealSpoiler, scrollToMessage } from '../static/client';
-import { buildProfiles } from '../utils/buildProfiles';
+import { buildProfiles } from '../utils/profiles';
 import type { AllAPIChannel, APIMessageData } from '../utils/channel';
 import { channelUtils } from '../utils/channel';
 import { guildUtils } from '../utils/guild';

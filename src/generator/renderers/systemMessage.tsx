@@ -14,10 +14,8 @@ export default async function SystemMessage({
   message: APIMessageData;
   context: RenderMessageContext;
 }) {
-  const guildId = ("guildId" in message ? message.guildId : message.guild_id) as string;
-  
-  const member = await context.adapter.resolveGuildMember(guildId, message.author.id);
-  const role = await context.adapter.resolveHighestGuildMemberRole(member!, guildId);
+  const member = await context.adapter.resolveGuildMember(message.guild_id!, message.author.id);
+  const role = await context.adapter.resolveHighestGuildMemberRole(member!, message.guild_id!);
 
   switch (message.type) {
     case MessageType.RecipientAdd:

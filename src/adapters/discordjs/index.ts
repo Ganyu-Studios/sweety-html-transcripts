@@ -12,20 +12,21 @@ import type {
 import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../../utils/channel';
 import type { CreateTranscriptOptions, ExportReturnType } from '../../types';
 import { createTranscript } from '../..';
+import { toSnakeCase } from '../../utils/replacer';
 
 export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
   override async resolveChannel(id: string): Promise<AllAPIChannel | null> {
     const channel = await this.client.channels.fetch(id).catch(() => null);
     if (!channel) return null;
 
-    return channel.toJSON() as AllAPIChannel;
+    return toSnakeCase<AllAPIChannel>({ ...(channel.toJSON() as AllAPIChannel) });
   }
 
   override async resolveUser(id: string): Promise<APIUser | null> {
     const user = await this.client.users.fetch(id).catch(() => null);
     if (!user) return null;
 
-    return user.toJSON() as APIUser;
+    return toSnakeCase<APIUser>({ ...(user.toJSON() as APIUser) });
   }
 
   override async resolveRole(guildId: string, id: string): Promise<APIRole | null> {
@@ -35,13 +36,14 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const role = await guild.roles.fetch(id).catch(() => null);
     if (!role) return null;
 
-    return role.toJSON() as APIRole;
+    return toSnakeCase<APIRole>({ ...(role.toJSON() as APIRole) });
   }
 
   override async resolveGuild(id: string): Promise<APIGuild | GatewayGuildCreateDispatchData | null> {
     const guild = await this.client.guilds.fetch(id).catch(() => null);
     if (!guild) return null;
-    return guild.toJSON() as APIGuild;
+
+    return toSnakeCase<APIGuild>({ ...(guild.toJSON() as APIGuild) });
   }
 
   override async resolveMessage(channelId: string, messageId: string): Promise<APIMessageData | null> {
@@ -51,7 +53,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const message = await channel.messages.fetch(messageId).catch(() => null);
     if (!message) return null;
 
-    return message.toJSON() as APIMessageData | null;
+    return toSnakeCase<APIMessageData>({ ...(message.toJSON() as APIMessage) });
   }
 
   override async listChannelMessages(
@@ -65,10 +67,10 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     if (!messages) return [];
 
     return messages.map((message) => {
-      return {
-        ...message.toJSON() as APIMessage,
+      return toSnakeCase<APIMessage>({
+        ...(message.toJSON() as APIMessage),
         author: message.author.toJSON() as APIUser,
-      };
+      });
     });
   }
   override createTranscriptAttachment(html: string, filename: string): AttachmentBuilder {
@@ -81,7 +83,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const roles = await guild.roles.fetch().catch(() => null);
     if (!roles) return [];
 
-    return roles.map((role) => role.toJSON() as APIRole);
+    return roles.map((role) => toSnakeCase<APIRole>({ ...(role.toJSON() as APIRole) }));
   }
   override async resolveGuildMember(guildId: string, userId: string): Promise<GuildMemberData | null> {
     const guild = await this.client.guilds.fetch(guildId).catch(() => null);
@@ -90,7 +92,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const member = await guild.members.fetch(userId).catch(() => null);
     if (!member) return null;
 
-    return member.toJSON() as GuildMemberData;
+    return toSnakeCase<GuildMemberData>({ ...(member.toJSON() as GuildMemberData) });
   }
   override async resolveGuildChannels(guildId: string): Promise<AllAPIChannel[]> {
     const guild = await this.client.guilds.fetch(guildId).catch(() => null);
@@ -102,7 +104,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     return channels
       .map((channel) => {
         if (!channel) return null;
-        return channel.toJSON() as AllAPIChannel;
+        return toSnakeCase<AllAPIChannel>({ ...(channel.toJSON() as AllAPIChannel) });
       })
       .filter((channel): channel is AllAPIChannel => channel !== null);
   }
@@ -117,7 +119,7 @@ export class DiscordJSTranscript {
     return createTranscript<DiscordJSTranscriptAdapter, T>({
       ...options,
       adapter: new DiscordJSTranscriptAdapter(options.channel.client),
-      channel: options.channel.toJSON() as AllAPIChannel,
+      channel: toSnakeCase<AllAPIChannel>({ ...(options.channel.toJSON() as AllAPIChannel) }),
     });
   }
 }
