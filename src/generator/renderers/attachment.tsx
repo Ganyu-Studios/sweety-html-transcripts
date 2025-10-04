@@ -216,27 +216,3 @@ export async function Attachment({
     />
   );
 }
-
-/**
- * Converts a Message to a JSON object
- * @param {Message} message the message to convert
- * @returns the JSON object
- */
-// function toJSON(message: Message) {
-//   const keys = Object.getOwnPropertyNames(message);
-//   const obj: Partial<APIMessage> = {};
-
-//   for (const key of keys) {
-//     if (['timestamp', 'client'].includes(key)) continue;
-
-//     const value = message[key as keyof Message];
-//     if (value && typeof value === 'object' && 'client' in value)
-//       Object.defineProperty(value, 'client', { value: undefined });
-
-//     if (value === undefined || value === null) continue;
-
-//     obj[ReplaceRegex.snake(key) as keyof APIMessage] = toSnakeCase(message[key as keyof Message] as never);
-//   }
-
-//   return obj;
-// }
