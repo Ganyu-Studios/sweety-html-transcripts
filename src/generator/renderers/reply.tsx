@@ -7,6 +7,7 @@ import { channelUtils } from '../../utils/channel';
 import { convertToHEX } from '../../utils/utils';
 import MessageContent, { RenderType } from './content';
 import { userUtils } from '../../utils/user';
+import { isObject } from '../../utils/replacer';
 
 export default async function MessageReply({
   message,
@@ -26,7 +27,7 @@ export default async function MessageReply({
 
   const isCrosspost =
     referencedMessage.message_reference && referencedMessage.message_reference.guild_id !== message.guild_id;
-  const isCommand = referencedMessage.interaction_metadata !== null;
+  const isCommand = isObject(referencedMessage.interaction_metadata)
 
   const referencedMember = (await context.adapter.resolveGuildMember(message.guild_id!, referencedMessage.author.id))!;
 
