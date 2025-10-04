@@ -38,7 +38,7 @@ export default async function DiscordMessage({
   const { adapter } = context;
 
   if (message && 'system' in message && message.system === true)
-    return <DiscordSystemMessage message={message as APIMessageData} context={context} />;
+    return <DiscordSystemMessage message={message} context={context} />;
 
   const isCrosspost =
     message?.message_reference &&
@@ -95,8 +95,7 @@ export default async function DiscordMessage({
         <DiscordCommand
           slot="reply"
           profile={message.interaction_metadata.user.id}
-          //@ts-expect-error not implented yet
-          command={'/' + message.interaction.name}
+          command={'/' + message.interaction!.name}
         />
       )}
 

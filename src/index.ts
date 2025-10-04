@@ -120,7 +120,6 @@ export async function createTranscript<
   const resolvedLimit = typeof limit === 'undefined' || limit === -1 ? Infinity : limit;
 
   // until there are no more messages, keep fetching
-
   while (true) {
     // calculate how many messages we still need to fetch
     const remainingMessages = resolvedLimit - allMessages.length;

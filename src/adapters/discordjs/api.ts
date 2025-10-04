@@ -18,24 +18,24 @@ import { toSnakeCase } from '../../utils/replacer';
 // they just return an array of ids.
 
 export const toApiMessage = (message: Message): APIMessageData => {
-  const json = message.toJSON() as APIMessage;
+  const apiMessage = message.toJSON() as APIMessage;
   const author = message.author.toJSON() as APIUser;
   const attachments = message.attachments.map((attachment) => attachment.toJSON() as APIAttachment);
 
   const message_snapshots =
     message.messageSnapshots?.map((snapshot) => {
-      const json = (snapshot.toJSON?.() ?? {}) as APIMessageSnapshot | APIMessage;
+      const apiSnapshot = (snapshot.toJSON?.() ?? {}) as APIMessageSnapshot | APIMessage;
       return {
-        ...(json as APIMessageSnapshot),
+        ...(apiSnapshot as APIMessageSnapshot),
         message: {
-          ...(json as APIMessage),
-          timestamp: String(snapshot.createdTimestamp),
+          ...(apiSnapshot as APIMessage),
+          timestamp: `${snapshot.createdTimestamp}`,
         },
       };
     }) ?? [];
 
   return toSnakeCase<APIMessageData>({
-    ...json,
+    ...apiMessage,
     author,
     attachments,
     message_snapshots,
