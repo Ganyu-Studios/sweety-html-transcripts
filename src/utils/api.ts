@@ -389,14 +389,18 @@ class APIUtils {
       vanity_url_code: guild.vanityURLCode ?? null,
       incidents_data: guild.incidentsData
         ? {
-            dms_disabled_until: guild.incidentsData.dmsDisabledUntil ? `${guild.incidentsData.dmsDisabledUntil.toISOString()}` : null,
+            dms_disabled_until: guild.incidentsData.dmsDisabledUntil
+              ? `${guild.incidentsData.dmsDisabledUntil.toISOString()}`
+              : null,
             invites_disabled_until: guild.incidentsData.invitesDisabledUntil
               ? `${guild.incidentsData.invitesDisabledUntil.toISOString()}`
               : null,
             dm_spam_detected_at: guild.incidentsData.dmSpamDetectedAt
               ? `${guild.incidentsData.dmSpamDetectedAt.toISOString()}`
               : null,
-            raid_detected_at: guild.incidentsData.raidDetectedAt ? `${guild.incidentsData.raidDetectedAt.toISOString()}` : null,
+            raid_detected_at: guild.incidentsData.raidDetectedAt
+              ? `${guild.incidentsData.raidDetectedAt.toISOString()}`
+              : null,
           }
         : null,
       features: guild.features
