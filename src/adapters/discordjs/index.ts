@@ -5,21 +5,21 @@ import type { APIUser, APIRole, APIGuild, APIMessage } from 'discord-api-types/v
 import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../../utils/channel';
 import type { CreateTranscriptOptions, ExportReturnType } from '../../types';
 import { createTranscript } from '../..';
-import { toApiChannel, toApiGuild, toApiGuildMember, toApiMessage, toApiRole, toApiUser } from './api';
+import { apiUtils } from '../../utils/api';
 
 export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
   override async resolveChannel(id: string): Promise<AllAPIChannel | null> {
     const channel = await this.client.channels.fetch(id).catch(() => null);
     if (!channel) return null;
 
-    return toApiChannel(channel);
+    return apiUtils.channel(channel);
   }
 
   override async resolveUser(id: string): Promise<APIUser | null> {
     const user = await this.client.users.fetch(id).catch(() => null);
     if (!user) return null;
 
-    return toApiUser(user);
+    return apiUtils.user(user);
   }
 
   override async resolveRole(guildId: string, id: string): Promise<APIRole | null> {
@@ -29,14 +29,14 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const role = await guild.roles.fetch(id).catch(() => null);
     if (!role) return null;
 
-    return toApiRole(role);
+    return apiUtils.role(role);
   }
 
   override async resolveGuild(id: string): Promise<APIGuild | GatewayGuildCreateDispatchData | null> {
     const guild = await this.client.guilds.fetch(id).catch(() => null);
     if (!guild) return null;
 
-    return toApiGuild(guild);
+    return apiUtils.guild(guild);
   }
 
   override async resolveMessage(channelId: string, messageId: string): Promise<APIMessageData | null> {
@@ -46,7 +46,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const message = await channel.messages.fetch(messageId).catch(() => null);
     if (!message) return null;
 
-    return toApiMessage(message);
+    return apiUtils.message(message);
   }
 
   override async listChannelMessages(
@@ -59,7 +59,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const messages = await channel.messages.fetch(options).catch(() => null);
     if (!messages) return [];
 
-    return messages.map((message) => toApiMessage(message));
+    return Promise.all(messages.map((message) => apiUtils.message(message)));
   }
 
   override createTranscriptAttachment(html: string, filename: string): AttachmentBuilder {
@@ -73,7 +73,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const roles = await guild.roles.fetch().catch(() => null);
     if (!roles) return [];
 
-    return roles.map((role) => toApiRole(role));
+    return roles.map((role) => apiUtils.role(role));
   }
 
   override async resolveGuildMember(guildId: string, userId: string): Promise<GuildMemberData | null> {
@@ -83,7 +83,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     const member = await guild.members.fetch(userId).catch(() => null);
     if (!member) return null;
 
-    return toApiGuildMember(member);
+    return apiUtils.member(member);
   }
 
   override async resolveGuildChannels(guildId: string): Promise<AllAPIChannel[]> {
@@ -96,7 +96,7 @@ export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
     return channels
       .map((channel) => {
         if (!channel) return null;
-        return toApiChannel(channel);
+        return apiUtils.channel(channel);
       })
       .filter((channel): channel is AllAPIChannel => channel !== null);
   }
@@ -111,7 +111,7 @@ export class DiscordJSTranscript {
     return createTranscript<DiscordJSTranscriptAdapter, T>({
       ...options,
       adapter: new DiscordJSTranscriptAdapter(options.channel.client),
-      channel: toApiChannel(options.channel),
+      channel: apiUtils.channel(options.channel),
     });
   }
 }
