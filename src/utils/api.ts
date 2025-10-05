@@ -127,16 +127,23 @@ class APIUtils {
             type: message.reference.type,
           }
         : undefined,
-      call: {
-        ended_timestamp: message.call?.endedAt ? `${message.call.endedAt.toISOString()}` : undefined,
-        participants: message.call?.participants as string[],
-      },
+      call: message.call
+        ? {
+            ended_timestamp: message.call.endedAt ? `${message.call.endedAt.toISOString()}` : undefined,
+            participants: message.call.participants as string[],
+          }
+        : undefined,
     };
   }
 
   user(user: User): APIUser {
     const raw: APIUser = {
-      ...user,
+      id: user.id,
+      username: user.username,
+      discriminator: user.discriminator,
+      avatar: user.avatar ?? null,
+      bot: user.bot ? user.bot : undefined,
+      system: user.system ? user.system : undefined,
       global_name: user.globalName,
       flags: user.flags?.bitfield ?? 0,
       accent_color: user.accentColor ?? undefined,
@@ -158,9 +165,15 @@ class APIUtils {
 
   attachment(attachment: Attachment): APIAttachment {
     return {
-      ...attachment,
-      filename: attachment.name,
+      id: attachment.id,
+      size: attachment.size,
+      url: attachment.url,
+      duration_secs: attachment.duration ?? undefined,
+      ephemeral: attachment.ephemeral ?? undefined,
+      height: attachment.height ?? undefined,
+      width: attachment.width ?? undefined,
       proxy_url: attachment.proxyURL,
+      filename: attachment.name,
       content_type: attachment.contentType ?? undefined,
       title: attachment.title ?? undefined,
       description: attachment.description ?? undefined,
@@ -171,7 +184,8 @@ class APIUtils {
 
   reaction(reaction: MessageReaction): APIReaction {
     return {
-      ...reaction,
+      count: reaction.count,
+      me: reaction.me,
       burst_colors: reaction.burstColors ?? [],
       count_details: reaction.countDetails,
       emoji: this.emoji(reaction.emoji),
@@ -181,15 +195,24 @@ class APIUtils {
 
   emoji(emoji: GuildEmoji | ReactionEmoji | ApplicationEmoji | Emoji): APIEmoji {
     return {
-      ...emoji,
+      id: emoji.id,
+      name: emoji.name ?? null,
+      roles: 'roles' in emoji ? emoji.roles.cache.map((role) => role.id) : undefined,
+      user: 'user' in emoji && emoji.user ? this.user(emoji.user as User) : undefined,
       available: 'available' in emoji && emoji.available ? emoji.available : undefined,
       animated: 'animated' in emoji && emoji.animated ? emoji.animated : undefined,
+      managed: 'managed' in emoji && emoji.managed ? emoji.managed : undefined,
     };
   }
 
   sticker(sticker: Sticker): APISticker {
     return {
-      ...sticker,
+      description: sticker.description ?? null,
+      id: sticker.id,
+      name: sticker.name,
+      guild_id: sticker.guildId ?? undefined,
+      sort_value: sticker.sortValue ?? undefined,
+      pack_id: sticker.packId ?? undefined,
       format_type: sticker.format,
       type: sticker.type!,
       tags: sticker.tags!,
@@ -200,7 +223,12 @@ class APIUtils {
 
   member(member: GuildMember): APIGuildMember {
     return {
-      ...member,
+      avatar: member.avatar ?? null,
+      nick: member.nickname ?? null,
+      premium_since: member.premiumSince ? `${member.premiumSince.getTime()}` : null,
+      pending: member.pending ?? undefined,
+      avatar_decoration_data: member.avatarDecorationData ? toSnakeCase(member.avatarDecorationData) : undefined,
+      banner: member.banner ?? null,
       user: this.user(member.user),
       deaf: member.voice.deaf ?? false,
       mute: member.voice.mute ?? false,
@@ -275,15 +303,15 @@ class APIUtils {
           : undefined,
       available_tags:
         'availableTags' in channel
-          ? (channel.availableTags?.map((tag): APIGuildForumTag => {
-              return {
+          ? (channel.availableTags?.map(
+              (tag): APIGuildForumTag => ({
                 emoji_id: tag.emoji!.id,
                 emoji_name: tag.emoji!.name ?? null,
                 id: tag.id,
                 moderated: tag.moderated,
                 name: tag.name,
-              };
-            }) ?? [])
+              })
+            ) ?? [])
           : [],
     };
   }
@@ -361,14 +389,14 @@ class APIUtils {
       vanity_url_code: guild.vanityURLCode ?? null,
       incidents_data: guild.incidentsData
         ? {
-            dms_disabled_until: guild.incidentsData.dmsDisabledUntil ? `${guild.incidentsData.dmsDisabledUntil}` : null,
+            dms_disabled_until: guild.incidentsData.dmsDisabledUntil ? `${guild.incidentsData.dmsDisabledUntil.toISOString()}` : null,
             invites_disabled_until: guild.incidentsData.invitesDisabledUntil
-              ? `${guild.incidentsData.invitesDisabledUntil}`
+              ? `${guild.incidentsData.invitesDisabledUntil.toISOString()}`
               : null,
             dm_spam_detected_at: guild.incidentsData.dmSpamDetectedAt
-              ? `${guild.incidentsData.dmSpamDetectedAt}`
+              ? `${guild.incidentsData.dmSpamDetectedAt.toISOString()}`
               : null,
-            raid_detected_at: guild.incidentsData.raidDetectedAt ? `${guild.incidentsData.raidDetectedAt}` : null,
+            raid_detected_at: guild.incidentsData.raidDetectedAt ? `${guild.incidentsData.raidDetectedAt.toISOString()}` : null,
           }
         : null,
       features: guild.features
