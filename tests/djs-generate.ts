@@ -13,7 +13,7 @@ const client = new Client({
   ],
 });
 
-client.on("debug", (message) => console.info(message));
+client.on('debug', (message) => console.info(message));
 
 client.on('clientReady', async () => {
   console.info(`Logged in as ${client.user?.username}`);

@@ -27,7 +27,7 @@ export default async function MessageReply({
 
   const isCrosspost =
     referencedMessage.message_reference && referencedMessage.message_reference.guild_id !== message.guild_id;
-  const isCommand = isObject(referencedMessage.interaction_metadata)
+  const isCommand = isObject(referencedMessage.interaction_metadata);
 
   const referencedMember = (await context.adapter.resolveGuildMember(message.guild_id!, referencedMessage.author.id))!;
 
