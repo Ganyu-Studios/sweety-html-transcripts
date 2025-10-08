@@ -6,7 +6,7 @@ import React from 'react';
 import type { RenderMessageContext } from '.';
 import MessageContent, { RenderType } from './renderers/content';
 import DiscordMessage from './renderers/message';
-import { ChannelType } from 'seyfert/lib/types';
+import { ChannelType } from 'discord-api-types/v10';
 import type { AllGuildTextableChannels } from 'seyfert';
 import { channelUtils } from '../utils/channel';
 import { guildUtils } from '../utils/guild';

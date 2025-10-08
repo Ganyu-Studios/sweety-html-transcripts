@@ -1,5 +1,5 @@
 import type { Emoji } from 'seyfert';
-import type { APIMessageComponentEmoji } from 'seyfert/lib/types';
+import type { APIMessageComponentEmoji } from 'discord-api-types/v10';
 import twemoji from 'twemoji';
 
 export function isDefined<T>(value: T | undefined | null): value is T {

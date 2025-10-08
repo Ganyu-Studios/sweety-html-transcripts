@@ -1,6 +1,6 @@
 import { DiscordReply } from '@penwin/discord-components-react-render';
 import React from 'react';
-import { UserFlags } from 'seyfert/lib/types';
+import { UserFlags } from 'discord-api-types/v10';
 import type { RenderMessageContext } from '..';
 import type { APIMessageData } from '../../utils/channel';
 import { channelUtils } from '../../utils/channel';

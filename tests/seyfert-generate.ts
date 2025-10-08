@@ -35,14 +35,14 @@ client.events.values.READY = {
         process.exit(1);
       }
 
-      console.info(`Generating transcript for channel ${channel.name}...`);
+      client.logger.info(`Generating transcript for channel ${channel.name}...`);
 
       const attachment = await SeyfertTranscript.create({
         channel,
         limit: 20,
       });
 
-      console.info(`Transcript generated for channel ${channel.name}.`);
+      client.logger.info(`Transcript generated for channel ${channel.name}.`);
 
       await channel.messages.write({
         content: 'Here is the transcript',

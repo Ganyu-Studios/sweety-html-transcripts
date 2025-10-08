@@ -55,12 +55,12 @@ Instead, please open a thread on [this](https://discord.gg/4JmKY8wgB6) server.
 const discordTranscripts = require('seyfert-html-transcripts');
 // or (if using typescript) import * as discordTranscripts from 'seyfert-html-transcripts';
 
-const channel = await message.channel(); // or however you get your TextChannel
+const channel = await client.channels.raw(channelId); // or however you get your channel raw object
 
 // Must be awaited
-const attachment = await discordTranscripts.createTranscript(channel);
+const attachment = await discordTranscripts.createTranscript({ channel });
 
-channel.messages.write({
+client.channel.messages.write(channelId, {
   files: [attachment],
 });
 ```
@@ -75,9 +75,11 @@ const messages = someWayToGetMessages(); // Must be Collection<string, Message> 
 const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name
 
 // Must be awaited
-const attachment = await discordTranscripts.generateFromMessages(messages, channel);
+const attachment = await discordTranscripts.generateFromMessages(messages, {
+  channel,
+});
 
-channel.messages.write({
+client.channel.messages.write(channelId, {
   files: [attachment],
 });
 ```

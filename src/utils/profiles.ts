@@ -1,5 +1,5 @@
 import type { APIUser } from 'discord-api-types/v10';
-import { UserFlags } from 'seyfert/lib/types';
+import { UserFlags } from 'discord-api-types/v10';
 import type { RenderMessageContext } from '../generator';
 import type { GuildMemberData } from './channel';
 import { channelUtils } from './channel';
