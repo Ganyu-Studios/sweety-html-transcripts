@@ -2,10 +2,6 @@ import type { Emoji } from 'seyfert';
 import type { APIMessageComponentEmoji } from 'seyfert/lib/types';
 import twemoji from 'twemoji';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const omitKeys = <T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> =>
-  Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>;
-
 export function isDefined<T>(value: T | undefined | null): value is T {
   return value !== undefined && value !== null;
 }

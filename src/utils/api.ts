@@ -159,17 +159,17 @@ class APIUtils {
       id: attachment.id,
       size: attachment.size,
       url: attachment.url,
+      proxy_url: attachment.proxyURL,
+      filename: attachment.name,
+      flags: attachment.flags.bitfield,
       duration_secs: attachment.duration ?? undefined,
       ephemeral: attachment.ephemeral ?? undefined,
       height: attachment.height ?? undefined,
       width: attachment.width ?? undefined,
-      proxy_url: attachment.proxyURL,
-      filename: attachment.name,
       content_type: attachment.contentType ?? undefined,
       title: attachment.title ?? undefined,
       description: attachment.description ?? undefined,
       waveform: attachment.waveform ?? undefined,
-      flags: attachment.flags.bitfield,
     };
   }
 
@@ -180,7 +180,7 @@ class APIUtils {
       burst_colors: reaction.burstColors ?? [],
       count_details: reaction.countDetails,
       emoji: this.emoji(reaction.emoji),
-      me_burst: reaction.meBurst ?? [],
+      me_burst: reaction.meBurst,
     };
   }
 
@@ -235,12 +235,12 @@ class APIUtils {
   channel(channel: Channel): AllAPIChannel {
     return {
       id: channel.id,
-      position: 'position' in channel && channel.position !== null ? channel.position : 0,
+      position: 'position' in channel ? channel.position : 0,
       flags: channel.flags?.bitfield ?? 0,
-      applied_tags: 'appliedTags' in channel ? (channel.appliedTags ?? []) : [],
+      applied_tags: 'appliedTags' in channel ? channel.appliedTags : [],
       name: 'name' in channel && channel.name ? channel.name : '',
       type: channel.type as never,
-      topic: 'topic' in channel ? (channel.topic ?? null) : null,
+      topic: 'topic' in channel ? channel.topic : null,
       nsfw: 'nsfw' in channel ? channel.nsfw : false,
       default_forum_layout: 'defaultForumLayout' in channel ? channel.defaultForumLayout : undefined,
       default_sort_order: 'defaultSortOrder' in channel ? channel.defaultSortOrder : undefined,
@@ -262,7 +262,7 @@ class APIUtils {
         'lastPinTimestamp' in channel && channel.lastPinTimestamp ? `${channel.lastPinTimestamp}` : null,
       rtc_region: 'rtcRegion' in channel ? (channel.rtcRegion ?? null) : null,
       user_limit: 'userLimit' in channel && channel.userLimit ? channel.userLimit : 0,
-      managed: ('managed' in channel && channel.managed ? channel.managed : false) as boolean | undefined,
+      managed: 'manageable' in channel ? channel.manageable : undefined,
       member_count: 'memberCount' in channel && channel.memberCount ? channel.memberCount : undefined,
       message_count: 'messageCount' in channel && channel.messageCount ? channel.messageCount : undefined,
       owner_id: 'ownerId' in channel && channel.ownerId ? channel.ownerId : undefined,
@@ -406,16 +406,16 @@ class APIUtils {
       incidents_data: guild.incidentsData
         ? {
             dms_disabled_until: guild.incidentsData.dmsDisabledUntil
-              ? `${guild.incidentsData.dmsDisabledUntil.toISOString()}`
+              ? guild.incidentsData.dmsDisabledUntil.toISOString()
               : null,
             invites_disabled_until: guild.incidentsData.invitesDisabledUntil
-              ? `${guild.incidentsData.invitesDisabledUntil.toISOString()}`
+              ? guild.incidentsData.invitesDisabledUntil.toISOString()
               : null,
             dm_spam_detected_at: guild.incidentsData.dmSpamDetectedAt
-              ? `${guild.incidentsData.dmSpamDetectedAt.toISOString()}`
+              ? guild.incidentsData.dmSpamDetectedAt.toISOString()
               : null,
             raid_detected_at: guild.incidentsData.raidDetectedAt
-              ? `${guild.incidentsData.raidDetectedAt.toISOString()}`
+              ? guild.incidentsData.raidDetectedAt.toISOString()
               : null,
           }
         : null,
