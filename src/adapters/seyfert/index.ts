@@ -62,8 +62,7 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
 
   override resolveGuildMember(guildId: string, userId: string): Promise<GuildMemberData | null> {
     return this.client.members
-      .fetch(guildId, userId)
-      .then((member) => this.client.members.raw(member.guildId, member.id))
+      .raw(guildId, userId)
       .catch(() => null);
   }
 }

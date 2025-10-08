@@ -15,8 +15,8 @@ importers:
         specifier: ^3.6.1
         version: 3.6.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@penwin/discord-components-react-render':
-        specifier: ^4.3.5
-        version: 4.3.5(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        specifier: ^4.3.7
+        version: 4.3.7(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       discord-api-types:
         specifier: ^0.38.29
         version: 0.38.29
@@ -52,8 +52,8 @@ importers:
         specifier: ^9.37.0
         version: 9.37.0
       '@penwin/discord-components-core':
-        specifier: ^4.3.5
-        version: 4.3.5
+        specifier: ^4.3.7
+        version: 4.3.7
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
@@ -518,12 +518,12 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@penwin/discord-components-core@4.3.5':
-    resolution: {integrity: sha512-s7AkPaZzt81BjjN9BzXDCUZzyy6OXhqufp89h18xJ+DC98IRRzfiHfVZ2g6oqXi13FThMUdUc6+56N7v2BvAPg==}
+  '@penwin/discord-components-core@4.3.7':
+    resolution: {integrity: sha512-Z41Yt0/5j1oHkcmtFVRbMOrPpDNJCCLqdq7ik3d9wP9zYL0r3mEc0aKNq81FKTiHg0YZ1H53gAlBT7Hq5vJH1w==}
     engines: {node: '>=v18'}
 
-  '@penwin/discord-components-react-render@4.3.5':
-    resolution: {integrity: sha512-prQMrfOtaetYB+1rRMuXX1mxqiN/fk0rrkmRIUZjiah/Mvip/cvwnxAh0G+3u0y7XElPCe6fkDuob+WyGOm46w==}
+  '@penwin/discord-components-react-render@4.3.7':
+    resolution: {integrity: sha512-cjHY2NkGr5uqk5J/06h0RGqch9GaIBDG00hPVf1fdS2KZS4rRwbXpJb+BmXh9qyo8r3JSShGUWKplyeeO9L3zw==}
     engines: {node: '>=v18'}
     peerDependencies:
       react: 16.8.x || 17.x || 18.x || 19.x
@@ -1674,7 +1674,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@penwin/discord-components-core@4.3.5':
+  '@penwin/discord-components-core@4.3.7':
     dependencies:
       '@lit/context': 1.1.6
       '@popperjs/core': 2.11.8
@@ -1684,7 +1684,7 @@ snapshots:
       pako: 2.1.0
       wavesurfer.js: 7.11.0
 
-  '@penwin/discord-components-react-render@4.3.5(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@penwin/discord-components-react-render@4.3.7(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@lit/react': 1.0.8(@types/react@19.2.2)
       react: 19.2.0

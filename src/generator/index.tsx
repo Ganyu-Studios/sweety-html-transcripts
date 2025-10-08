@@ -84,11 +84,6 @@ export default async function render(context: RenderMessageContext) {
           }
         />
 
-        <link
-          rel="stylesheet"
-          href={`https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${discordComponentsVersion}/dist/bundle/styles/base.css`}
-        />
-
         {/* title */}
         <title>
           {channelUtils.isDM(channel) || channelUtils.isDirectory(channel) ? 'Direct Messages' : channel.name}
@@ -116,6 +111,10 @@ export default async function render(context: RenderMessageContext) {
             ></script>
           </>
         )}
+        <link
+          rel="stylesheet"
+          href={`https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${discordComponentsVersion}/dist/bundle/styles/base.css`}
+        />
       </head>
 
       <body

@@ -51,7 +51,9 @@ export default async function MessageContent({ content, context }: { content: st
   // parse the markdown
   const parsed = parse(
     content,
-    context.type === RenderType.EMBED || context.type === RenderType.WEBHOOK ? 'extended' : 'normal'
+    //? apparently now users can use extended parsing
+    // context.type === RenderType.EMBED || context.type === RenderType.WEBHOOK ? 'extended' : 'normal'
+    'extended'
   );
 
   // check if the parsed content is only emojis

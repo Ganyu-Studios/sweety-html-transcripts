@@ -1,4 +1,5 @@
 import {
+  DiscordCode,
   DiscordEmbed as DiscordEmbedComponent,
   DiscordEmbedDescription,
   DiscordEmbedField,
@@ -9,7 +10,8 @@ import {
 } from '@penwin/discord-components-react-render';
 import type { APIEmbed, APIMessageSnapshot } from 'discord-api-types/v10';
 import { EmbedType } from 'discord-api-types/v10';
-import React from 'react';
+import parse from 'discord-markdown-parser';
+import React, { Fragment } from 'react';
 import type { RenderMessageContext } from '..';
 import type { APIMessageData } from '../../utils/channel';
 import { calculateInlineIndex } from '../../utils/embeds';
@@ -47,18 +49,21 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
 
   const key = context.message.id ? `${context.message.id}-e-${context.index}` : void 0;
 
+  const isArticle = embed.type === EmbedType.Article;
+
   return (
     <DiscordEmbedComponent
-      embedTitle={embed.title ?? undefined}
+      embed-title={embed.title ?? undefined}
       slot="embeds"
       key={key}
-      authorImage={embed.author?.proxy_icon_url ?? embed.author?.icon_url}
-      authorName={embed.author?.name}
-      authorUrl={embed.author?.url}
+      author-image={embed.author?.proxy_icon_url ?? embed.author?.icon_url}
+      author-name={embed.author?.name}
+      author-url={embed.author?.url}
       color={embed.color ? convertToHEX(embed.color) : undefined}
-      image={embed.image?.proxy_url ?? embed.image?.url}
-      thumbnail={embed.thumbnail?.proxy_url ?? embed.thumbnail?.url}
+      image={embed.image?.proxy_url ?? embed.image?.url ?? (isArticle ? embed.thumbnail?.proxy_url ?? embed.thumbnail?.url : void 0)}
+      thumbnail={!isArticle ? (embed.thumbnail?.proxy_url ?? embed.thumbnail?.url) : void 0}
       url={embed.url ?? undefined}
+      provider={embed.provider?.name ?? undefined}
     >
       {/* Description */}
       {embed.description && (
@@ -70,16 +75,33 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
       {/* Fields */}
       {embed.fields && embed.fields.length > 0 && (
         <DiscordEmbedFields slot="fields">
-          {embed.fields.map((field, id) => (
-            <DiscordEmbedField
-              key={`${context.message.id}-e-${context.index}-f-${id}`}
-              fieldTitle={field.name}
-              inline={field.inline}
-              inlineIndex={calculateInlineIndex(embed.fields ?? [], id)}
-            >
-              <MessageContent content={field.value} context={{ ...context, type: RenderType.EMBED }} />
-            </DiscordEmbedField>
-          ))}
+          {embed.fields.map((field, id) => {
+
+            const parsedTitle = parse(field.name).map((node, id) => {
+              switch (node.type) {
+                case 'text':
+                  return <Fragment key={id}>{node.content}</Fragment>;
+                case 'inlineCode':
+                  return <DiscordCode key={id}>{node.content}</DiscordCode>;
+                default:
+                  throw new Error(`Unsupported node type in embed field title: ${node.type}`);
+              }
+            })
+
+            return (
+              <DiscordEmbedField
+                key={`${context.message.id}-e-${context.index}-f-${id}`}
+                field-title={field.name}
+                inline={field.inline}
+                inline-index={field.inline ? calculateInlineIndex(embed.fields ?? [], id) : void 0}
+              >
+                <span slot="field-title">
+                  {parsedTitle}
+                </span>
+                <MessageContent content={field.value} context={{ ...context, type: RenderType.EMBED }} />
+              </DiscordEmbedField>
+            )
+          })}
         </DiscordEmbedFields>
       )}
 
@@ -87,7 +109,7 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
       {embed.footer && (
         <DiscordEmbedFooter
           slot="footer"
-          footerImage={embed.footer.proxy_icon_url ?? embed.footer.icon_url}
+          footer-image={embed.footer.proxy_icon_url ?? embed.footer.icon_url}
           timestamp={embed.timestamp ?? undefined}
         >
           {embed.footer.text}
