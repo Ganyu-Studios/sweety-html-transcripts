@@ -65,7 +65,7 @@ export type GenerateFromMessagesOptions<
    * or pass in a url to use a custom icon
    * @default "guild"
    */
-  favicon: 'guild' | string;
+  favicon: 'guild' | (string & {});
 
   /**
    * Whether to hydrate the html server-side

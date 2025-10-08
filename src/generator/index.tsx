@@ -63,8 +63,6 @@ export default async function render(context: RenderMessageContext) {
 
   adapter.renderContext.profiles = profiles;
 
-  // NOTE: this renders a STATIC site with no interactivity
-  // if interactivity is needed, switch to renderToPipeableStream and use hydrateRoot on client.
   // tysom sagiriikeda to fix this <3
   const stream = await prerenderToNodeStream(
     <html>

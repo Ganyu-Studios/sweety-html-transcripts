@@ -25,8 +25,8 @@ export * from './adapters/seyfert/index';
 
 /**
  *
+ * Generate a transcript from an array of messages.
  * @param messages The messages to generate a transcript from
- * @param channel  The channel the messages are from (used for header and guild name)
  * @param options  The options to use when generating the transcript
  * @returns        The generated transcript
  */
@@ -96,8 +96,7 @@ export async function generateFromMessages<
 }
 
 /**
- *
- * @param channel The channel to create a transcript from
+ * Create a transcript from a channel.
  * @param options The options to use when creating the transcript
  * @returns       The generated transcript
  */
@@ -130,7 +129,6 @@ export async function createTranscript<
     if (!lastMessageId) delete fetchLimitOptions.before;
 
     // fetch messages
-    // const messages = await channel.messages.list(fetchLimitOptions);
     const messages = await adapter.listChannelMessages(channel.id, fetchLimitOptions);
     const filtered = typeof filter === 'function' ? messages.filter(filter) : messages;
 
