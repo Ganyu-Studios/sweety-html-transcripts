@@ -20,7 +20,7 @@ import { Component } from './components';
 import MessageContent, { RenderType } from './content';
 import { DiscordEmbed } from './embed';
 import MessageReply from './reply';
-import DiscordSystemMessage from './systemMessage';
+import DiscordSystemMessage, { SystemMessageTypes } from './systemMessage';
 import { messageUtils } from '../../utils/message';
 import { guildUtils } from '../../utils/guild';
 
@@ -37,7 +37,8 @@ export default async function DiscordMessage({
 )) {
   const { adapter } = context;
 
-  if (message && 'system' in message && message.system === true)
+  const isSystem = message && 'system' in message && message.system === true;
+  if (message && (isSystem || SystemMessageTypes.includes(message.type)))
     return <DiscordSystemMessage message={message} context={context} />;
 
   const isCrosspost =

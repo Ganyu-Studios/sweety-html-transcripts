@@ -70,7 +70,7 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
       {/* Fields */}
       {embed.fields && embed.fields.length > 0 && (
         <DiscordEmbedFields slot="fields">
-          {embed.fields.map(async (field, id) => (
+          {embed.fields.map((field, id) => (
             <DiscordEmbedField
               key={`${context.message.id}-e-${context.index}-f-${id}`}
               fieldTitle={field.name}

@@ -7,6 +7,17 @@ import type { APIMessageData, GuildMemberData } from '../../utils/channel';
 import { userUtils } from '../../utils/user';
 import { convertToHEX, parseDiscordEmoji } from '../../utils/utils';
 
+export const SystemMessageTypes = [
+  MessageType.RecipientAdd,
+  MessageType.UserJoin,
+  MessageType.ChannelPinnedMessage,
+  MessageType.GuildBoost,
+  MessageType.GuildBoostTier1,
+  MessageType.GuildBoostTier2,
+  MessageType.GuildBoostTier3,
+  MessageType.ThreadStarterMessage,
+];
+
 export default async function SystemMessage({
   message,
   context,

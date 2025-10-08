@@ -28,9 +28,9 @@ export abstract class TranscriptAdapter<Client> {
 
   async resolveGuildMemberRoles(member: Pick<GuildMemberData, 'roles'>, guildId: string) {
     if (!member) return [];
-    
+
     const guildRoles = await this.resolveGuildRoles(guildId);
-    
+
     if (!Array.isArray(guildRoles)) return [];
 
     return guildRoles.filter((role) => member.roles.includes(role.id));

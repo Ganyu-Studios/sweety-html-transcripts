@@ -156,6 +156,7 @@ export async function Attachment({
     }
     return (
       <DiscordMediaGalleryItem
+        spoiler={(attach.flags ?? 0 & 8) === 8}
         media={url}
         key={attachment.id}
         description={attachment.description}

@@ -8,6 +8,7 @@ import { convertToHEX } from '../../utils/utils';
 import MessageContent, { RenderType } from './content';
 import { userUtils } from '../../utils/user';
 import { isObject } from '../../utils/replacer';
+import { messageUtils } from '../../utils/message';
 
 export default async function MessageReply({
   message,
@@ -16,6 +17,7 @@ export default async function MessageReply({
   message: APIMessageData;
   context: RenderMessageContext;
 }) {
+  if (messageUtils.isForward(message)) return null;
   if (!message.message_reference) return null;
 
   if (message.message_reference.guild_id !== message.guild_id) return null;
