@@ -13,7 +13,7 @@ import type {
   Sticker,
   User,
 } from 'discord.js';
-import { type Message } from 'discord.js';
+import { Collection, ThreadAutoArchiveDuration, type Message } from 'discord.js';
 import type {
   APIAttachment,
   APIChannel,
@@ -28,13 +28,13 @@ import type {
   APIRole,
   APISticker,
   APIUser,
+  GuildFeature,
 } from 'discord-api-types/v10';
 import { toSnakeCase } from './replacer';
 import type { AllAPIChannel } from './channel';
-import { GuildFeature } from 'seyfert/lib/types';
 
 // THIS IS A FUCKING MESS AND I HATE IT BUT IT WORKS SO WHATEVER
-// I HATE THIS SO MUCH, BUT I HAVE D.JS MORE FOR NOT ALLOWING PEOPLE
+// I HATE THIS SO MUCH, BUT I HATE D.JS MORE FOR NOT ALLOWING PEOPLE
 // TO RETURN API OBJECTS DIRECTLY
 
 class APIUtils {
@@ -67,18 +67,17 @@ class APIUtils {
       resolved: undefined,
       mentions: message.mentions.users.map((user) => this.user(user)),
       referenced_message: messageReference ? await this.message(messageReference) : null,
-      // @ts-expect-error the types are fucked up
       interaction_metadata: message.interactionMetadata
         ? {
             id: message.interactionMetadata.id,
-            type: message.interactionMetadata.type,
+            type: message.interactionMetadata.type as never,
             user: this.user(message.interactionMetadata.user),
             authorizing_integration_owners: message.interactionMetadata.authorizingIntegrationOwners,
             interacted_message_id: message.interactionMetadata.interactedMessageId!,
             original_response_message_id: message.interactionMetadata.originalResponseMessageId!,
             triggering_interaction_metadata: message.interactionMetadata.triggeringInteractionMetadata
               ? {
-                  type: message.interactionMetadata.triggeringInteractionMetadata.type,
+                  type: message.interactionMetadata.triggeringInteractionMetadata.type as never,
                   id: message.interactionMetadata.triggeringInteractionMetadata.id,
                   user: this.user(message.interactionMetadata.triggeringInteractionMetadata.user),
                   authorizing_integration_owners:
@@ -129,7 +128,7 @@ class APIUtils {
         : undefined,
       call: message.call
         ? {
-            ended_timestamp: message.call.endedAt ? `${message.call.endedAt.toISOString()}` : undefined,
+            ended_timestamp: message.call.endedAt ? message.call.endedAt.toISOString() : undefined,
             participants: message.call.participants as string[],
           }
         : undefined,
@@ -137,7 +136,7 @@ class APIUtils {
   }
 
   user(user: User): APIUser {
-    const raw: APIUser = {
+    return {
       id: user.id,
       username: user.username,
       discriminator: user.discriminator,
@@ -148,19 +147,11 @@ class APIUtils {
       flags: user.flags?.bitfield ?? 0,
       accent_color: user.accentColor ?? undefined,
       banner: user.banner ?? undefined,
-      collectibles: undefined,
-      avatar_decoration_data: undefined,
+      avatar_decoration_data: user.avatarDecorationData ? toSnakeCase(user.avatarDecorationData) : undefined,
+      collectibles: {
+        nameplate: user.collectibles?.nameplate ? toSnakeCase(user.collectibles.nameplate) : undefined,
+      },
     };
-
-    if (user.avatarDecorationData) {
-      raw.avatar_decoration_data = toSnakeCase(user.avatarDecorationData);
-    }
-
-    if (user.collectibles?.nameplate) {
-      raw.collectibles = { nameplate: toSnakeCase(user.collectibles.nameplate) };
-    }
-
-    return raw;
   }
 
   attachment(attachment: Attachment): APIAttachment {
@@ -198,7 +189,7 @@ class APIUtils {
       id: emoji.id,
       name: emoji.name ?? null,
       roles: 'roles' in emoji ? emoji.roles.cache.map((role) => role.id) : undefined,
-      user: 'user' in emoji && emoji.user ? this.user(emoji.user as User) : undefined,
+      user: 'author' in emoji && emoji.author ? this.user(emoji.author) : undefined,
       available: 'available' in emoji && emoji.available ? emoji.available : undefined,
       animated: 'animated' in emoji && emoji.animated ? emoji.animated : undefined,
       managed: 'managed' in emoji && emoji.managed ? emoji.managed : undefined,
@@ -225,31 +216,30 @@ class APIUtils {
     return {
       avatar: member.avatar ?? null,
       nick: member.nickname ?? null,
-      premium_since: member.premiumSince ? `${member.premiumSince.getTime()}` : null,
+      premium_since: member.premiumSince ? member.premiumSince.toISOString() : null,
       pending: member.pending ?? undefined,
       avatar_decoration_data: member.avatarDecorationData ? toSnakeCase(member.avatarDecorationData) : undefined,
       banner: member.banner ?? null,
       user: this.user(member.user),
       deaf: member.voice.deaf ?? false,
       mute: member.voice.mute ?? false,
-      communication_disabled_until: member.communicationDisabledUntil
-        ? `${member.communicationDisabledUntil.getTime()}`
-        : null,
       roles: member.roles.cache.map((role) => role.id),
-      joined_at: `${member.joinedAt?.getTime()}`,
+      joined_at: member.joinedAt ? member.joinedAt.toISOString() : null,
       flags: member.user.flags?.bitfield ?? 0,
+      communication_disabled_until: member.communicationDisabledUntil
+        ? member.communicationDisabledUntil.toISOString()
+        : null,
     };
   }
 
   channel(channel: Channel): AllAPIChannel {
-    //@ts-expect-error the channel type is everything but is not assignable to APIChannel
     return {
       id: channel.id,
       position: 'position' in channel && channel.position !== null ? channel.position : 0,
       flags: channel.flags?.bitfield ?? 0,
       applied_tags: 'appliedTags' in channel ? (channel.appliedTags ?? []) : [],
       name: 'name' in channel && channel.name ? channel.name : '',
-      type: channel.type,
+      type: channel.type as never,
       topic: 'topic' in channel ? (channel.topic ?? null) : null,
       nsfw: 'nsfw' in channel ? channel.nsfw : false,
       default_forum_layout: 'defaultForumLayout' in channel ? channel.defaultForumLayout : undefined,
@@ -272,14 +262,9 @@ class APIUtils {
         'lastPinTimestamp' in channel && channel.lastPinTimestamp ? `${channel.lastPinTimestamp}` : null,
       rtc_region: 'rtcRegion' in channel ? (channel.rtcRegion ?? null) : null,
       user_limit: 'userLimit' in channel && channel.userLimit ? channel.userLimit : 0,
-      managed: 'managed' in channel ? channel.managed : false,
-      permission_synced: 'permissionSynced' in channel ? channel.permissionSynced : false,
-      archived: 'archived' in channel ? channel.archived : false,
+      managed: ('managed' in channel && channel.managed ? channel.managed : false) as boolean | undefined,
       member_count: 'memberCount' in channel && channel.memberCount ? channel.memberCount : undefined,
-      thread_metadata:
-        'threadMetadata' in channel && channel.threadMetadata ? toSnakeCase(channel.threadMetadata) : undefined,
       message_count: 'messageCount' in channel && channel.messageCount ? channel.messageCount : undefined,
-      member: 'member' in channel && channel.member ? this.member(channel.member as GuildMember) : undefined,
       owner_id: 'ownerId' in channel && channel.ownerId ? channel.ownerId : undefined,
       total_message_sent:
         'totalMessageSent' in channel && channel.totalMessageSent ? channel.totalMessageSent : undefined,
@@ -289,8 +274,8 @@ class APIUtils {
         'permissionOverwrites' in channel
           ? channel.permissionOverwrites.cache.map((perm) => ({
               id: perm.id,
-              allow: perm.allow.bitfield,
-              deny: perm.deny.bitfield,
+              allow: perm.allow.bitfield.toString(),
+              deny: perm.deny.bitfield.toString(),
               type: perm.type,
             }))
           : [],
@@ -303,7 +288,7 @@ class APIUtils {
           : undefined,
       available_tags:
         'availableTags' in channel
-          ? (channel.availableTags?.map(
+          ? channel.availableTags.map(
               (tag): APIGuildForumTag => ({
                 emoji_id: tag.emoji!.id,
                 emoji_name: tag.emoji!.name ?? null,
@@ -311,8 +296,35 @@ class APIUtils {
                 moderated: tag.moderated,
                 name: tag.name,
               })
-            ) ?? [])
+            )
           : [],
+      thread_metadata: {
+        archive_timestamp: 'createdAt' in channel ? channel.createdAt!.toDateString() : '',
+        archived: 'archived' in channel && channel.archived ? channel.archived : false,
+        auto_archive_duration:
+          'autoArchiveDuration' in channel && channel.autoArchiveDuration
+            ? channel.autoArchiveDuration
+            : ThreadAutoArchiveDuration.OneDay,
+        locked: 'locked' in channel && channel.locked ? channel.locked : false,
+        invitable: 'invitable' in channel && channel.invitable ? channel.invitable : undefined,
+        create_timestamp: 'createdAt' in channel && channel.createdAt ? channel.createdAt.toISOString() : undefined,
+      },
+      member: {
+        flags: 'flags' in channel ? (channel.flags?.bitfield ?? 0) : 0,
+        id: 'id' in channel ? channel.id : undefined,
+        join_timestamp:
+          'members' in channel && !(channel.members instanceof Collection)
+            ? (channel.members.me?.joinedAt?.toISOString() ?? '')
+            : '',
+        member:
+          'members' in channel && !(channel.members instanceof Collection) && channel.members.me?.guildMember
+            ? this.member(channel.members.me.guildMember)
+            : undefined,
+        user_id:
+          'members' in channel && !(channel.members instanceof Collection) && channel.members.me?.user
+            ? channel.members.me.user.id
+            : undefined,
+      },
     };
   }
 
@@ -322,7 +334,7 @@ class APIUtils {
         attachments: snapshot.attachments.map((attachment) => this.attachment(attachment)),
         content: snapshot.content,
         components: snapshot.components.map((component) => component.toJSON()),
-        edited_timestamp: snapshot.editedTimestamp ? `${snapshot.editedTimestamp}` : null,
+        edited_timestamp: snapshot.createdAt ? snapshot.createdAt.toISOString() : null,
         embeds: snapshot.embeds.map((embed) => embed.toJSON()),
         mention_roles: snapshot.mentions.roles.map((role) => role.id),
         timestamp: snapshot.createdAt!.toISOString(),
@@ -337,6 +349,7 @@ class APIUtils {
   role(role: Role): APIRole {
     return {
       color: role.color,
+      colors: toSnakeCase(role.colors),
       id: role.id,
       name: role.name,
       permissions: role.permissions.bitfield.toString(),
@@ -351,11 +364,13 @@ class APIUtils {
   }
 
   guild(guild: Guild): APIGuild {
-    // @ts-expect-error region is not available anymore
     return {
       id: guild.id,
       name: guild.name,
-      icon: guild.icon ?? null,
+      icon: guild.icon ?? null, 
+      // yeah, this is deprecated but the type requires it
+      // so ¯\_(ツ)_/¯
+      region: 'deprecated',
       afk_channel_id: guild.afkChannelId ?? null,
       afk_timeout: guild.afkTimeout as 1800 | 3600 | 60 | 300 | 900,
       banner: guild.banner ?? null,
@@ -387,6 +402,7 @@ class APIUtils {
       safety_alerts_channel_id: guild.safetyAlertsChannelId ?? null,
       stickers: guild.stickers.cache.map((sticker) => this.sticker(sticker)),
       vanity_url_code: guild.vanityURLCode ?? null,
+      features: guild.features as GuildFeature[],
       incidents_data: guild.incidentsData
         ? {
             dms_disabled_until: guild.incidentsData.dmsDisabledUntil
@@ -403,15 +419,6 @@ class APIUtils {
               : null,
           }
         : null,
-      features: guild.features
-        .map((feature) => {
-          const values = Object.entries(GuildFeature).map(([key, value]) => ({ key, value }));
-          const found = values.find((v) => v.key === feature);
-          if (found) return found.value;
-
-          return null;
-        })
-        .filter((f): f is GuildFeature => f !== null),
     };
   }
 }
