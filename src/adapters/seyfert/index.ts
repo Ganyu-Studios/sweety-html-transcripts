@@ -9,7 +9,7 @@ import { createTranscript } from '../..';
 
 export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
   override resolveChannel(id: string): Promise<AllAPIChannel | null> {
-    return this.client.channels.raw(id).catch(() => null);
+    return this.client.channels.raw(id).catch(() => null) as Promise<AllAPIChannel | null>;
   }
 
   override resolveUser(id: string): Promise<APIUser | null> {
@@ -46,7 +46,7 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
     return this.client.guilds.channels
       .list(guildId)
       .then((channels) => Promise.all(channels.map((channel) => this.client.channels.raw(channel.id))))
-      .catch(() => []);
+      .catch(() => []) as Promise<AllAPIChannel[]>;
   }
 
   override createTranscriptAttachment(html: string, filename: string): AttachmentBuilder {
@@ -78,7 +78,7 @@ export class SeyfertTranscript {
     return createTranscript<SeyfertTranscriptAdapter, T>({
       ...options,
       adapter: new SeyfertTranscriptAdapter(options.channel.client),
-      channel: raw,
+      channel: raw as AllAPIChannel,
     });
   }
 }

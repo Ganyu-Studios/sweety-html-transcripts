@@ -367,7 +367,7 @@ class APIUtils {
     return {
       id: guild.id,
       name: guild.name,
-      icon: guild.icon ?? null, 
+      icon: guild.icon ?? null,
       // yeah, this is deprecated but the type requires it
       // so ¯\_(ツ)_/¯
       region: 'deprecated',

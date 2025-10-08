@@ -253,7 +253,7 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
       );
 
     case 'timestamp':
-      return <DiscordTime timestamp={parseInt(node.timestamp) * 1000} format={node.format} />;
+      return <DiscordTime timestamp={parseInt(node.timestamp)} format={node.format} />;
 
     default: {
       console.log(`Unknown node type: ${type}`, node);
