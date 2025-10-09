@@ -45,7 +45,7 @@ Instead, please open a thread on [this](https://discord.gg/4JmKY8wgB6) server.
 
 ## 🖨️ Example Output
 
-![output](https://derock.media/r/6G6FIl.gif)
+![output](https://i.imgur.com/AIfEOOj.gif)
 
 ## 📝 Usage
 

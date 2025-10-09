@@ -57,6 +57,7 @@ export async function Component({
           type={'style' in component ? ButtonStyleMapping[component.style] : 'secondary'}
           url={'url' in component ? component.url : undefined}
           emoji={'emoji' in component ? parseDiscordEmoji(component.emoji!) : undefined}
+          disabled={component.disabled}
         >
           {'label' in component ? component.label : undefined}
         </DiscordButton>
@@ -158,7 +159,9 @@ export async function Component({
     case ComponentType.StringSelect:
     case ComponentType.SelectMenu: {
       return (
-        <DiscordStringSelectMenu>
+        <DiscordStringSelectMenu
+          disabled={component.disabled}
+        >
           {component.options.map((option, id) => (
             <DiscordStringSelectMenuOption
               key={id}

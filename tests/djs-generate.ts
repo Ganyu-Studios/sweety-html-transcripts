@@ -2,7 +2,9 @@ import 'dotenv/config';
 
 import type { GuildTextBasedChannel } from 'discord.js';
 import { Client, GatewayIntentBits } from 'discord.js';
-import { DiscordJSTranscript } from '../src';
+import { ExportReturnType } from '../src';
+import { DiscordJSTranscript } from '../src/adapters/discordjs';
+import { writeFile } from 'node:fs/promises';
 
 const client = new Client({
   intents: [
@@ -12,6 +14,8 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
   ],
 });
+
+const isSendable = process.env.SEND_TRANSCRIPT_TEST !== 'false';
 
 client.on('debug', (message) => console.info(message));
 
@@ -29,15 +33,22 @@ client.on('clientReady', async () => {
 
     const attachment = await DiscordJSTranscript.create({
       channel,
-      limit: 20,
+      limit: 30,
+      returnType: isSendable ? ExportReturnType.Attachment : ExportReturnType.String,
     });
 
     console.info(`Transcript generated for channel ${(channel as GuildTextBasedChannel).name}.`);
 
-    await (channel as GuildTextBasedChannel).send({
-      content: 'Here is the transcript',
-      files: [attachment],
-    });
+    if (typeof attachment === 'string') {
+      const route = `./index.html`;
+      await writeFile(route, attachment);
+     console.info(`Transcript saved in  ${route}`);
+    } else {
+      await (channel as GuildTextBasedChannel).send({
+        content: 'Here is the transcript',
+        files: [attachment],
+      });
+    }
 
     client.destroy();
     process.exit(0);

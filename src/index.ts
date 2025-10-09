@@ -20,8 +20,6 @@ export * from './types';
 
 // adapter exports
 export * from './adapters/core';
-export * from './adapters/discordjs/index';
-export * from './adapters/seyfert/index';
 
 /**
  *

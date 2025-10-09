@@ -2,7 +2,8 @@ import 'dotenv/config';
 
 import { Client, type ParseClient } from 'seyfert';
 import { GatewayIntentBits } from 'seyfert/lib/types';
-import { ExportReturnType, SeyfertTranscript } from '../src';
+import { ExportReturnType } from '../src';
+import { SeyfertTranscript } from '../src/adapters/seyfert';
 import { writeFile } from 'node:fs/promises';
 
 const client = new Client({
@@ -23,7 +24,7 @@ const client = new Client({
   },
 });
 
-const sendTranscriptTest = process.env.SEND_TRANSCRIPT_TEST !== 'false';
+const isSendable = process.env.SEND_TRANSCRIPT_TEST !== 'false';
 
 client.events.values.READY = {
   __filePath: null,
@@ -42,8 +43,8 @@ client.events.values.READY = {
 
       const attachment = await SeyfertTranscript.create({
         channel,
-        limit: 25,
-        returnType: sendTranscriptTest ? ExportReturnType.Attachment : ExportReturnType.String,
+        limit: 30,
+        returnType: isSendable ? ExportReturnType.Attachment : ExportReturnType.String,
       });
 
       client.logger.info(`Transcript generated for channel ${channel.name}.`);
