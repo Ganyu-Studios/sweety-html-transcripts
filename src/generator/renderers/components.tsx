@@ -158,9 +158,11 @@ export async function Component({
 
     case ComponentType.StringSelect:
     case ComponentType.SelectMenu: {
+
       return (
         <DiscordStringSelectMenu
           disabled={component.disabled}
+          placeholder={component.placeholder}
         >
           {component.options.map((option, id) => (
             <DiscordStringSelectMenuOption
@@ -169,6 +171,7 @@ export async function Component({
               description={option.description}
               emojiName={option.emoji?.name}
               emoji={option.emoji && parseDiscordEmoji(option.emoji)}
+              selected={option.default}
             />
           ))}
         </DiscordStringSelectMenu>
@@ -292,6 +295,8 @@ export async function Component({
           {scripts}
           <DiscordSelectMenuPortal
             key={id}
+            disabled={component.disabled}
+            placeholder={component.placeholder}
             type={isMentionable ? 'mentionable' : isUser ? 'user' : isRole ? 'role' : 'channel'}
             default-identifier={component.default_values?.[0].id}
             default-type={component.default_values?.[0].type}
