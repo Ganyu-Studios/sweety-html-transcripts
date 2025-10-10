@@ -61,9 +61,7 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
   }
 
   override resolveGuildMember(guildId: string, userId: string): Promise<GuildMemberData | null> {
-    return this.client.members
-      .raw(guildId, userId)
-      .catch(() => null);
+    return this.client.members.raw(guildId, userId).catch(() => null);
   }
 }
 

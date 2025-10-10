@@ -2,6 +2,11 @@ import type { Emoji } from 'seyfert';
 import type { APIMessageComponentEmoji } from 'discord-api-types/v10';
 import twemoji from 'twemoji';
 
+interface FlagsOptions {
+  bitfield?: number;
+  flag: number;
+}
+
 export function isDefined<T>(value: T | undefined | null): value is T {
   return value !== undefined && value !== null;
 }
@@ -45,6 +50,14 @@ export function streamToString(stream: NodeJS.ReadableStream) {
     stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
   });
 }
+
+/**
+ *
+ * Check if a flag is present in a bitfield
+ * @param {FlagsOptions} options - The options to check.
+ * @returns boolean
+ */
+export const hasFlag = (options: FlagsOptions) => (options.bitfield ?? 0 & options.flag) === options.flag;
 
 /**
  *

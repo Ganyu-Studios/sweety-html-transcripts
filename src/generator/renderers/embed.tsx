@@ -60,7 +60,11 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
       author-name={embed.author?.name}
       author-url={embed.author?.url}
       color={embed.color ? convertToHEX(embed.color) : undefined}
-      image={embed.image?.proxy_url ?? embed.image?.url ?? (isArticle ? embed.thumbnail?.proxy_url ?? embed.thumbnail?.url : void 0)}
+      image={
+        embed.image?.proxy_url ??
+        embed.image?.url ??
+        (isArticle ? (embed.thumbnail?.proxy_url ?? embed.thumbnail?.url) : void 0)
+      }
       thumbnail={!isArticle ? (embed.thumbnail?.proxy_url ?? embed.thumbnail?.url) : void 0}
       url={embed.url ?? undefined}
       provider={embed.provider?.name ?? undefined}
@@ -76,7 +80,6 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
       {embed.fields && embed.fields.length > 0 && (
         <DiscordEmbedFields slot="fields">
           {embed.fields.map((field, id) => {
-
             const parsedTitle = parse(field.name).map((node, id) => {
               switch (node.type) {
                 case 'text':
@@ -86,7 +89,7 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
                 default:
                   throw new Error(`Unsupported node type in embed field title: ${node.type}`);
               }
-            })
+            });
 
             return (
               <DiscordEmbedField
@@ -95,12 +98,10 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
                 inline={field.inline}
                 inline-index={field.inline ? calculateInlineIndex(embed.fields ?? [], id) : void 0}
               >
-                <span slot="field-title">
-                  {parsedTitle}
-                </span>
+                <span slot="field-title">{parsedTitle}</span>
                 <MessageContent content={field.value} context={{ ...context, type: RenderType.EMBED }} />
               </DiscordEmbedField>
-            )
+            );
           })}
         </DiscordEmbedFields>
       )}

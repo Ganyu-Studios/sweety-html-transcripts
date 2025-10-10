@@ -42,7 +42,7 @@ client.on('clientReady', async () => {
     if (typeof attachment === 'string') {
       const route = `./index.html`;
       await writeFile(route, attachment);
-     console.info(`Transcript saved in  ${route}`);
+      console.info(`Transcript saved in  ${route}`);
     } else {
       await (channel as GuildTextBasedChannel).send({
         content: 'Here is the transcript',

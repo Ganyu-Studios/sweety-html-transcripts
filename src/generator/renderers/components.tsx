@@ -158,12 +158,8 @@ export async function Component({
 
     case ComponentType.StringSelect:
     case ComponentType.SelectMenu: {
-
       return (
-        <DiscordStringSelectMenu
-          disabled={component.disabled}
-          placeholder={component.placeholder}
-        >
+        <DiscordStringSelectMenu disabled={component.disabled} placeholder={component.placeholder}>
           {component.options.map((option, id) => (
             <DiscordStringSelectMenuOption
               key={id}

@@ -4,7 +4,7 @@ import type { RenderMessageContext } from '../generator';
 import type { GuildMemberData } from './channel';
 import { channelUtils } from './channel';
 import { userUtils } from './user';
-import { convertToHEX } from './utils';
+import { convertToHEX, hasFlag } from './utils';
 import { guildUtils } from './guild';
 
 export type Profile = {
@@ -90,7 +90,7 @@ async function buildProfile(
     roleIcon: role?.icon ?? undefined,
     roleName: role?.name ?? undefined,
     bot: author.bot,
-    verified: (author.public_flags ?? 0 & UserFlags.VerifiedBot) === UserFlags.VerifiedBot,
+    verified: hasFlag({ bitfield: author.flags, flag: UserFlags.VerifiedBot }),
     clanTag: author.primary_guild?.tag,
     clanIcon:
       author.primary_guild?.identity_guild_id &&

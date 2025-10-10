@@ -13,7 +13,7 @@ import React from 'react';
 import type { RenderMessageContext } from '..';
 import type { AttachmentTypes } from '../../types';
 import type { APIMessageData } from '../../utils/channel';
-import { formatBytes } from '../../utils/utils';
+import { formatBytes, hasFlag } from '../../utils/utils';
 
 function getAttachmentType(attachment: Pick<APIAttachment, 'content_type'>): AttachmentTypes {
   const type = attachment.content_type?.split('/')?.[0] ?? 'unknown';
@@ -156,7 +156,7 @@ export async function Attachment({
     }
     return (
       <DiscordMediaGalleryItem
-        spoiler={(attach.flags ?? 0 & 8) === 8}
+        spoiler={hasFlag({ bitfield: attach.flags, flag: 8 })}
         media={url}
         key={attachment.id}
         description={attachment.description}

@@ -96,7 +96,7 @@ export default async function DiscordMessage({
         <DiscordCommand
           slot="reply"
           profile={message.interaction_metadata.user.id}
-          command={'/' + message.interaction!.name}
+          command={message.interaction!.name}
         />
       )}
 
