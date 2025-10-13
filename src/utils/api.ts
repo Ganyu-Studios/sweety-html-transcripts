@@ -15,6 +15,7 @@ import type {
 } from 'discord.js';
 import { Collection, ThreadAutoArchiveDuration, type Message } from 'discord.js';
 import type {
+  APIApplicationCommandInteractionMetadata,
   APIAttachment,
   APIChannel,
   APIEmoji,
@@ -22,8 +23,8 @@ import type {
   APIGuildForumTag,
   APIGuildMember,
   APIMessage,
+  APIMessageComponentInteractionMetadata,
   APIMessageSnapshot,
-  APIModalSubmitInteractionMetadata,
   APIReaction,
   APIRole,
   APISticker,
@@ -33,9 +34,11 @@ import type {
 import { toSnakeCase } from './replacer';
 import type { AllAPIChannel } from './channel';
 
-// THIS IS A FUCKING MESS AND I HATE IT BUT IT WORKS SO WHATEVER
+// THIS IS A FUCKING MESS AND I HATE IT, BUT IT WORKS SO WHATEVER
 // I HATE THIS SO MUCH, BUT I HATE D.JS MORE FOR NOT ALLOWING PEOPLE
 // TO RETURN API OBJECTS DIRECTLY
+
+type TriggeringInteractionMetadata = APIApplicationCommandInteractionMetadata | APIMessageComponentInteractionMetadata;
 
 class APIUtils {
   async message(message: Message): Promise<APIMessage> {
@@ -64,7 +67,6 @@ class APIUtils {
       components: message.components.map((component) => component.toJSON()),
       thread: message.hasThread ? (this.channel(message.thread!) as APIChannel) : undefined,
       position: message.position ?? undefined,
-      resolved: undefined,
       mentions: message.mentions.users.map((user) => this.user(user)),
       referenced_message: messageReference ? await this.message(messageReference) : null,
       interaction_metadata: message.interactionMetadata
@@ -86,7 +88,7 @@ class APIUtils {
                   original_response_message_id:
                     message.interactionMetadata.triggeringInteractionMetadata.originalResponseMessageId!,
                 }
-              : ({} as APIModalSubmitInteractionMetadata['triggering_interaction_metadata']),
+              : ({} as TriggeringInteractionMetadata),
           }
         : undefined,
       mention_channels: message.mentions.channels.map((channel) => ({
