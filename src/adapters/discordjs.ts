@@ -1,11 +1,11 @@
 import { AttachmentBuilder } from 'discord.js';
-import { TranscriptAdapter } from '../core';
+import { TranscriptAdapter } from './core';
 import type { GatewayGuildCreateDispatchData, Client, Channel } from 'discord.js';
 import type { APIUser, APIRole, APIGuild, APIMessage } from 'discord-api-types/v10';
-import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../../utils/channel';
-import type { CreateTranscriptOptions, ExportReturnType } from '../../types';
-import { createTranscript } from '../..';
-import { apiUtils } from '../../utils/api';
+import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../utils/channel';
+import type { CreateTranscriptOptions, ExportReturnType } from '../types';
+import { createTranscript } from '..';
+import { apiUtils } from '../utils/api';
 
 export class DiscordJSTranscriptAdapter extends TranscriptAdapter<Client> {
   override async resolveChannel(id: string): Promise<AllAPIChannel | null> {

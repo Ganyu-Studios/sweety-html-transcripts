@@ -1,11 +1,10 @@
 import type { APIGuild, APIRole, APIUser } from 'discord-api-types/v10';
 import type { AllChannels, UsingClient } from 'seyfert';
 import { AttachmentBuilder } from 'seyfert';
-import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../../utils/channel';
-import type { Awaitable } from '../core';
-import { TranscriptAdapter } from '../core';
-import type { CreateTranscriptOptions, ExportReturnType } from '../../types';
-import { createTranscript } from '../..';
+import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../utils/channel';
+import { TranscriptAdapter } from './core';
+import type { CreateTranscriptOptions, ExportReturnType } from '../types';
+import { createTranscript } from '..';
 
 export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
   override resolveChannel(id: string): Promise<AllAPIChannel | null> {
@@ -24,14 +23,19 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
     return this.client.guilds.raw(id).catch(() => null) as Promise<APIGuild | null>;
   }
 
-  override resolveMessage(channelId: string, messageId: string): Promise<APIMessageData | null> {
-    return this.client.messages.raw(messageId, channelId).catch(() => null) as Promise<APIMessageData | null>;
+  override async resolveMessage(channelId: string, messageId: string): Promise<APIMessageData | null> {
+    const message = (await this.client.messages.raw(messageId, channelId).catch(() => null)) as APIMessageData | null;
+    if (!message) return null;
+
+    message.author ??= (await this.resolveUser((message as { user_id: string }).user_id))!;
+
+    return message;
   }
 
   override listChannelMessages(
     channelId: string,
     options: { limit?: number; before?: string }
-  ): Awaitable<APIMessageData[]> {
+  ): Promise<APIMessageData[]> {
     if (options && !options?.before) delete options.before;
 
     return this.client.messages

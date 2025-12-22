@@ -40,7 +40,7 @@ export async function generateFromMessages<
   const transformedMessages = messages instanceof Collection ? Array.from(messages.values()) : messages;
   const allMessages = transformedMessages.map((message) => {
     if (channelUtils.isDM(channel) || channelUtils.isDirectory(channel)) return message;
-    if (typeof message.guild_id === 'undefined' && guild) message.guild_id = guild.id;
+    message.guild_id ??= guild?.id;
     return message;
   });
 

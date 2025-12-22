@@ -39,7 +39,7 @@ export type AllAPIGuildChannels =
   | APIDirectoryChannel;
 
 export type APIMessageData =
-  | (APIMessage & { guild_id?: string; member?: APIGuildMember; system?: boolean })
+  | (APIMessage & { guild_id?: string; member?: APIGuildMember; system?: boolean; user_id?: string })
   | GatewayMessageCreateDispatchData;
 
 export type GuildMemberData =

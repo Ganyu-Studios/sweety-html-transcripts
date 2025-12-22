@@ -10,7 +10,7 @@ import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../utils/ch
 export type Awaitable<T> = Promise<T> | T;
 
 export abstract class TranscriptAdapter<Client> {
-  constructor(protected client: Client) {}
+  constructor(public client: Client) {}
 
   abstract resolveChannel(id: string): Awaitable<AllAPIChannel | null>;
   abstract resolveUser(id: string): Awaitable<APIUser | null>;
@@ -31,7 +31,7 @@ export abstract class TranscriptAdapter<Client> {
 
     const guildRoles = await this.resolveGuildRoles(guildId);
 
-    if (!Array.isArray(guildRoles)) return [];
+    if (!Array.isArray(guildRoles) || !guildRoles.length) return [];
 
     return guildRoles.filter((role) => member.roles.includes(role.id));
   }
