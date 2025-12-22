@@ -10,7 +10,7 @@ import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../utils/ch
 export type Awaitable<T> = Promise<T> | T;
 
 export abstract class TranscriptAdapter<Client> {
-  constructor(public client: Client) {}
+  constructor(protected client: Client) {}
 
   abstract resolveChannel(id: string): Awaitable<AllAPIChannel | null>;
   abstract resolveUser(id: string): Awaitable<APIUser | null>;
