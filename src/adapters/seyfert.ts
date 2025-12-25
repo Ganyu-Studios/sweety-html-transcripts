@@ -27,6 +27,7 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
     const message = (await this.client.messages.raw(messageId, channelId).catch(() => null)) as APIMessageData | null;
     if (!message) return null;
 
+    // why seyfert? WHY
     message.author ??= (await this.resolveUser((message as { user_id: string }).user_id))!;
 
     return message;
