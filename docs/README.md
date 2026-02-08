@@ -1,5 +1,5 @@
 ---
-description: Welcome to the official seyfert-html-transcripts documentation and guide.
+description: Welcome to the official sweety-html-transcripts documentation and guide.
 ---
 
 # 🏠 Home
@@ -10,17 +10,17 @@ Discord HTML Transcripts is a node.js module to generate nice-looking HTML trans
 
 Join the [Discord Server](https://discord.gg/4JmKY8wgB6) and create a new forum post if you need help. You can also follow the announcement channel to get updates whenever a new version is released.
 
-If you find a bug, please create a post on [GitHub](https://github.com/Ganyu-Studios/seyfert-html-transcripts/issues).
+If you find a bug, please create a post on [GitHub](https://github.com/Ganyu-Studios/sweety-html-transcripts/issues).
 
 ## Getting Started
 
-To get started with `seyfert-html-transcripts` install the module and ensure you are running `seyfert^3.2`
+To get started with `sweety-html-transcripts` install the module and ensure you are running `seyfert^3.2`
 
 {% tabs %}
 {% tab title="NPM" %}
 
 ```shell
-npm install --save seyfert-html-transcripts
+npm install --save sweety-html-transcripts
 ```
 
 {% endtab %}
@@ -28,7 +28,7 @@ npm install --save seyfert-html-transcripts
 {% tab title="PNPM" %}
 
 ```shell
-pnpm i -S seyfert-html-transcripts
+pnpm i -S sweety-html-transcripts
 ```
 
 {% endtab %}
@@ -36,7 +36,7 @@ pnpm i -S seyfert-html-transcripts
 {% tab title="Yarn" %}
 
 ```shell
-yarn add seyfert-html-transcripts
+yarn add sweety-html-transcripts
 ```
 
 {% endtab %}
@@ -46,8 +46,8 @@ yarn add seyfert-html-transcripts
 
 The code to this module can be found on GitHub:
 
-{% embed url="https://github.com/Ganyu-Studios/seyfert-html-transcripts" %}
-Ganyu-Studios/seyfert-html-transcripts
+{% embed url="https://github.com/Ganyu-Studios/sweety-html-transcripts" %}
+Ganyu-Studios/sweety-html-transcripts
 {% endembed %}
 
 The markdown files to this documentation can also be found there.

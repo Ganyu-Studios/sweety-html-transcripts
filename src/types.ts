@@ -48,7 +48,7 @@ export type GenerateFromMessagesOptions<
   filename: string;
 
   /**
-   * Whether to include the "Powered by seyfert-html-transcripts" footer
+   * Whether to include the "Powered by sweety-html-transcripts" footer
    * @default true
    */
   poweredBy: boolean;

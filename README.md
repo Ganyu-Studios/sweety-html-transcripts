@@ -1,9 +1,9 @@
-# `seyfert-html-transcripts`
+# `sweety-html-transcripts`
 
 [![Discord](https://img.shields.io/discord/555474311637499955?label=discord)](https://discord.gg/4JmKY8wgB6)
-[![npm](https://img.shields.io/npm/dw/seyfert-html-transcripts)](http://npmjs.org/package/seyfert-html-transcripts)
-![GitHub package.json version](https://img.shields.io/github/package-json/v/Ganyu-Studios/seyfert-html-transcripts)
-![GitHub Repo stars](https://img.shields.io/github/stars/Ganyu-Studios/seyfert-html-transcripts?style=social)
+[![npm](https://img.shields.io/npm/dw/sweety-html-transcripts)](http://npmjs.org/package/sweety-html-transcripts)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/Ganyu-Studios/sweety-html-transcripts)
+![GitHub Repo stars](https://img.shields.io/github/stars/Ganyu-Studios/sweety-html-transcripts?style=social)
 
 Discord HTML Transcripts is a node.js module to generate nice looking HTML
 transcripts. Processes discord markdown like **bold**, _italics_,
@@ -52,8 +52,8 @@ Instead, please open a thread on [this](https://discord.gg/4JmKY8wgB6) server.
 ### Example usage using the built in message fetcher.
 
 ```js
-const discordTranscripts = require('seyfert-html-transcripts');
-// or (if using typescript) import * as discordTranscripts from 'seyfert-html-transcripts';
+const discordTranscripts = require('sweety-html-transcripts');
+// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
 
 const channel = await client.channels.raw(channelId); // or however you get your channel raw object
 
@@ -68,8 +68,8 @@ client.channel.messages.write(channelId, {
 ### Or if you prefer, you can pass in your own messages.
 
 ```js
-const discordTranscripts = require('seyfert-html-transcripts');
-// or (if using typescript) import * as discordTranscripts from 'seyfert-html-transcripts';
+const discordTranscripts = require('sweety-html-transcripts');
+// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
 
 const messages = someWayToGetMessages(); // Must be Collection<string, Message> or Message[]
 const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name
@@ -107,7 +107,7 @@ const attachment = await discordTranscripts.createTranscript({
       resolveUser: (userId: string) => Awaitable<APIUser | null>,
       resolveRole: (roleId: string) => Awaitable<APIRole | null>,
     },
-    poweredBy: true, // Whether to include the "Powered by seyfert-html-transcripts" footer
+    poweredBy: true, // Whether to include the "Powered by sweety-html-transcripts" footer
     hydrate: true, // Whether to hydrate the html server-side
     filter: (APIMessage) => true // Filter messages, e.g. (message) => !message.author.bot
 });

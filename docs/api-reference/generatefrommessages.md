@@ -1,6 +1,6 @@
 # generateFromMessages
 
-If you want to provide your own messages for finer control of what `seyfert-html-transcripts` will save, use this function.
+If you want to provide your own messages for finer control of what `sweety-html-transcripts` will save, use this function.
 
 ## Example
 
@@ -8,7 +8,7 @@ If you want to provide your own messages for finer control of what `seyfert-html
 {% tab title="JavaScript" %}
 
 ```javascript
-const discordTranscripts = require("seyfert-html-transcripts");
+const discordTranscripts = require("sweety-html-transcripts");
 const { Collection } = require("seyfert");
 
 [...]
@@ -35,7 +35,7 @@ channel.messages.write({
 {% tab title="TypeScript" %}
 
 ```typescript
-import * as discordTranscripts from "seyfert-html-transcripts";
+import * as discordTranscripts from "sweety-html-transcripts";
 import { Collection, Message } from "seyfert";
 
 [...]
@@ -77,7 +77,7 @@ Defined in seyfert as `TextGuildChannelStructure | VoiceChannelStructure | Media
 
 ### `options: GenerateFromMessagesOptions`
 
-An object with the seyfert-html-transcripts configuration options.
+An object with the sweety-html-transcripts configuration options.
 
 <details>
 
@@ -95,7 +95,7 @@ const attachment = await discordTranscripts.createTranscript(channel, {
       resolveUser: (userId: string) => Awaitable<User | null>,
       resolveRole: (roleId: string) => Awaitable<GuildRole | null>
     },
-    poweredBy: true // Whether to include the "Powered by seyfert-html-transcripts" footer
+    poweredBy: true // Whether to include the "Powered by sweety-html-transcripts" footer
 });
 ```
 
@@ -137,7 +137,7 @@ The default value is `Exported {number} message{s}`
 
 #### `options.poweredBy: boolean`
 
-Disabling this will remove the `Powered by seyfert-html-transcripts` in the footer.
+Disabling this will remove the `Powered by sweety-html-transcripts` in the footer.
 
 The default value is `true`
 

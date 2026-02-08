@@ -21,7 +21,7 @@ export type ResolveImageCallback = (
  * Builder to build a image saving callback.
  */
 export class TranscriptImageDownloader {
-  private static log = debug('seyfert-html-transcripts:TranscriptImageDownloader');
+  private static log = debug('sweety-html-transcripts:TranscriptImageDownloader');
   private log = TranscriptImageDownloader.log;
 
   private maxFileSize?: number; // in kilobytes
@@ -53,7 +53,7 @@ export class TranscriptImageDownloader {
     import('sharp').catch((err) => {
       console.error(err);
       console.error(
-        `[seyfert-html-transcripts] Failed to import 'sharp'. Image compression requires the 'sharp' package to be installed. Either install sharp or remove the compression options.`
+        `[sweety-html-transcripts] Failed to import 'sharp'. Image compression requires the 'sharp' package to be installed. Either install sharp or remove the compression options.`
       );
     });
 
@@ -75,7 +75,7 @@ export class TranscriptImageDownloader {
       // fetch the image
       this.log(`Fetching attachment ${attachment.id}: ${attachment.url}`);
       const response = await request(attachment.url).catch((err) => {
-        console.error(`[seyfert-html-transcripts] Failed to download image for transcript: `, err);
+        console.error(`[sweety-html-transcripts] Failed to download image for transcript: `, err);
         return null;
       });
 
