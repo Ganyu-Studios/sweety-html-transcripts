@@ -27,8 +27,14 @@
     "seyfert-html-transcripts",
     "discord-transcripts"
   ],
-  "author": "Derock <derock@derock.dev>",
+  "author": "Ganyu Studios",
   "license": "GNU GPLv3",
+  "contributors": [
+    {
+      "name": "JustEvil",
+      "url": "https://github.com/EvilG-MC"
+    }
+  ],
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts",
