@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
+    "prepare": "npm run build",
     "lint": "prettier --write --cache . && eslint --cache --fix .",
     "typecheck": "tsc -p tsconfig.eslint.json",
     "vite": "vite",
@@ -36,9 +37,7 @@
     }
   ],
   "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "dist/**/*.js.map"
+    "dist/**"
   ],
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
@@ -54,7 +53,6 @@
     "dotenv": "^17.2.4",
     "eslint": "^10.0.0",
     "globals": "^17.3.0",
-    "husky": "^9.1.7",
     "prettier": "^3.8.1",
     "sharp": "^0.34.5",
     "tsx": "^4.21.0",
