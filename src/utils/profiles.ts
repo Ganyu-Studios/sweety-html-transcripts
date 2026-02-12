@@ -32,10 +32,6 @@ export async function buildProfiles(context: RenderMessageContext) {
 
   // loop through messages
   for (const message of messages) {
-    // for some reason, some messages don't have an author but have a user_id
-    if (typeof message.author === 'undefined' && 'user_id' in message && message.user_id)
-      message.author = (await adapter.resolveUser(message.user_id))!;
-
     // add all users
     const author = message.author;
 

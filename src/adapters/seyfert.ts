@@ -28,7 +28,9 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
     if (!message) return null;
 
     // why seyfert? WHY
-    message.author ??= (await this.resolveUser((message as { user_id: string }).user_id))!;
+    // for some reason, some messages don't have an author but have a user_id
+    if (typeof message.author === 'undefined' && 'user_id' in message && message.user_id)
+      message.author = (await this.resolveUser(message.user_id))!;
 
     return message;
   }
