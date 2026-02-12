@@ -1,6 +1,5 @@
 import type { WebpOptions } from 'sharp';
 import { request } from 'undici';
-import debug from 'debug';
 import type { APIAttachment, APIMessage, APIMessageSnapshot } from 'discord-api-types/v10';
 import type { Awaitable } from '../adapters/core';
 
@@ -21,9 +20,6 @@ export type ResolveImageCallback = (
  * Builder to build a image saving callback.
  */
 export class TranscriptImageDownloader {
-  private static log = debug('sweety-html-transcripts:TranscriptImageDownloader');
-  private log = TranscriptImageDownloader.log;
-
   private maxFileSize?: number; // in kilobytes
   private compression?: {
     quality: number; // 1-100
@@ -73,7 +69,6 @@ export class TranscriptImageDownloader {
       if (this.maxFileSize && attachment.size > this.maxFileSize * 1024) return undefined;
 
       // fetch the image
-      this.log(`Fetching attachment ${attachment.id}: ${attachment.url}`);
       const response = await request(attachment.url).catch((err) => {
         console.error(`[sweety-html-transcripts] Failed to download image for transcript: `, err);
         return null;
@@ -83,13 +78,11 @@ export class TranscriptImageDownloader {
 
       const mimetype = response.headers['content-type'];
       const buffer = await response.body.arrayBuffer().then((res) => Buffer.from(res));
-      this.log(`Finished fetching ${attachment.id} (${buffer.length} bytes)`);
 
       // if the compression options are set, compress the image
       if (this.compression) {
         const sharp = await import('sharp');
 
-        this.log(`Compressing ${attachment.id} with 'sharp'`);
         const sharpbuf = await sharp
           .default(buffer)
           .webp({
@@ -99,7 +92,6 @@ export class TranscriptImageDownloader {
             ...this.compression.options,
           })
           .toBuffer({ resolveWithObject: true });
-        this.log(`Finished compressing ${attachment.id} (${sharpbuf.info.size} bytes)`);
 
         return `data:image/${sharpbuf.info.format};base64,${sharpbuf.data.toString('base64')}`;
       }
