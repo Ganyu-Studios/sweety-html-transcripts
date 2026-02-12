@@ -56,7 +56,7 @@ export class BaseCDN {
     return this.makeURL(['avatar-decoration-presets', avatarDecorationDataAsset], { extension: ImageFormat.PNG });
   }
 
-  sticket(stickerId: string, extension: StickerExtension) {
+  sticker(stickerId: string, extension: StickerExtension) {
     return this.makeURL(['stickers', stickerId], { extension });
   }
 

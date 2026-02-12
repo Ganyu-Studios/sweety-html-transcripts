@@ -56,7 +56,7 @@ export default async function DiscordMessage({
     webhook_id?: string;
   };
 
-  const componets = displayMessage?.components && displayMessage.components.length > 0 && (
+  const components = displayMessage?.components && displayMessage.components.length > 0 && (
     <DiscordAttachments slot="components">
       <DiscordComponentsColumn>
         {displayMessage.components.map((component, id) => (
@@ -96,7 +96,7 @@ export default async function DiscordMessage({
         <DiscordCommand
           slot="reply"
           profile={message.interaction_metadata.user.id}
-          command={message.interaction!.name}
+          command={message.interaction?.name}
         />
       )}
 
@@ -115,7 +115,7 @@ export default async function DiscordMessage({
         <DiscordEmbed embed={embed} context={{ ...context, index: id, message: displayMessage }} key={id} />
       ))}
 
-      {componets}
+      {components}
 
       {message?.message_snapshots?.map((snpashot, index) => (
         <DiscordForwardedMessage
