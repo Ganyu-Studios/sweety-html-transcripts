@@ -43,9 +43,7 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
 
     return this.client.messages
       .list(channelId, options)
-      .then((messages) =>
-        Promise.all(messages.map((message) => this.resolveMessage(channelId, message.id)))
-      )
+      .then((messages) => Promise.all(messages.map((message) => this.resolveMessage(channelId, message.id))))
       .catch(() => []) as Promise<APIMessageData[]>;
   }
 
@@ -63,9 +61,7 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
   override resolveGuildRoles(guildId: string): Promise<APIRole[]> {
     return this.client.roles
       .list(guildId)
-      .then((roles) => Promise.all(
-        roles.map((role) => this.resolveRole(guildId, role.id))
-      ))
+      .then((roles) => Promise.all(roles.map((role) => this.resolveRole(guildId, role.id))))
       .then((roles) => roles.filter((role): role is APIRole => role !== null))
       .catch(() => []);
   }
