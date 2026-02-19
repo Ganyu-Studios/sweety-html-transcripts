@@ -42,9 +42,8 @@ export async function generateFromMessages<
     if (channelUtils.isDM(channel) || channelUtils.isDirectory(channel)) return message;
     // dale a tu cuerpo alegría, macarena
     // ts is dumb because for some reason guild_id doesn't exist sometimes
-    
-    if (typeof message.guild_id === 'undefined' && guild) 
-      message.guild_id = guild.id
+
+    if (typeof message.guild_id === 'undefined' && guild) message.guild_id = guild.id;
 
     return message;
   });
