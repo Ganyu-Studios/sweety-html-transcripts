@@ -74,7 +74,7 @@ async function buildProfile(
   const role = await context.adapter.resolveHighestGuildMemberRole(member!, guildId!);
 
   const authorName = author.bot ? author.username : userUtils.displayName(author);
-  const roleColor = role?.color ?? author.accent_color;
+  const roleColor = role?.color ?? role?.colors?.primary_color ?? author.accent_color;
 
   return {
     id: author.id,

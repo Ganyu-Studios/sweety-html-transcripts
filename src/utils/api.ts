@@ -25,6 +25,7 @@ import type {
   APIMessage,
   APIMessageComponentInteractionMetadata,
   APIMessageSnapshot,
+  APIPollMedia,
   APIReaction,
   APIRole,
   APISticker,
@@ -100,9 +101,9 @@ class APIUtils {
       poll: message.poll
         ? {
             allow_multiselect: message.poll.allowMultiselect,
-            expiry: message.poll.expiresAt.toISOString(),
+            expiry: message.poll.expiresAt!.toISOString(),
             layout_type: message.poll.layoutType,
-            question: message.poll.question,
+            question: message.poll.question as APIPollMedia,
             answers: message.poll.answers.map((answer) => ({
               answer_id: answer.id,
               poll_media: {
