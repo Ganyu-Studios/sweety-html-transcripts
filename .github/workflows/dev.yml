@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-    if: github.repository == 'Ganyu-Studios/Hoshimi'
+    if: github.repository == 'Ganyu-Studios/sweety-html-transcripts'
     env:
       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:

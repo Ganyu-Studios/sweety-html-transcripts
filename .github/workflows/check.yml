@@ -26,7 +26,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Biome
-        run: pnpm run format
+        run: pnpm lint
         id: biome
 
       - name: Commit and Push changes
@@ -45,4 +45,4 @@ jobs:
 
       - name: Publish in pkg.pr.new
         run: pnpx pkg-pr-new publish
-        if: github.repository == 'Ganyu-Studios/Hoshimi'
+        if: github.repository == 'Ganyu-Studios/sweety-html-transcripts'

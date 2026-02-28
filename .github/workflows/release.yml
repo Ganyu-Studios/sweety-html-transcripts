@@ -9,7 +9,7 @@ jobs:
   build:
     name: Publish
     runs-on: ubuntu-latest
-    if: github.repository == 'Ganyu-Studios/Hoshimi'
+    if: github.repository == 'Ganyu-Studios/sweety-html-transcripts'
     permissions:
       id-token: write
     steps:
