@@ -32,7 +32,7 @@ This module can format the following:
 - Threads
 
 **This module is designed to work with [seyfert](https://seyfert.dev) 3.2 or
-above _only_.**
+above, or [discord.js](https://discord.js.org) 14 or above.**
 
 Styles from
 [@penwin/discord-components-core](https://github.com/Ganyu-Studios/discord-components).\
@@ -51,38 +51,101 @@ Instead, please open a thread on [this](https://discord.gg/4JmKY8wgB6) server.
 
 ### Example usage using the built in message fetcher.
 
-```js
-const discordTranscripts = require('sweety-html-transcripts');
-// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
+{% tabs %}
+{% tab title="Seyfert" %}
 
-const channel = await client.channels.raw(channelId); // or however you get your channel raw object
+```js
+const discordTranscripts = require("sweety-html-transcripts");
+// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
+const { SeyfertTranscriptAdapter } = require("sweety-html-transcripts/adapters/seyfert");
+
+const channel = await client.channels.raw(channelId);
 
 // Must be awaited
-const attachment = await discordTranscripts.createTranscript({ channel });
+const attachment = await discordTranscripts.createTranscript({
+  channel,
+  adapter: new SeyfertTranscriptAdapter(client),
+});
 
-client.channel.messages.write(channelId, {
+await client.messages.write(channelId, {
   files: [attachment],
 });
 ```
 
-### Or if you prefer, you can pass in your own messages.
+{% endtab %}
+
+{% tab title="Discord.js" %}
 
 ```js
-const discordTranscripts = require('sweety-html-transcripts');
+const discordTranscripts = require("sweety-html-transcripts");
 // or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
+const { DiscordJSTranscriptAdapter } = require("sweety-html-transcripts/adapters/discordjs");
 
-const messages = someWayToGetMessages(); // Must be Collection<string, Message> or Message[]
-const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name
+const channel = await client.channels.fetch(channelId);
+
+// Must be awaited
+const attachment = await discordTranscripts.createTranscript({
+  channel, // Some way to get the api channel object, or use DiscordJSTranscript class instead.
+  adapter: new DiscordJSTranscriptAdapter(client),
+});
+
+await channel.send({
+  files: [attachment],
+});
+```
+
+{% endtab %}
+{% endtabs %}
+
+### Or if you prefer, you can pass in your own messages.
+
+{% tabs %}
+{% tab title="Seyfert" %}
+
+```js
+const discordTranscripts = require("sweety-html-transcripts");
+// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
+const { SeyfertTranscriptAdapter } = require("sweety-html-transcripts/adapters/seyfert");
+
+const messages = someWayToGetMessages(); // Must be APIMessage[]
+const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name in api object.
 
 // Must be awaited
 const attachment = await discordTranscripts.generateFromMessages(messages, {
   channel,
+  adapter: new SeyfertTranscriptAdapter(client),
 });
 
-client.channel.messages.write(channelId, {
+await client.messages.write(channelId, {
   files: [attachment],
 });
 ```
+
+{% endtab %}
+
+{% tab title="Discord.js" %}
+
+```js
+const discordTranscripts = require("sweety-html-transcripts");
+// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
+const { DiscordJSTranscriptAdapter } = require("sweety-html-transcripts/adapters/discordjs");
+
+const messages = someWayToGetMessages(); // Must be APIMessage[]
+const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name in api object.
+
+// Must be awaited
+const attachment = await discordTranscripts.generateFromMessages(messages, {
+  channel,
+  adapter: new DiscordJSTranscriptAdapter(client),
+});
+
+await channel.send({
+  files: [attachment],
+});
+```
+
+{% endtab %}
+{% endtabs %}
 
 ## ⚙️ Configuration
 
@@ -100,7 +163,7 @@ const attachment = await discordTranscripts.createTranscript({
     filename: 'transcript.html', // Only valid with returnType is 'attachment'. Name of attachment.
     saveImages: false, // Download all images and include the image data in the HTML (allows viewing the image even after it has been deleted) (! WILL INCREASE FILE SIZE !)
     footerText: "Exported {number} message{s}", // Change text at footer, don't forget to put {number} to show how much messages got exported, and {s} for plural
-    adapter: new SomeAdapter(), // The adapter to use to generate the transcripts
+    adapter: new SomeAdapter(...), // The adapter to use to generate the transcripts
     callbacks: {
       // register custom callbacks for the following:
       resolveChannel: (channelId: string) => Awaitable<AllAPIChannel | null>,
@@ -118,6 +181,7 @@ const attachment = await discordTranscripts.createTranscript({
 ```js
 const attachment = await discordTranscripts.generateFromMessages(messages, {
   // Same as createTranscript, except no limit or filter
+  adapter: new SomeAdapter(...), // The client adapter to use.
   channel: channel, // The API channel object to create the transcript.
 });
 ```

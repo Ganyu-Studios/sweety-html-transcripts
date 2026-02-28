@@ -72,7 +72,7 @@ class BaseChannelUtils {
     return [ChannelType.PublicThread, ChannelType.PrivateThread, ChannelType.AnnouncementThread].includes(channel.type);
   }
 
-  isDirectory(channel: AllChannelTypePicked) {
+  isDirectory(channel: AllChannelTypePicked): channel is APIDirectoryChannel {
     return channel.type === ChannelType.GuildDirectory;
   }
 

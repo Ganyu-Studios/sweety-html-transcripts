@@ -1,14 +1,14 @@
 import type { APIEmbedField } from 'discord-api-types/v10';
 
-export function calculateInlineIndex(fields: APIEmbedField[], currentFieldIndex: number) {
-  const startIndex = currentFieldIndex - 1;
+export function calculateInlineIndex(fields: APIEmbedField[], currentFieldIndex: number): number {
+  const startIndex: number = currentFieldIndex - 1;
 
-  for (let i = startIndex; i >= 0; i--) {
-    const field = fields[i];
+  for (let i: number = startIndex; i >= 0; i--) {
+    const field: APIEmbedField = fields[i];
     if (!field) continue;
 
     if (field.inline === false) {
-      const amount = startIndex - i;
+      const amount: number = startIndex - i;
       return (amount % 3) + 1;
     }
   }

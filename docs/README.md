@@ -14,7 +14,7 @@ If you find a bug, please create a post on [GitHub](https://github.com/Ganyu-Stu
 
 ## Getting Started
 
-To get started with `sweety-html-transcripts` install the module and ensure you are running `seyfert^3.2`
+To get started with `sweety-html-transcripts` install the module and ensure you are running `seyfert`^3.2 or `discord.js`^14
 
 {% tabs %}
 {% tab title="NPM" %}

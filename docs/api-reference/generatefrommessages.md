@@ -5,55 +5,51 @@ If you want to provide your own messages for finer control of what `sweety-html-
 ## Example
 
 {% tabs %}
-{% tab title="JavaScript" %}
+{% tab title="Seyfert" %}
 
 ```javascript
 const discordTranscripts = require("sweety-html-transcripts");
-const { Collection } = require("seyfert");
+import { SeyfertTranscriptAdapter } from 'sweety-html-transcripts/adapters/seyfert';
 
-[...]
+const messages = /* array of APIMessage objects */;
+const channel = /* API channel object */;
 
-const messages = new Collection();
-const channel  = /* somehow get this */;
+// somehow get your messages
 
-// somehow fill the messages collection
-
-const transcript = await discordTranscripts.generateFromMessages(
-    messages, // the content in the transcript
-    channel, // used for transcript title, etc
-    { /* options */ }
-);
+const transcript = await discordTranscripts.generateFromMessages(messages, {
+    channel,
+    adapter: new SeyfertTranscriptAdapter(client),
+    // other options
+});
 
 // By default returns an AttachmentBuilder that can be sent in a channel.
-channel.messages.write({
-    files: [attachment]
+await client.messages.write(channelId, {
+    files: [transcript]
 });
 ```
 
 {% endtab %}
 
-{% tab title="TypeScript" %}
+{% tab title="Discord.js" %}
 
-```typescript
-import * as discordTranscripts from "sweety-html-transcripts";
-import { Collection, Message } from "seyfert";
+```javascript
+const discordTranscripts = require("sweety-html-transcripts");
+import { DiscordJSTranscriptAdapter } from 'sweety-html-transcripts/adapters/discordjs';
 
-[...]
+const messages = /* array of APIMessage objects */;
+const channel = /* channel object */;
 
-const messages = new Collection<string, Message>();
-const channel  = /* somehow get this */;
+// somehow get your messages
 
-// somehow fill the messages collection
-
-const transcript = await discordTranscripts.generateFromMessages(
-    messages, // the content in the transcript
-    channel, // used for transcript title, etc
-    { /* options */ }
-);
+const transcript = await discordTranscripts.generateFromMessages(messages, {
+    channel,
+    adapter: new DiscordJSTranscriptAdapter(client),
+    // other options
+});
 
 // By default returns an AttachmentBuilder that can be sent in a channel.
-channel.messages.write({
-    files: [attachment]
+await channel.send({
+    files: [transcript]
 });
 ```
 
@@ -63,17 +59,16 @@ channel.messages.write({
 ## Parameters
 
 ```javascript
-generateFromMessages(messages, channel, (options = {}));
+generateFromMessages(messages, options);
 ```
 
-### `messages: Message[] | Collection<string, Message>`
+### `messages: APIMessageData[]`
 
-These are the messages that will be used in the body of the transcript. Can either be an array of seyfert Message objects or a Collection of Messages.
+These are the messages that will be used in the body of the transcript. Must be an array of Discord API message objects.
 
-### `channel: AllChannels`
+### `channel: AllAPIChannel`
 
-Defined in seyfert as `TextGuildChannelStructure | VoiceChannelStructure | MediaChannelStructure | ForumChannelStructure | ThreadChannelStructure | CategoryChannelStructure | NewsChannelStructure | DirectoryChannelStructure | StageChannelStructure`\
-``This is channel is used to grab information about the transcript, like guild name and icon, channel name, etc.
+This is the channel used to grab information about the transcript, like guild name and icon, channel name, etc. Must be a Discord API channel object.
 
 ### `options: GenerateFromMessagesOptions`
 
@@ -84,16 +79,18 @@ An object with the sweety-html-transcripts configuration options.
 <summary>TLDR: quick summary of everything below.</summary>
 
 ```javascript
-const attachment = await discordTranscripts.createTranscript(channel, {
+const attachment = await discordTranscripts.generateFromMessages(messages, {
+    channel, // API channel object
     returnType: 'attachment', // Valid options: 'buffer' | 'string' | 'attachment' Default: 'attachment' OR use the enum ExportReturnType
     filename: 'transcript.html', // Only valid with returnType is 'attachment'. Name of attachment.
     saveImages: false, // Download all images and include the image data in the HTML (allows viewing the image even after it has been deleted) (! WILL INCREASE FILE SIZE !)
     footerText: "Exported {number} message{s}", // Change text at footer, don't forget to put {number} to show how much messages got exported, and {s} for plural
+    adapter: new SomeAdapter(..), // The client adapter to create the transcripts
     callbacks: {
       // register custom callbacks for the following:
-      resolveChannel: (channelId: string) => Awaitable<AllChannels | null>,
-      resolveUser: (userId: string) => Awaitable<User | null>,
-      resolveRole: (roleId: string) => Awaitable<GuildRole | null>
+      resolveChannel: (channelId: string) => Awaitable<AllAPIChannel | null>,
+      resolveUser: (userId: string) => Awaitable<APIUser | null>,
+      resolveRole: (roleId: string) => Awaitable<APIRole | null>
     },
     poweredBy: true // Whether to include the "Powered by sweety-html-transcripts" footer
 });
@@ -141,20 +138,14 @@ Disabling this will remove the `Powered by sweety-html-transcripts` in the foote
 
 The default value is `true`
 
-#### `options.callbacks.resolveChannel: (channelId: string) => Awaitable<AllChannels | null>`
+#### `options.callbacks.resolveChannel: (channelId: string) => Awaitable<AllAPIChannel | null>`
 
 A custom function that will be used by the module whenever it needs to resolve a channel (for example, if someone mentions a channel)
 
-The default option uses `channel.client.channels.fetch(...)` function.
-
-#### `options.callbacks.resolveUser: (userId: string) => Awaitable<User | null>`
+#### `options.callbacks.resolveUser: (userId: string) => Awaitable<APIUser | null>`
 
 A custom function that will be used by the module whenever it needs to resolve a user (for example, if a user is mentioned)
 
-The default option uses `channel.client.users.fetch(...)`
+#### `options.callbacks.resolveRole: (guildId: string, roleId: string) => Awaitable<APIRole | null>`
 
-#### `options.callbacks.resolveRole: (roleId: string) => Awaitable<GuildRole | null>`
-
-#### A custom function that will be used by the module whenever it needs to resolve a role (for example, if a role is mentioned)
-
-The default option uses `channel.client.roles.fetch(...)`
+A custom function that will be used by the module whenever it needs to resolve a role (for example, if a role is mentioned)

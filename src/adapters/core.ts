@@ -26,19 +26,19 @@ export abstract class TranscriptAdapter<Client> {
   abstract resolveGuildMember(guildId: string, userId: string): Awaitable<GuildMemberData | null>;
   abstract resolveGuildChannels(guildId: string): Awaitable<AllAPIChannel[]>;
 
-  async resolveGuildMemberRoles(member: Pick<GuildMemberData, 'roles'>, guildId: string) {
+  async resolveGuildMemberRoles(member: Pick<GuildMemberData, 'roles'>, guildId: string): Promise<APIRole[]> {
     if (!member) return [];
 
-    const guildRoles = await this.resolveGuildRoles(guildId);
+    const guildRoles: APIRole[] = await this.resolveGuildRoles(guildId);
 
     if (!Array.isArray(guildRoles) || !guildRoles.length) return [];
 
-    return guildRoles.filter((role) => member.roles.includes(role.id));
+    return guildRoles.filter((role): boolean => member.roles.includes(role.id));
   }
 
-  async resolveHighestGuildMemberRole(member: Pick<GuildMemberData, 'roles'>, guildId: string) {
-    const roles = await this.resolveGuildMemberRoles(member, guildId);
-    return roles.sort((a, b) => b.position - a.position)[0];
+  async resolveHighestGuildMemberRole(member: Pick<GuildMemberData, 'roles'>, guildId: string): Promise<APIRole | null> {
+    const roles: APIRole[] = await this.resolveGuildMemberRoles(member, guildId);
+    return roles.sort((a, b): number => b.position - a.position)[0] ?? null;
   }
 
   renderContext = {

@@ -1,4 +1,4 @@
-import type { APIMessage } from 'discord-api-types/v10';
+import type { APIGuild, APIMessage, APIRole, APIUser } from 'discord-api-types/v10';
 import { Collection } from 'seyfert';
 import type { TranscriptAdapter } from './adapters/core';
 import { TranscriptImageDownloader, type ResolveImageCallback } from './downloader/images';
@@ -9,7 +9,7 @@ import {
   type GenerateFromMessagesOptions,
   type ObjectType,
 } from './types';
-import type { APIMessageData } from './utils/channel';
+import type { AllAPIChannel, APIMessageData } from './utils/channel';
 import { channelUtils } from './utils/channel';
 import { name as packageName } from '../package.json';
 
@@ -34,15 +34,14 @@ export async function generateFromMessages<
 >(messages: APIMessageData[], options: GenerateFromMessagesOptions<T, Adapter>): Promise<ObjectType<T, Adapter>> {
   const { adapter, channel } = options;
 
-  const guild = 'guild_id' in channel && channel.guild_id ? await adapter.resolveGuild(channel.guild_id) : null;
+  const guild: APIGuild | null = 'guild_id' in channel && channel.guild_id ? await adapter.resolveGuild(channel.guild_id) : null;
 
   // turn messages into an array
-  const transformedMessages = messages instanceof Collection ? Array.from(messages.values()) : messages;
-  const allMessages = transformedMessages.map((message) => {
+  const transformedMessages: APIMessageData[] = messages instanceof Collection ? Array.from(messages.values()) : messages;
+  const allMessages: APIMessageData[] = transformedMessages.map((message): APIMessageData => {
     if (channelUtils.isDM(channel) || channelUtils.isDirectory(channel)) return message;
-    // dale a tu cuerpo alegría, macarena
+    
     // ts is dumb because for some reason guild_id doesn't exist sometimes
-
     if (typeof message.guild_id === 'undefined' && guild) message.guild_id = guild.id;
 
     return message;
@@ -62,7 +61,7 @@ export async function generateFromMessages<
   }
 
   // render the messages
-  const html = await DiscordMessages({
+  const html: string = await DiscordMessages({
     adapter,
     channel,
     guild,
@@ -70,9 +69,9 @@ export async function generateFromMessages<
     saveImages: options.saveImages ?? false,
     callbacks: {
       resolveImageSrc,
-      resolveChannel: async (id) => adapter.resolveChannel(id),
-      resolveUser: async (id) => adapter.resolveUser(id),
-      resolveRole: async (id) => (guild ? adapter.resolveRole(guild.id, id) : null),
+      resolveChannel: async (id): Promise<AllAPIChannel | null> => adapter.resolveChannel(id),
+      resolveUser: async (id): Promise<APIUser | null> => adapter.resolveUser(id),
+      resolveRole: async (id): Promise<APIRole | null> => (guild ? adapter.resolveRole(guild.id, id) : null),
 
       ...(options.callbacks ?? {}),
     },
@@ -118,21 +117,21 @@ export async function createTranscript<
 
   const { limit, filter } = options;
 
-  const resolvedLimit = typeof limit === 'undefined' || limit === -1 ? Infinity : limit;
+  const resolvedLimit: number = typeof limit === 'undefined' || limit === -1 ? Infinity : limit;
 
   // until there are no more messages, keep fetching
   while (true) {
     // calculate how many messages we still need to fetch
-    const remainingMessages = resolvedLimit - allMessages.length;
-    const fetchLimit = Math.min(100, remainingMessages);
+    const remainingMessages: number = resolvedLimit - allMessages.length;
+    const fetchLimit: number = Math.min(100, remainingMessages);
 
     // create fetch options
     const fetchLimitOptions = { limit: fetchLimit, before: lastMessageId };
     if (!lastMessageId) delete fetchLimitOptions.before;
 
     // fetch messages
-    const messages = await adapter.listChannelMessages(channel.id, fetchLimitOptions);
-    const filtered = typeof filter === 'function' ? messages.filter(filter) : messages;
+    const messages: APIMessage[] = await adapter.listChannelMessages(channel.id, fetchLimitOptions);
+    const filtered: APIMessage[] = typeof filter === 'function' ? messages.filter(filter) : messages;
 
     // add the messages to the array
     allMessages.push(...filtered);

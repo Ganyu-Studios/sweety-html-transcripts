@@ -188,7 +188,7 @@ export async function Attachment({
     if (format && size <= 1024 * 1024) {
       const content = await fetch(attach.url)
         .then((res) => res.text())
-        .catch(() => null);
+        .catch((): null => null);
 
       if (content) {
         return (

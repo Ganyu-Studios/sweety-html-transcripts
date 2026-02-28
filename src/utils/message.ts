@@ -2,7 +2,7 @@ import { MessageReferenceType } from 'discord-api-types/v10';
 import type { APIMessageData } from './channel';
 
 class MessageUtils {
-  isForward(message: Pick<APIMessageData, 'message_reference'>) {
+  isForward(message: Pick<APIMessageData, 'message_reference'>): boolean {
     return message.message_reference?.type === MessageReferenceType.Forward;
   }
 }

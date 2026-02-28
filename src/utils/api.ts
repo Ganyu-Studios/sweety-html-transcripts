@@ -43,7 +43,7 @@ type TriggeringInteractionMetadata = APIApplicationCommandInteractionMetadata | 
 
 class APIUtils {
   async message(message: Message): Promise<APIMessage> {
-    const messageReference = await message.fetchReference().catch(() => null);
+    const messageReference = await message.fetchReference().catch((): null => null);
 
     return {
       content: message.content,

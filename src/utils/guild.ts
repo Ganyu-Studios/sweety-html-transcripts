@@ -9,11 +9,11 @@ class GuildUtils {
     return cdn.guildIcon(guild.id, guild.icon, options);
   }
 
-  guildTagBadge(guildId: string, guildTagBadge: string, options?: CDNUrlOptions) {
+  guildTagBadge(guildId: string, guildTagBadge: string, options?: CDNUrlOptions): string {
     return cdn.guildTagBadge(guildId, guildTagBadge, options);
   }
 
-  roleIcon(roleId: string, icon: string, options?: CDNUrlOptions) {
+  roleIcon(roleId: string, icon: string, options?: CDNUrlOptions): string {
     return cdn.roleIcon(roleId, icon, options);
   }
 }

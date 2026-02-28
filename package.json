@@ -35,10 +35,11 @@
   },
   "keywords": [
     "seyfert",
+    "discord.js",
     "seyfert-transcripts",
+    "discordjs-transcripts",
     "sweety-html-transcripts",
     "html-transcripts",
-    "sweety-html-transcripts",
     "discord-transcripts"
   ],
   "author": "Ganyu Studios",
@@ -53,17 +54,17 @@
     "dist/**"
   ],
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/eslintrc": "^3.3.4",
     "@eslint/js": "^10.0.1",
     "@penwin/discord-components-core": "^4.3.8",
     "@types/debug": "^4.1.12",
-    "@types/node": "^25.3.0",
+    "@types/node": "^25.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@typescript-eslint/eslint-plugin": "^8.56.0",
-    "@typescript-eslint/parser": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
     "dotenv": "^17.3.1",
-    "eslint": "^10.0.1",
+    "eslint": "^10.0.2",
     "globals": "^17.3.0",
     "prettier": "^3.8.1",
     "sharp": "^0.34.5",
@@ -82,8 +83,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "simple-markdown": "^0.7.3",
-    "twemoji": "^14.0.2",
-    "undici": "^7.22.0"
+    "twemoji": "^14.0.2"
   },
   "peerDependencies": {
     "seyfert": "4.2.2",
@@ -98,5 +98,5 @@
       "sharp"
     ]
   },
-  "packageManager": "pnpm@10.30.1+sha512.3590e550d5384caa39bd5c7c739f72270234b2f6059e13018f975c313b1eb9fefcc09714048765d4d9efe961382c312e624572c0420762bdc5d5940cdf9be73a"
+  "packageManager": "pnpm@10.30.3+sha512.c961d1e0a2d8e354ecaa5166b822516668b7f44cb5bd95122d590dd81922f606f5473b6d23ec4a5be05e7fcd18e8488d47d978bbe981872f1145d06e9a740017"
 }

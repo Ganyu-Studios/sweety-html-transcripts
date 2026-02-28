@@ -1,4 +1,4 @@
-import type { APIUser } from 'discord-api-types/v10';
+import type { APIRole, APIUser } from 'discord-api-types/v10';
 import { UserFlags } from 'discord-api-types/v10';
 import type { RenderMessageContext } from '../generator';
 import type { GuildMemberData } from './channel';
@@ -71,10 +71,10 @@ async function buildProfile(
 ) {
   if (guildId && !member) member = await context.adapter.resolveGuildMember(guildId, author.id);
 
-  const role = await context.adapter.resolveHighestGuildMemberRole(member!, guildId!);
+  const role: APIRole | null = await context.adapter.resolveHighestGuildMemberRole(member!, guildId!);
 
-  const authorName = author.bot ? author.username : userUtils.displayName(author);
-  const roleColor = role?.color ?? role?.colors?.primary_color ?? author.accent_color;
+  const authorName: string = author.bot ? author.username : userUtils.displayName(author);
+  const roleColor: number | null | undefined = role?.color ?? role?.colors?.primary_color ?? author.accent_color;
 
   return {
     id: author.id,

@@ -1,4 +1,3 @@
-import type { Emoji } from 'seyfert';
 import type { APIMessageComponentEmoji } from 'discord-api-types/v10';
 import twemoji from 'twemoji';
 
@@ -23,12 +22,12 @@ export function formatBytes(bytes: number, decimals = 2) {
   return { size: parseFloat((bytes / Math.pow(k, i)).toFixed(dm)), unit: sizes[i] };
 }
 
-export function parseDiscordEmoji(emoji: Emoji | APIMessageComponentEmoji) {
+export function parseDiscordEmoji(emoji: APIMessageComponentEmoji): string {
   if (emoji.id) {
     return `https://cdn.discordapp.com/emojis/${emoji.id}.${emoji.animated ? 'gif' : 'png'}`;
   }
 
-  const codepoints = twemoji.convert
+  const codepoints: string = twemoji.convert
     .toCodePoint(
       emoji.name!.indexOf(String.fromCharCode(0x200d)) < 0 ? emoji.name!.replace(/\uFE0F/g, '') : emoji.name!
     )
@@ -41,7 +40,7 @@ export function parseDiscordEmoji(emoji: Emoji | APIMessageComponentEmoji) {
  * Converts a stream to a string
  * @param stream - The stream to convert
  */
-export function streamToString(stream: NodeJS.ReadableStream) {
+export function streamToString(stream: NodeJS.ReadableStream): Promise<string> {
   const chunks: Buffer[] = [];
 
   return new Promise<string>((resolve, reject) => {
@@ -57,7 +56,7 @@ export function streamToString(stream: NodeJS.ReadableStream) {
  * @param {FlagsOptions} options - The options to check.
  * @returns boolean
  */
-export const hasFlag = (options: FlagsOptions) => (options.bitfield ?? 0 & options.flag) === options.flag;
+export const hasFlag = (options: FlagsOptions): boolean => (options.bitfield ?? 0 & options.flag) === options.flag;
 
 /**
  *
@@ -65,4 +64,4 @@ export const hasFlag = (options: FlagsOptions) => (options.bitfield ?? 0 & optio
  * @param color - The color number
  * @returns
  */
-export const convertToHEX = (color?: number) => (color ? `#${color.toString(16).padStart(6, '0')}` : '#FFFFFF');
+export const convertToHEX = (color?: number): string => (color ? `#${color.toString(16).padStart(6, '0')}` : '#FFFFFF');

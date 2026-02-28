@@ -33,7 +33,7 @@ client.events.values.READY = {
     client.logger.info(`Logged in as ${user.username}`);
 
     if (process.env.CHANNEL) {
-      const channel = await client.channels.fetch(process.env.CHANNEL).catch(() => null);
+      const channel = await client.channels.fetch(process.env.CHANNEL).catch((): null => null);
       if (!channel || !channel.isGuildTextable()) {
         client.logger.error('Invalid channel provided.');
         process.exit(1);

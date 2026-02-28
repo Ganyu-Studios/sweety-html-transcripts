@@ -4,16 +4,16 @@ import { cdn } from './cdn';
 import type { GuildMemberData } from './channel';
 
 class UserUtils {
-  calculateUserDefaultAvatarIndex(userId: Snowflake, discriminator: string) {
+  calculateUserDefaultAvatarIndex(userId: Snowflake, discriminator: string): number {
     if (discriminator === '0') return Number(BigInt(userId) >> 22n) % 6;
     return Number(discriminator) % 5;
   }
 
-  defaultAvatarURL(user: Pick<APIUser, 'id' | 'discriminator'>) {
+  defaultAvatarURL(user: Pick<APIUser, 'id' | 'discriminator'>): string {
     return cdn.defaultUserAvatar(this.calculateUserDefaultAvatarIndex(user.id, user.discriminator));
   }
 
-  avatarURL(user: Pick<APIUser, 'id' | 'avatar' | 'discriminator'>, options?: CDNUrlOptions) {
+  avatarURL(user: Pick<APIUser, 'id' | 'avatar' | 'discriminator'>, options?: CDNUrlOptions): string {
     if (!user.avatar) {
       return this.defaultAvatarURL(user);
     }
@@ -46,12 +46,12 @@ class UserUtils {
     return cdn.memberAvatar(guildId, user.id, member.avatar, options);
   }
 
-  avatarDecorationURL(user: Pick<APIUser, 'id' | 'avatar_decoration_data'>) {
+  avatarDecorationURL(user: Pick<APIUser, 'id' | 'avatar_decoration_data'>): string | undefined {
     if (!user.avatar_decoration_data) return;
     return cdn.avatarDecoration(user.avatar_decoration_data.asset);
   }
 
-  displayName(user: Pick<APIUser, 'username' | 'discriminator' | 'global_name'>) {
+  displayName(user: Pick<APIUser, 'username' | 'discriminator' | 'global_name'>): string {
     if (user.discriminator === '0') return user.global_name ?? user.username;
     return user.global_name ?? `${user.username}#${user.discriminator}`;
   }

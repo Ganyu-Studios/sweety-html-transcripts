@@ -2,100 +2,70 @@
 
 Will fetch (by default, all) the messages from the provided channel and can return either a `Buffer`, `string`, or `AttachmentBuilder`
 
-## Example&#x20;
+## Example
 
 {% tabs %}
-{% tab title="JavaScript" %}
-{% code lineNumbers="true" %}
+{% tab title="Seyfert" %}
 
 ```javascript
 const discordTranscripts = require("sweety-html-transcripts");
-
-[...]
+const { SeyfertTranscriptAdapter } = require("sweety-html-transcripts/adapters/seyfert");
 
 export default createEvent({
     data: { name: "messageCreate" },
-//   ⤵️ Notice the async here
     async run(message) {
         if (message.content === "!transcript") {
-        const channel = await message.channel();
+            const channel = await client.channels.raw(message.channelId);
 
-        // Use the following to fetch the transcript.
-        const transcript = await discordTranscripts.createTranscript(
-            channel,
-            {
-                // options go here
-                // for example
+            const transcript = await discordTranscripts.createTranscript({
+                channel,
                 saveImages: true,
-                footerText: "Saved {number} message{s}"
-            }
-        );
+                footerText: "Saved {number} message{s}",
+                adapter: new SeyfertTranscriptAdapter(message.client)
+            });
 
-        // and by default, createTranscript will return an AttachmentBuilder
-        // which you can directly send to seyfert
-        message.reply({
-            content: "Here's your transcript!",
-            files: [transcript]
-        });
-    }
+            await message.reply({
+                content: "Here's your transcript!",
+                files: [transcript]
+            });
+        }
     }
 });
 ```
 
-{% endcode %}
 {% endtab %}
 
-{% tab title="TypeScript" %}
-{% code lineNumbers="true" %}
+{% tab title="Discord.js" %}
 
-```typescript
-import * as discordTranscripts from "sweety-html-transcripts";
+```javascript
+const discordTranscripts = require("sweety-html-transcripts");
+const { DiscordJSTranscriptAdapter } = require("sweety-html-transcripts/adapters/discordjs");
 
-[...]
+client.on('messageCreate', async (message) => {
+    if (message.content === "!transcript") {
+        const transcript = await discordTranscripts.createTranscript({
+            channel, // some way to get the api channel object, or use the DiscordJSTranscript class instead
+            saveImages: true,
+            footerText: "Saved {number} message{s}",
+            adapter: new DiscordJSTranscriptAdapter(message.client)
+        });
 
-export default createEvent({
-    data: { name: "messageCreate" },
-//   ⤵️ Notice the async here
-    async run(message) {
-        if (message.content === "!transcript") {
-        const channel = await message.channel();
-
-        // Use the following to fetch the transcript.
-        const transcript = await discordTranscripts.createTranscript(
-            channel,
-            {
-                // options go here
-                // for example
-                saveImages: true,
-                footerText: "Saved {number} message{s}"
-            }
-        );
-
-        // and by default, createTranscript will return an AttachmentBuilder
-        // which you can directly send to seyfert
-        message.reply({
+        await message.reply({
             content: "Here's your transcript!",
             files: [transcript]
         });
     }
-    }
 });
 ```
 
-{% endcode %}
 {% endtab %}
 {% endtabs %}
 
 ## Parameters
 
 ```javascript
-createTranscript(channel, (options = {}));
+createTranscript(options);
 ```
-
-### `channel: AllGuildChannels`
-
-Defined in seyfert as `TextGuildChannelStructure | VoiceChannelStructure | MediaChannelStructure | ForumChannelStructure | ThreadChannelStructure | CategoryChannelStructure | NewsChannelStructure | DirectoryChannelStructure | StageChannelStructure`\
-``This is the channel Discord HTML Transcripts will fetch messages from.&#x20;
 
 ### `options: CreateTranscriptOptions`
 

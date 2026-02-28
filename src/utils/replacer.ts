@@ -43,10 +43,10 @@ export function isObject(o: any): o is Record<string, unknown> {
 }
 
 export const ReplaceRegex = {
-  camel: (s: string) => {
+  camel: (s: string): string => {
     return s.toLowerCase().replace(/(_\S)/gi, (a) => a[1].toUpperCase());
   },
-  snake: (s: string) => {
+  snake: (s: string): string => {
     // Handle sequences of uppercase letters (acronyms) and individual uppercase letters
     return s
       .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2') // Handle transition from acronym to word (e.g., URLPath -> URL_Path)

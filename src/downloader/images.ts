@@ -1,5 +1,4 @@
 import type { WebpOptions } from 'sharp';
-import { request } from 'undici';
 import type { APIAttachment, APIMessage, APIMessageSnapshot } from 'discord-api-types/v10';
 import type { Awaitable } from '../adapters/core';
 
@@ -69,15 +68,15 @@ export class TranscriptImageDownloader {
       if (this.maxFileSize && attachment.size > this.maxFileSize * 1024) return undefined;
 
       // fetch the image
-      const response = await request(attachment.url).catch((err) => {
+      const response = await fetch(attachment.url).catch((err) => {
         console.error(`[sweety-html-transcripts] Failed to download image for transcript: `, err);
         return null;
       });
 
-      if (!response) return undefined;
+      if (!response || !response.ok) return undefined;
 
-      const mimetype = response.headers['content-type'];
-      const buffer = await response.body.arrayBuffer().then((res) => Buffer.from(res));
+      const mimetype = response.headers.get('content-type');
+      const buffer = Buffer.from(await response.arrayBuffer());
 
       // if the compression options are set, compress the image
       if (this.compression) {
