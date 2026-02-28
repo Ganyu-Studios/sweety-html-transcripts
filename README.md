@@ -55,9 +55,9 @@ Instead, please open a thread on [this](https://discord.gg/4JmKY8wgB6) server.
 {% tab title="Seyfert" %}
 
 ```js
-const discordTranscripts = require("sweety-html-transcripts");
+const discordTranscripts = require('sweety-html-transcripts');
 // or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
-const { SeyfertTranscriptAdapter } = require("sweety-html-transcripts/adapters/seyfert");
+const { SeyfertTranscriptAdapter } = require('sweety-html-transcripts/adapters/seyfert');
 
 const channel = await client.channels.raw(channelId);
 
@@ -77,9 +77,9 @@ await client.messages.write(channelId, {
 {% tab title="Discord.js" %}
 
 ```js
-const discordTranscripts = require("sweety-html-transcripts");
+const discordTranscripts = require('sweety-html-transcripts');
 // or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
-const { DiscordJSTranscriptAdapter } = require("sweety-html-transcripts/adapters/discordjs");
+const { DiscordJSTranscriptAdapter } = require('sweety-html-transcripts/adapters/discordjs');
 
 const channel = await client.channels.fetch(channelId);
 
@@ -103,9 +103,9 @@ await channel.send({
 {% tab title="Seyfert" %}
 
 ```js
-const discordTranscripts = require("sweety-html-transcripts");
+const discordTranscripts = require('sweety-html-transcripts');
 // or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
-const { SeyfertTranscriptAdapter } = require("sweety-html-transcripts/adapters/seyfert");
+const { SeyfertTranscriptAdapter } = require('sweety-html-transcripts/adapters/seyfert');
 
 const messages = someWayToGetMessages(); // Must be APIMessage[]
 const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name in api object.
@@ -126,9 +126,9 @@ await client.messages.write(channelId, {
 {% tab title="Discord.js" %}
 
 ```js
-const discordTranscripts = require("sweety-html-transcripts");
+const discordTranscripts = require('sweety-html-transcripts');
 // or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
-const { DiscordJSTranscriptAdapter } = require("sweety-html-transcripts/adapters/discordjs");
+const { DiscordJSTranscriptAdapter } = require('sweety-html-transcripts/adapters/discordjs');
 
 const messages = someWayToGetMessages(); // Must be APIMessage[]
 const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name in api object.

@@ -36,7 +36,10 @@ export abstract class TranscriptAdapter<Client> {
     return guildRoles.filter((role): boolean => member.roles.includes(role.id));
   }
 
-  async resolveHighestGuildMemberRole(member: Pick<GuildMemberData, 'roles'>, guildId: string): Promise<APIRole | null> {
+  async resolveHighestGuildMemberRole(
+    member: Pick<GuildMemberData, 'roles'>,
+    guildId: string
+  ): Promise<APIRole | null> {
     const roles: APIRole[] = await this.resolveGuildMemberRoles(member, guildId);
     return roles.sort((a, b): number => b.position - a.position)[0] ?? null;
   }

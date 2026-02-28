@@ -8,28 +8,28 @@ Will fetch (by default, all) the messages from the provided channel and can retu
 {% tab title="Seyfert" %}
 
 ```javascript
-const discordTranscripts = require("sweety-html-transcripts");
-const { SeyfertTranscriptAdapter } = require("sweety-html-transcripts/adapters/seyfert");
+const discordTranscripts = require('sweety-html-transcripts');
+const { SeyfertTranscriptAdapter } = require('sweety-html-transcripts/adapters/seyfert');
 
 export default createEvent({
-    data: { name: "messageCreate" },
-    async run(message) {
-        if (message.content === "!transcript") {
-            const channel = await client.channels.raw(message.channelId);
+  data: { name: 'messageCreate' },
+  async run(message) {
+    if (message.content === '!transcript') {
+      const channel = await client.channels.raw(message.channelId);
 
-            const transcript = await discordTranscripts.createTranscript({
-                channel,
-                saveImages: true,
-                footerText: "Saved {number} message{s}",
-                adapter: new SeyfertTranscriptAdapter(message.client)
-            });
+      const transcript = await discordTranscripts.createTranscript({
+        channel,
+        saveImages: true,
+        footerText: 'Saved {number} message{s}',
+        adapter: new SeyfertTranscriptAdapter(message.client),
+      });
 
-            await message.reply({
-                content: "Here's your transcript!",
-                files: [transcript]
-            });
-        }
+      await message.reply({
+        content: "Here's your transcript!",
+        files: [transcript],
+      });
     }
+  },
 });
 ```
 
@@ -38,23 +38,23 @@ export default createEvent({
 {% tab title="Discord.js" %}
 
 ```javascript
-const discordTranscripts = require("sweety-html-transcripts");
-const { DiscordJSTranscriptAdapter } = require("sweety-html-transcripts/adapters/discordjs");
+const discordTranscripts = require('sweety-html-transcripts');
+const { DiscordJSTranscriptAdapter } = require('sweety-html-transcripts/adapters/discordjs');
 
 client.on('messageCreate', async (message) => {
-    if (message.content === "!transcript") {
-        const transcript = await discordTranscripts.createTranscript({
-            channel, // some way to get the api channel object, or use the DiscordJSTranscript class instead
-            saveImages: true,
-            footerText: "Saved {number} message{s}",
-            adapter: new DiscordJSTranscriptAdapter(message.client)
-        });
+  if (message.content === '!transcript') {
+    const transcript = await discordTranscripts.createTranscript({
+      channel, // some way to get the api channel object, or use the DiscordJSTranscript class instead
+      saveImages: true,
+      footerText: 'Saved {number} message{s}',
+      adapter: new DiscordJSTranscriptAdapter(message.client),
+    });
 
-        await message.reply({
-            content: "Here's your transcript!",
-            files: [transcript]
-        });
-    }
+    await message.reply({
+      content: "Here's your transcript!",
+      files: [transcript],
+    });
+  }
 });
 ```
 

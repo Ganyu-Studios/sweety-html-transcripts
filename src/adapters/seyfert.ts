@@ -24,7 +24,9 @@ export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
   }
 
   override async resolveMessage(channelId: string, messageId: string): Promise<APIMessageData | null> {
-    const message = (await this.client.messages.raw(messageId, channelId).catch((): null => null)) as APIMessageData | null;
+    const message = (await this.client.messages
+      .raw(messageId, channelId)
+      .catch((): null => null)) as APIMessageData | null;
     if (!message) return null;
 
     // why seyfert? WHY

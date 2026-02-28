@@ -34,13 +34,15 @@ export async function generateFromMessages<
 >(messages: APIMessageData[], options: GenerateFromMessagesOptions<T, Adapter>): Promise<ObjectType<T, Adapter>> {
   const { adapter, channel } = options;
 
-  const guild: APIGuild | null = 'guild_id' in channel && channel.guild_id ? await adapter.resolveGuild(channel.guild_id) : null;
+  const guild: APIGuild | null =
+    'guild_id' in channel && channel.guild_id ? await adapter.resolveGuild(channel.guild_id) : null;
 
   // turn messages into an array
-  const transformedMessages: APIMessageData[] = messages instanceof Collection ? Array.from(messages.values()) : messages;
+  const transformedMessages: APIMessageData[] =
+    messages instanceof Collection ? Array.from(messages.values()) : messages;
   const allMessages: APIMessageData[] = transformedMessages.map((message): APIMessageData => {
     if (channelUtils.isDM(channel) || channelUtils.isDirectory(channel)) return message;
-    
+
     // ts is dumb because for some reason guild_id doesn't exist sometimes
     if (typeof message.guild_id === 'undefined' && guild) message.guild_id = guild.id;
 
