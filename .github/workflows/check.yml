@@ -7,7 +7,7 @@ jobs:
   linter:
     runs-on: ubuntu-latest
     permissions:
-        contents: write
+      contents: write
     steps:
       - name: check out code
         uses: actions/checkout@v6
@@ -42,7 +42,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HUSKY: 0
-        
 
       - name: Publish in pkg.pr.new
         run: pnpx pkg-pr-new publish
