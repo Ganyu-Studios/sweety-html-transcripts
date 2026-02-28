@@ -54,6 +54,7 @@
     "dist/**"
   ],
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@eslint/eslintrc": "^3.3.4",
     "@eslint/js": "^10.0.1",
     "@penwin/discord-components-core": "^4.3.8",
