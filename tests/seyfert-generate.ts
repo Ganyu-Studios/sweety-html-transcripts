@@ -2,8 +2,8 @@ import 'dotenv/config';
 
 import { Client, type ParseClient } from 'seyfert';
 import { GatewayIntentBits } from 'seyfert/lib/types';
-import { ExportReturnType } from '../src';
-import { SeyfertTranscript } from '../src/adapters/seyfert';
+import { ExportReturnType } from '../dist';
+import { SeyfertTranscript } from '../dist/adapters/seyfert';
 import { writeFile } from 'node:fs/promises';
 
 const client = new Client({
