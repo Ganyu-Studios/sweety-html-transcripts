@@ -24,7 +24,7 @@
     "noUnusedParameters": true,
     "pretty": true,
     "jsx": "react",
-    "incremental": true,
+    "incremental": false,
     "declaration": true,
     "skipLibCheck": true
   },
