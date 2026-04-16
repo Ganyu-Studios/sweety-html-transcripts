@@ -16,44 +16,33 @@ If you find a bug, please create a post on [GitHub](https://github.com/Ganyu-Stu
 
 To get started with `sweety-html-transcripts` install the module and ensure you are running `seyfert`^3.2 or `discord.js`^14
 
-{% tabs %}
-{% tab title="NPM" %}
+### NPM
 
 ```shell
 npm install --save sweety-html-transcripts
 ```
 
-{% endtab %}
-
-{% tab title="PNPM" %}
+### PNPM
 
 ```shell
 pnpm i -S sweety-html-transcripts
 ```
 
-{% endtab %}
-
-{% tab title="Yarn" %}
+### Yarn
 
 ```shell
 yarn add sweety-html-transcripts
 ```
 
-{% endtab %}
-{% endtabs %}
 
 ## Contributing
 
 The code to this module can be found on GitHub:
 
-{% embed url="https://github.com/Ganyu-Studios/sweety-html-transcripts" %}
-Ganyu-Studios/sweety-html-transcripts
-{% endembed %}
+[Ganyu-Studios/sweety-html-transcripts](https://github.com/Ganyu-Studios/sweety-html-transcripts)
 
 The markdown files to this documentation can also be found there.
 
 ## Useful Links
 
-{% content-ref url="broken-reference" %}
 [Broken link](broken-reference)
-{% endcontent-ref %}

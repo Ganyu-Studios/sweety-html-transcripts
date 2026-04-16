@@ -4,8 +4,7 @@ If you want to provide your own messages for finer control of what `sweety-html-
 
 ## Example
 
-{% tabs %}
-{% tab title="Seyfert" %}
+### Seyfert
 
 ```javascript
 const discordTranscripts = require("sweety-html-transcripts");
@@ -28,9 +27,7 @@ await client.messages.write(channelId, {
 });
 ```
 
-{% endtab %}
-
-{% tab title="Discord.js" %}
+### Discord.js
 
 ```javascript
 const discordTranscripts = require("sweety-html-transcripts");
@@ -53,8 +50,6 @@ await channel.send({
 });
 ```
 
-{% endtab %}
-{% endtabs %}
 
 ## Parameters
 

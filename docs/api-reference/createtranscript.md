@@ -4,8 +4,7 @@ Will fetch (by default, all) the messages from the provided channel and can retu
 
 ## Example
 
-{% tabs %}
-{% tab title="Seyfert" %}
+### Seyfert
 
 ```javascript
 const discordTranscripts = require('sweety-html-transcripts');
@@ -33,9 +32,7 @@ export default createEvent({
 });
 ```
 
-{% endtab %}
-
-{% tab title="Discord.js" %}
+### Discord.js
 
 ```javascript
 const discordTranscripts = require('sweety-html-transcripts');
@@ -58,8 +55,6 @@ client.on('messageCreate', async (message) => {
 });
 ```
 
-{% endtab %}
-{% endtabs %}
 
 ## Parameters
 

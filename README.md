@@ -51,8 +51,7 @@ Instead, please open a thread on [this](https://discord.gg/4JmKY8wgB6) server.
 
 ### Example usage using the built in message fetcher.
 
-{% tabs %}
-{% tab title="Seyfert" %}
+#### Seyfert
 
 ```js
 const discordTranscripts = require('sweety-html-transcripts');
@@ -72,9 +71,7 @@ await client.messages.write(channelId, {
 });
 ```
 
-{% endtab %}
-
-{% tab title="Discord.js" %}
+#### Discord.js
 
 ```js
 const discordTranscripts = require('sweety-html-transcripts');
@@ -94,13 +91,10 @@ await channel.send({
 });
 ```
 
-{% endtab %}
-{% endtabs %}
 
 ### Or if you prefer, you can pass in your own messages.
 
-{% tabs %}
-{% tab title="Seyfert" %}
+#### Seyfert
 
 ```js
 const discordTranscripts = require('sweety-html-transcripts');
@@ -121,9 +115,7 @@ await client.messages.write(channelId, {
 });
 ```
 
-{% endtab %}
-
-{% tab title="Discord.js" %}
+#### Discord.js
 
 ```js
 const discordTranscripts = require('sweety-html-transcripts');
@@ -144,8 +136,6 @@ await channel.send({
 });
 ```
 
-{% endtab %}
-{% endtabs %}
 
 ## ⚙️ Configuration
 
