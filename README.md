@@ -91,7 +91,6 @@ await channel.send({
 });
 ```
 
-
 ### Or if you prefer, you can pass in your own messages.
 
 #### Seyfert
@@ -135,7 +134,6 @@ await channel.send({
   files: [attachment],
 });
 ```
-
 
 ## ⚙️ Configuration
 

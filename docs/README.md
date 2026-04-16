@@ -34,7 +34,6 @@ pnpm i -S sweety-html-transcripts
 yarn add sweety-html-transcripts
 ```
 
-
 ## Contributing
 
 The code to this module can be found on GitHub:

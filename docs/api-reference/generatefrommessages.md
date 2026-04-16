@@ -50,7 +50,6 @@ await channel.send({
 });
 ```
 
-
 ## Parameters
 
 ```javascript

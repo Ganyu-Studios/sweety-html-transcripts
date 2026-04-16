@@ -55,7 +55,6 @@ client.on('messageCreate', async (message) => {
 });
 ```
 
-
 ## Parameters
 
 ```javascript
