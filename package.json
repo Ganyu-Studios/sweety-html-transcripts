@@ -89,6 +89,14 @@
     "discord.js": ">=14.25.1",
     "seyfert": ">=4.2.2"
   },
+  "peerDependenciesMeta": {
+    "discord.js": {
+      "optional": true
+    },
+    "seyfert": {
+      "optional": true
+    }
+  },
   "overrides": {
     "react": "$react"
   },
