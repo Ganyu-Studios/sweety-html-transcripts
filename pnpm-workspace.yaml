@@ -2,4 +2,8 @@ allowBuilds:
   esbuild: true
   sharp: true
 
+minimumReleaseAgeExclude:
+  - '@eslint/plugin-kit@0.7.2'
+  - eslint@10.4.1
+
 packages: []
