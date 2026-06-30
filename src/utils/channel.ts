@@ -21,11 +21,7 @@ import { ChannelType } from 'discord-api-types/v10';
 
 export type APIAllGuildTextableChannels = APITextChannel | APIGuildVoiceChannel | APINewsChannel | APIThreadChannel;
 export type APIAllTextableChannels =
-  | APITextChannel
-  | APIGuildVoiceChannel
-  | APIDMChannel
-  | APINewsChannel
-  | APIThreadChannel;
+  APITextChannel | APIGuildVoiceChannel | APIDMChannel | APINewsChannel | APIThreadChannel;
 export type APIDirectoryChannel = APIBasePartialChannel & { type: ChannelType.GuildDirectory };
 export type AllAPIChannel = APIChannel | APIDirectoryChannel;
 export type AllAPIGuildChannels =
