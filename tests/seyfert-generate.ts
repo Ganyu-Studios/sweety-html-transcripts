@@ -73,5 +73,7 @@ client.events.values.READY = {
 client.start();
 
 declare module 'seyfert' {
-  interface UsingClient extends ParseClient<Client<true>> {}
+  interface SeyfertRegistry {
+    client: ParseClient<Client<true>>;
+  }
 }
