@@ -2,8 +2,8 @@ import 'dotenv/config';
 
 import type { GuildTextBasedChannel } from 'discord.js';
 import { Client, GatewayIntentBits } from 'discord.js';
-import { ExportReturnType } from '../src';
-import { DiscordJSTranscript } from '../src/adapters/discordjs';
+import { ExportReturnType } from '../dist';
+import { DiscordJSTranscript } from '../dist/adapters/discordjs';
 import { writeFile } from 'node:fs/promises';
 
 const client = new Client({

@@ -291,15 +291,13 @@ class APIUtils {
           : undefined,
       available_tags:
         'availableTags' in channel
-          ? channel.availableTags.map(
-              (tag): APIGuildForumTag => ({
-                emoji_id: tag.emoji!.id,
-                emoji_name: tag.emoji!.name ?? null,
-                id: tag.id,
-                moderated: tag.moderated,
-                name: tag.name,
-              })
-            )
+          ? channel.availableTags.map((tag): APIGuildForumTag => ({
+              emoji_id: tag.emoji!.id,
+              emoji_name: tag.emoji!.name ?? null,
+              id: tag.id,
+              moderated: tag.moderated,
+              name: tag.name,
+            }))
           : [],
       thread_metadata: {
         archive_timestamp: 'createdAt' in channel ? channel.createdAt!.toDateString() : '',

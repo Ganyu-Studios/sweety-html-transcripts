@@ -23,9 +23,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": true,
     "pretty": true,
-    "moduleResolution": "node",
     "jsx": "react",
-    "incremental": true,
+    "incremental": false,
     "declaration": true,
     "skipLibCheck": true
   },
