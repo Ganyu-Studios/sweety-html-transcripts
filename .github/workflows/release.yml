@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'Ganyu-Studios/sweety-html-transcripts'
     permissions:
+      # Only npm provenance needs a token here; nothing is pushed back to the repository.
       id-token: write
     steps:
       - name: Check out code
@@ -31,12 +32,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Create Release Pull Request
-        uses: changesets/action@v1
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # The version in package.json is the release: bump it on `main` and merge into `release`.
+      # Publishing is skipped when that version is already on npm, so a merge that carries no bump
+      # (or a re-run) is a no-op instead of a failure.
+      - name: Publish to npm
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        with:
-          commit: 'chore: release packages'
-          publish: npm publish --provenance
-          title: 'chore: release packages'
+        run: |
+          version=$(node -p "require('./package.json').version")
+
+          if npm view "sweety-html-transcripts@$version" version > /dev/null 2>&1; then
+            echo "sweety-html-transcripts@$version is already published, nothing to do."
+            exit 0
+          fi
+
+          echo "Publishing sweety-html-transcripts@$version"
+          npm config set //registry.npmjs.org/:_authToken ${NODE_AUTH_TOKEN}
+          npm publish --provenance

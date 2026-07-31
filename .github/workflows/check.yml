@@ -9,7 +9,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24.x'
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # `prepare` only sets up husky here, so nothing compiles until `prepack` runs at publish time.
+      # Without these two steps a type error reaches npm before anything notices.
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
   linter:
+    # Nothing gets pushed back or published off a red verify run.
+    needs: verify
+    # Push events only: this job commits back to `github.ref`, which on a pull_request is the ephemeral
+    # `refs/pull/N/merge` — not a branch to push to, and gone the moment the pull request is merged.
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write

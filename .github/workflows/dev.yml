@@ -33,6 +33,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # This publishes to npm on every push to main, so it does not go out unchecked.
+      - name: Typecheck
+        run: pnpm typecheck
+
       - name: Verify npm token
         run: npm whoami
 
