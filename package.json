@@ -17,6 +17,15 @@
     "test:djs": "tsx ./tests/djs-generate.ts",
     "update-components": "pnpm update @penwin/*@latest"
   },
+  "lint-staged": {
+    "*.{ts,tsx,mjs}": [
+      "prettier --write",
+      "eslint --cache --fix"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -67,6 +76,7 @@
     "eslint": "^10.8.0",
     "globals": "^17.7.0",
     "husky": "^9.1.7",
+    "lint-staged": "^17.2.0",
     "prettier": "^3.9.6",
     "seyfert": "5.0.1-dev-29307366727.0",
     "sharp": "^0.35.3",
