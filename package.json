@@ -66,17 +66,17 @@
     "@eslint/eslintrc": "^3.3.6",
     "@eslint/js": "^10.0.1",
     "@penwin/discord-components-core": "^4.3.8",
-    "@types/node": "^26.1.1",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",
     "discord.js": "^14.27.0",
     "dotenv": "^17.4.2",
     "eslint": "^10.8.0",
-    "globals": "^17.7.0",
+    "globals": "^17.8.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.2.0",
+    "lint-staged": "^17.3.0",
     "prettier": "^3.9.6",
     "seyfert": "5.0.1-dev-29307366727.0",
     "sharp": "^0.35.3",
@@ -86,7 +86,7 @@
   "dependencies": {
     "@derockdev/discord-components-core": "^3.6.1",
     "@penwin/discord-components-react-render": "^4.3.8",
-    "discord-api-types": "^0.38.51",
+    "discord-api-types": "^0.38.52",
     "discord-markdown-parser": "~1.3.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -100,5 +100,5 @@
   "overrides": {
     "react": "$react"
   },
-  "packageManager": "pnpm@11.17.0+sha512.cca3cea332ad254bb84145f966d19f4879615210346fc92c79a047f23a0d7b3cca3c3792f0076ba1f1831d277efbcf0a9119b31a9a60eca7fb3d6231f331ef72"
+  "packageManager": "pnpm@11.18.0+sha512.33d83c77da82f49fba836925c6f1b841181ec3132b670639bd012f7075f5c7cf634c5f870147c19aae7478fac01df09d8892e880454896edd23ee9b33757563c"
 }

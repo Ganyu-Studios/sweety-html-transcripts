@@ -11,5 +11,8 @@ minimumReleaseAgeExclude:
   - '@eslint/eslintrc@3.3.6'
   - discord.js@14.26.5
   - discord-api-types@0.38.51
+  - '@types/react-dom@19.2.4'
+  - '@types/react@19.2.18'
+  - lint-staged@17.3.0
 
 packages: []
