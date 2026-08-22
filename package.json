@@ -69,18 +69,18 @@
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@typescript-eslint/eslint-plugin": "^8.66.0",
-    "@typescript-eslint/parser": "^8.66.0",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
     "discord.js": "^14.27.0",
     "dotenv": "^17.4.2",
-    "eslint": "^10.8.1",
-    "globals": "^17.9.0",
+    "eslint": "^10.9.0",
+    "globals": "^17.11.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.3.0",
     "prettier": "^3.9.6",
     "seyfert": "5.0.1-dev-29307366727.0",
     "sharp": "^0.35.3",
-    "tsx": "^4.23.11",
+    "tsx": "^4.23.12",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "dependencies": {
@@ -100,5 +100,5 @@
   "overrides": {
     "react": "$react"
   },
-  "packageManager": "pnpm@11.20.0+sha512.9a6f330a95b66446ea088faf1521405a8a01f07fde7124cc9958dfed52d4bb436737e65b08f85f37b46fcba375092558ac51262b816844b22f63406ed166bfee"
+  "packageManager": "pnpm@11.22.0+sha512.1ff870c4c6133dfd88fb2afc46dd13d47f09c9794b438c6fdb47ca98caf3bc16381ee0be93a091b8e3824cf01f889f46d7d9e20910fb0be1ab0fb5baa80dd621"
 }
