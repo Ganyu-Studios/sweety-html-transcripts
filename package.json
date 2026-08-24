@@ -15,6 +15,7 @@
     "vite": "vite",
     "test:seyfert": "tsx ./tests/seyfert-generate.ts",
     "test:djs": "tsx ./tests/djs-generate.ts",
+    "test:escape": "tsx ./tests/stringify-for-script.ts",
     "update-components": "pnpm update @penwin/*@latest"
   },
   "lint-staged": {
