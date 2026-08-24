@@ -19,7 +19,7 @@ import type { ReactElement } from 'react';
 import React from 'react';
 import type { APIFileComponent, APIMessageComponent } from 'discord-api-types/v10';
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
-import { convertToHEX, formatBytes, parseDiscordEmoji } from '../../utils/utils';
+import { convertToHEX, formatBytes, parseDiscordEmoji, stringifyForScript } from '../../utils/utils';
 import MessageContent, { RenderType } from './content';
 import type { RenderMessageContext } from '..';
 import type {
@@ -212,7 +212,7 @@ export async function Component({
             <script
               key={'users-script'}
               dangerouslySetInnerHTML={{
-                __html: `${selectMenuScriptHeader}.users = ${JSON.stringify(context.adapter.renderContext.selectMenu.users.data)}`,
+                __html: `${selectMenuScriptHeader}.users = ${stringifyForScript(context.adapter.renderContext.selectMenu.users.data)}`,
               }}
             />
           );
@@ -247,7 +247,7 @@ export async function Component({
             <script
               key={'roles-script'}
               dangerouslySetInnerHTML={{
-                __html: `${selectMenuScriptHeader}.roles = ${JSON.stringify(context.adapter.renderContext.selectMenu.roles.data)}`,
+                __html: `${selectMenuScriptHeader}.roles = ${stringifyForScript(context.adapter.renderContext.selectMenu.roles.data)}`,
               }}
             />
           );
@@ -280,7 +280,7 @@ export async function Component({
             <script
               key={'channels-script'}
               dangerouslySetInnerHTML={{
-                __html: `${selectMenuScriptHeader}.channels = ${JSON.stringify(context.adapter.renderContext.selectMenu.channels.data)}`,
+                __html: `${selectMenuScriptHeader}.channels = ${stringifyForScript(context.adapter.renderContext.selectMenu.channels.data)}`,
               }}
             />
           );

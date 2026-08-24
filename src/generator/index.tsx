@@ -10,7 +10,7 @@ import { buildProfiles } from '../utils/profiles';
 import type { AllAPIChannel, APIMessageData } from '../utils/channel';
 import { channelUtils } from '../utils/channel';
 import { guildUtils } from '../utils/guild';
-import { streamToString } from '../utils/utils';
+import { streamToString, stringifyForScript } from '../utils/utils';
 import DiscordMessages from './transcript';
 
 const resolveVersion = (version: string) => version.replace('^', '').replace('~', '');
@@ -101,7 +101,7 @@ export default async function render(context: RenderMessageContext) {
             {/* profiles */}
             <script
               dangerouslySetInnerHTML={{
-                __html: `window.$discordMessage={profiles:${JSON.stringify(profiles)}}`,
+                __html: `window.$discordMessage={profiles:${stringifyForScript(profiles)}}`,
               }}
             ></script>
             {/* component library */}
