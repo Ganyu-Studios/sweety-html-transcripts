@@ -6,19 +6,23 @@ import {
   DiscordHeader,
   DiscordItalic,
   DiscordLink,
+  DiscordListItem,
   DiscordMention,
+  DiscordOrderedList,
   DiscordQuote,
   DiscordSpoiler,
   DiscordSubscript,
   DiscordTime,
   DiscordUnderlined,
+  DiscordUnorderedList,
 } from '@penwin/discord-components-react-render';
-import parse, { type RuleTypesExtended } from 'discord-markdown-parser';
+import type { RuleTypesExtended } from 'discord-markdown-parser';
 import React from 'react';
 import type { ASTNode, SingleASTNode } from 'simple-markdown';
 import { ASTNode as MessageASTNodes } from 'simple-markdown';
 import type { RenderMessageContext } from '../';
 import { channelUtils } from '../../utils/channel';
+import { parseWithLists } from '../../utils/list';
 import { convertToHEX, parseDiscordEmoji } from '../../utils/utils';
 import type { APIMessageComponentEmoji } from 'discord-api-types/v10';
 import { ChannelType } from 'discord-api-types/v10';
@@ -49,12 +53,9 @@ export default async function MessageContent({ content, context }: { content: st
   if (context.type === RenderType.REPLY && content.length > 180) content = content.slice(0, 180) + '...';
 
   // parse the markdown
-  const parsed = parse(
-    content,
-    //? apparently now users can use extended parsing
-    // context.type === RenderType.EMBED || context.type === RenderType.WEBHOOK ? 'extended' : 'normal'
-    'extended'
-  );
+  //? apparently now users can use extended parsing
+  // context.type === RenderType.EMBED || context.type === RenderType.WEBHOOK ? 'extended' : 'normal'
+  const parsed = parseWithLists(content);
 
   // check if the parsed content is only emojis
   const isOnlyEmojis = parsed.every(
@@ -256,6 +257,36 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
 
     case 'timestamp':
       return <DiscordTime timestamp={parseInt(node.timestamp)} format={node.format} />;
+
+    case 'list': {
+      // A reply preview is a single line. blockQuote and br unwrap themselves for the same reason.
+      // The trailing space matters: the block match consumed the newline that ended the list, so
+      // there is no br left for the case above to turn into a space.
+      if (context.type === RenderType.REPLY) {
+        return (
+          <>
+            {(node.items as ASTNode[]).map((item, index) => (
+              <React.Fragment key={index}>
+                {index > 0 ? ' ' : null}
+                <MessageASTNodes nodes={item} context={context} />
+              </React.Fragment>
+            ))}{' '}
+          </>
+        );
+      }
+
+      const items = (node.items as ASTNode[]).map((item, index) => (
+        <DiscordListItem key={index}>
+          <MessageASTNodes nodes={item} context={context} />
+        </DiscordListItem>
+      ));
+
+      return node.ordered ? (
+        <DiscordOrderedList start={node.start ?? 1}>{items}</DiscordOrderedList>
+      ) : (
+        <DiscordUnorderedList nested={Boolean(node.nested)}>{items}</DiscordUnorderedList>
+      );
+    }
 
     default: {
       console.log(`Unknown node type: ${type}`, node);

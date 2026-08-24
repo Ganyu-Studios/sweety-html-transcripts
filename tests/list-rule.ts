@@ -1,0 +1,195 @@
+import assert from 'node:assert/strict';
+import { parseWithLists } from '../src/utils/list';
+
+// A raw U+2028 is still a line terminator inside a regular expression literal, and it is
+// message content Discord happily carries, so it is built rather than typed.
+const LS: string = String.fromCharCode(0x2028);
+
+type Node = {
+  type?: string;
+  content?: unknown;
+  items?: unknown[];
+  ordered?: boolean;
+  start?: number;
+  nested?: boolean;
+};
+type Item = { text: string; lists: List[] };
+type List = { ordered: boolean; start?: number; nested: boolean; items: Item[] };
+
+/** Text of one item, with any list nested inside it left out. */
+function textOf(node: unknown): string {
+  if (Array.isArray(node)) return node.map(textOf).join('');
+  if (typeof node === 'string') return node;
+  if (!node || typeof node !== 'object') return '';
+
+  const single = node as Node;
+  if (single.type === 'list') return '';
+  if (typeof single.content === 'string') return single.content;
+
+  return single.content ? textOf(single.content) : '';
+}
+
+/** Every list at this level, each item carrying its text and its own sub-lists. */
+function lists(nodes: unknown): List[] {
+  const found: List[] = [];
+
+  const visit = (node: unknown): void => {
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (!node || typeof node !== 'object') return;
+
+    const single = node as Node;
+    if (single.type !== 'list') return;
+
+    found.push({
+      ordered: Boolean(single.ordered),
+      start: single.start,
+      nested: Boolean(single.nested),
+      items: (single.items ?? []).map((item) => ({ text: textOf(item), lists: lists(item) })),
+    });
+  };
+
+  visit(nodes);
+  return found;
+}
+
+const texts = (list: List): string[] => list.items.map((item) => item.text);
+
+/** Every node of a given type anywhere in the tree. */
+function nodesOfType(nodes: unknown, type: string, found: Node[] = []): Node[] {
+  if (Array.isArray(nodes)) {
+    nodes.forEach((node) => nodesOfType(node, type, found));
+    return found;
+  }
+  if (!nodes || typeof nodes !== 'object') return found;
+
+  const single = nodes as Node;
+  if (single.type === type) found.push(single);
+  if (single.content) nodesOfType(single.content, type, found);
+  if (single.items) nodesOfType(single.items, type, found);
+
+  return found;
+}
+
+// Bullets. Discord takes - and * but not +, so `+ 1 for pizza` and pasted diffs stay literal.
+for (const marker of ['-', '*']) {
+  const [list, ...rest] = lists(parseWithLists(marker + ' one\n' + marker + ' two\n'));
+  assert.equal(rest.length, 0, marker + ' should produce exactly one list');
+  assert.deepEqual(texts(list!), ['one', 'two']);
+  assert.equal(list!.ordered, false);
+}
+assert.deepEqual(lists(parseWithLists('+ 1 for pizza\n')), [], '+ is not a Discord bullet');
+assert.deepEqual(lists(parseWithLists('1) not a list\n2) still not\n')), [], 'N) is not a Discord marker');
+assert.deepEqual(lists(parseWithLists('a well - placed dash')), [], 'a dash mid-sentence is not a list');
+
+// Numbering. The 50 cap is on where a list starts, not on every line in it.
+const ordered = lists(parseWithLists('3. three\n4. four\n'))[0]!;
+assert.equal(ordered.ordered, true);
+assert.equal(ordered.start, 3, 'the list starts where the author started it');
+assert.deepEqual(texts(ordered), ['three', 'four']);
+
+const capped = lists(parseWithLists('50. fifty\n51. fifty one\n'))[0]!;
+assert.equal(capped.start, 50);
+assert.deepEqual(texts(capped), ['fifty', 'fifty one'], 'a list keeps counting past 50 once it has started');
+assert.deepEqual(lists(parseWithLists('51. fifty one\n')), [], '51 does not open a list');
+
+// Nothing the author typed may disappear. BLOCK takes these lines out of the source, so a line
+// the grouping drops renders nowhere at all.
+const outdented = lists(parseWithLists('  - a\n- b\n'));
+assert.deepEqual(outdented.map(texts), [['a'], ['b']], 'a line shallower than the first must survive');
+assert.deepEqual(
+  outdented.map((list) => list.nested),
+  [false, false],
+  'neither has a parent, so neither nests'
+);
+
+// Nesting below an indented first line must survive too. Raising every line to the first line's
+// indent kept the text but flattened the structure under it.
+const belowFloor = lists(parseWithLists('  - a\n- b\n  - c\n  - d\n- e\n'));
+assert.deepEqual(belowFloor.map(texts), [['a'], ['b', 'e']], 'c and d belong to b, not to the top level');
+assert.deepEqual(texts(belowFloor[1]!.items[0]!.lists[0]!), ['c', 'd']);
+
+const separated = lists(parseWithLists('- a' + LS + 'b\n- c\n'))[0]!;
+assert.deepEqual(texts(separated), ['a' + LS + 'b', 'c'], 'U+2028 inside an item must not drop the line');
+
+// Switching between bullets and numbers starts a new list rather than rewriting the marker.
+const [first, second, ...others] = lists(parseWithLists('1. a\n- b\n'));
+assert.equal(others.length, 0, 'exactly two lists');
+assert.equal(first!.ordered, true);
+assert.deepEqual(texts(first!), ['a']);
+assert.equal(second!.ordered, false, 'the bullet must not be renumbered as item 2');
+assert.deepEqual(texts(second!), ['b']);
+
+// Indentation nests, and a jump of more than one level is only one level down.
+const nested = lists(parseWithLists('- top\n  - child\n- second\n'))[0]!;
+assert.deepEqual(texts(nested), ['top', 'second']);
+assert.deepEqual(texts(nested.items[0]!.lists[0]!), ['child']);
+assert.equal(nested.items[0]!.lists[0]!.nested, true, 'a list inside an item is nested');
+
+const jumped = lists(parseWithLists('- a\n    - b\n  - c\n'))[0]!;
+assert.deepEqual(texts(jumped), ['a']);
+assert.deepEqual(
+  jumped.items[0]!.lists.map(texts),
+  [['b', 'c']],
+  'a four-space indent is one level down, and the two-space line joins it'
+);
+
+// A blank line ENDS the list. SimpleMarkdown's own list rule does not, and the difference
+// matters: it swallowed the heading after a list and lost it.
+const afterBlank = parseWithLists('- item\n\n## Heading after the list\n');
+assert.deepEqual(texts(lists(afterBlank)[0]!), ['item'], 'the list stops at the blank line');
+assert.equal(nodesOfType(afterBlank, 'heading').length, 1, 'the heading after a blank line must survive');
+
+// And with no blank line. Rules that key off the previous capture's last group read THIS rule's
+// capture, so a block pattern with no capture group silently disables them on the following line.
+assert.equal(nodesOfType(parseWithLists('- a\n# H\n'), 'heading').length, 1, 'a heading straight after a list');
+assert.equal(nodesOfType(parseWithLists('- a\n-# s\n'), 'subtext').length, 1, 'subtext straight after a list');
+assert.equal(
+  nodesOfType(parseWithLists('- a\n  - b\n# H\n'), 'heading').length,
+  1,
+  'a heading straight after a nested list'
+);
+
+// `1)` is not a Discord marker, so the bullets under it have no parent and stay primary.
+const orphaned = lists(parseWithLists('1) a heading-ish line\n   - one\n   - two\n     - deeper\n'));
+assert.equal(orphaned[0]!.nested, false, 'bullets with no parent list are primary');
+assert.deepEqual(texts(orphaned[0]!), ['one', 'two']);
+assert.deepEqual(texts(orphaned[0]!.items[1]!.lists[0]!), ['deeper']);
+
+// The same item text must render the same way whatever preceded the list.
+const bare = lists(parseWithLists('- # Hi\n'))[0]!;
+const afterQuote = lists(parseWithLists('> q\n- # Hi\n'))[0]!;
+assert.deepEqual(texts(bare), texts(afterQuote), 'a stale lookbehind must not change how an item parses');
+
+// Equal indents are siblings. Clamping each line against the previous, already-clamped depth
+// turned identical indentation into a staircase.
+assert.deepEqual(
+  lists(parseWithLists('- a\n    - b\n    - c\n'))[0]!.items[0]!.lists.map(texts),
+  [['b', 'c']],
+  'two lines indented the same must land at the same level'
+);
+assert.deepEqual(
+  lists(parseWithLists('- a\n      - b\n    - c\n'))[0]!.items[0]!.lists.map(texts),
+  [['b', 'c']],
+  'a less indented line must not become a child of a more indented one'
+);
+
+// An ordered list cannot open above 50 or below 1 wherever it opens, not only at the head of the
+// block. A marker switch opens a new list part way through one.
+assert.deepEqual(lists(parseWithLists('- a\n51. b\n')).map(texts), [['a']], '51 does not open a list mid-block');
+assert.deepEqual(lists(parseWithLists('- a\n0. b\n')).map(texts), [['a']], '0 does not open a list mid-block');
+
+// Item text is not a fresh line, so a marker inside it stays literal. Letting it re-enter the
+// rule also left nesting depth unbounded.
+assert.deepEqual(texts(lists(parseWithLists('- - -'))[0]!), ['- -'], 'a marker inside an item is literal');
+assert.doesNotThrow(
+  () => parseWithLists('- '.repeat(2000)),
+  'a 4000 character message, which any user can send, must not overflow the stack'
+);
+
+// Array elements skip SimpleMarkdown's type stamping, so build sets type explicitly. Drop that
+// and every list falls through the renderer's default branch and vanishes.
+for (const node of parseWithLists('1. a\n- b\n')) {
+  if ((node as Node).items) assert.equal((node as Node).type, 'list', 'every list node must carry its type');
+}
+
+console.info('parseWithLists: markers, numbering, nesting, blank-line termination and content preservation all hold.');
