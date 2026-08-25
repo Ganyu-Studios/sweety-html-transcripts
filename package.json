@@ -20,11 +20,10 @@
   },
   "lint-staged": {
     "*.{ts,tsx,mjs}": [
-      "prettier --write",
-      "eslint --cache --fix"
+      "pnpm lint"
     ],
     "*.{json,md,yml,yaml}": [
-      "prettier --write"
+      "pnpm lint"
     ]
   },
   "exports": {
