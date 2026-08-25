@@ -151,9 +151,11 @@ export async function Attachment({
     // download it to a data url
     const downloaded = await context.callbacks.resolveImageSrc(attach, message);
 
-    if (downloaded !== null) {
-      url = downloaded ?? url;
-    }
+    // null means the caller wants this attachment left out of the transcript entirely.
+    // undefined means fall back to the original url.
+    if (downloaded === null) return null;
+
+    url = downloaded ?? url;
     return (
       <DiscordMediaGalleryItem
         spoiler={hasFlag({ bitfield: attach.flags, flag: 8 })}
