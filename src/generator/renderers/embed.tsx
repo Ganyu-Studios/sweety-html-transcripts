@@ -16,7 +16,7 @@ import type { RenderMessageContext } from '..';
 import type { APIMessageData } from '../../utils/channel';
 import { calculateInlineIndex } from '../../utils/embeds';
 import { convertToHEX } from '../../utils/utils';
-import MessageContent, { RenderType } from './content';
+import MessageContent, { MessageSingleASTNode, RenderType } from './content';
 
 type RenderEmbedContext = RenderMessageContext & {
   index: number;
@@ -87,7 +87,11 @@ export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; contex
                 case 'inlineCode':
                   return <DiscordCode key={id}>{node.content}</DiscordCode>;
                 default:
-                  throw new Error(`Unsupported node type in embed field title: ${node.type}`);
+                  // Field names carry the same inline markdown as anything else (bold, emoji,
+                  // mentions, links...). Delegate the rest to the shared renderer, which degrades
+                  // unknown nodes to text, rather than throwing and taking the whole transcript
+                  // down with a single formatted field title.
+                  return <MessageSingleASTNode key={id} node={node} context={{ ...context, type: RenderType.EMBED }} />;
               }
             });
 
