@@ -218,7 +218,7 @@ export const list: ParserRule = {
 // the standalone package this file imports for its annotations, and the copy bundled inside
 // discord-markdown-parser that parserFor is declared with. They differ only in that the bundled
 // State allows `inline: null`, so the object is cast to the parameter type parserFor expects.
-const parser = SimpleMarkdown.parserFor({ ...rulesExtended, list };
+const parser = SimpleMarkdown.parserFor({ ...rulesExtended, list } as Parameters<typeof SimpleMarkdown.parserFor>[0]);
 
 /**
  *
