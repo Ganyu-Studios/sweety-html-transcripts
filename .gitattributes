@@ -1,0 +1,11 @@
+# Normalize line endings to LF in the repository and on checkout, matching
+# prettier's endOfLine: lf. Stops Windows checkouts from reintroducing CRLF.
+* text=auto eol=lf
+
+# Binary assets git must never try to normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
