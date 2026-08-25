@@ -19,8 +19,12 @@ export class BaseCDN {
   constructor(public readonly baseURL: string) {}
 
   makeURL(route: string[], options: CDNUrlOptions = {}): string {
+    // Work on a copy so a caller that reuses the same options object does not get its extension
+    // pinned to gif/png by the first animated asset it happens to build.
+    options = { ...options };
+
     const lastRoute: string = route.at(-1)!;
-    const isAnimated: boolean = lastRoute.includes('a_');
+    const isAnimated: boolean = lastRoute.startsWith('a_');
 
     if (isAnimated) {
       if (options.forceStatic) options.extension = ImageFormat.PNG;

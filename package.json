@@ -16,6 +16,7 @@
     "test:seyfert": "tsx ./tests/seyfert-generate.ts",
     "test:djs": "tsx ./tests/djs-generate.ts",
     "test:escape": "tsx ./tests/stringify-for-script.ts",
+    "test:list": "tsx ./tests/list-rule.ts",
     "update-components": "pnpm update @penwin/*@latest"
   },
   "lint-staged": {
