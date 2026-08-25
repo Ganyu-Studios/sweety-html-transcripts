@@ -13,10 +13,11 @@
     "lint": "prettier --write --cache . && eslint --cache --fix .",
     "typecheck": "tsc -p tsconfig.eslint.json",
     "vite": "vite",
-    "test:seyfert": "tsx ./tests/seyfert-generate.ts",
-    "test:djs": "tsx ./tests/djs-generate.ts",
-    "test:escape": "tsx ./tests/stringify-for-script.ts",
-    "test:list": "tsx ./tests/list-rule.ts",
+    "test": "tsx --test tests/unit/*.test.ts",
+    "test:escape": "tsx --test tests/unit/stringify-for-script.test.ts",
+    "test:list": "tsx --test tests/unit/list-rule.test.ts",
+    "generate:seyfert": "tsx ./tests/generators/seyfert-generate.ts",
+    "generate:djs": "tsx ./tests/generators/djs-generate.ts",
     "update-components": "pnpm update @penwin/*@latest"
   },
   "lint-staged": {

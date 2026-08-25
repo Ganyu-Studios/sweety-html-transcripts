@@ -1,54 +1,60 @@
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 import type { APIGuild, APIMessage, APIRole, APIUser } from 'discord-api-types/v10';
-import { ExportReturnType, generateFromMessages, TranscriptAdapter } from '../src';
-import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../src/utils/channel';
-import { stringifyForScript } from '../src/utils/utils';
+import { ExportReturnType, generateFromMessages, TranscriptAdapter } from '../../src';
+import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../../src/utils/channel';
+import { stringifyForScript } from '../../src/utils/utils';
 
 // A raw U+2028 is still a line terminator inside a regular expression literal, and it is
 // message content Discord happily carries, so it is built rather than typed.
 const LS: string = String.fromCharCode(0x2028);
 const PS: string = String.fromCharCode(0x2029);
 
-// Exact output, so widening or narrowing the escape set fails here instead of being restated
-// by the test.
-assert.equal(stringifyForScript({ a: '<' }), '{"a":"\\u003c"}');
-assert.equal(stringifyForScript({ a: '>' }), '{"a":"\\u003e"}');
-assert.equal(stringifyForScript({ a: '&' }), '{"a":"\\u0026"}');
-assert.equal(stringifyForScript({ a: LS }), '{"a":"\\u2028"}');
-assert.equal(stringifyForScript({ a: PS }), '{"a":"\\u2029"}');
+test('escapes the exact set as \\uXXXX and nothing else', () => {
+  // Exact output, so widening or narrowing the escape set fails here instead of being restated
+  // by the test.
+  assert.equal(stringifyForScript({ a: '<' }), '{"a":"\\u003c"}');
+  assert.equal(stringifyForScript({ a: '>' }), '{"a":"\\u003e"}');
+  assert.equal(stringifyForScript({ a: '&' }), '{"a":"\\u0026"}');
+  assert.equal(stringifyForScript({ a: LS }), '{"a":"\\u2028"}');
+  assert.equal(stringifyForScript({ a: PS }), '{"a":"\\u2029"}');
+});
 
-// JSON.stringify returns undefined, not a string, for undefined, functions, symbols and classes,
-// and the replace would throw on it. `object` would still admit functions and classes, so the
-// parameter is a record or an array. Nothing runs this file in CI, but typecheck does read it,
-// so these are the assertions that hold.
-type Parameter = Parameters<typeof stringifyForScript>[0];
-const takesUndefined: undefined extends Parameter ? true : false = false;
-const takesFunction: (() => void) extends Parameter ? true : false = false;
-assert.equal(takesUndefined, false);
-assert.equal(takesFunction, false);
+test('the parameter type rejects the values JSON.stringify drops', () => {
+  // JSON.stringify returns undefined, not a string, for undefined, functions, symbols and classes,
+  // and the replace would throw on it. `object` would still admit functions and classes, so the
+  // parameter is a record or an array. These assertions are what typecheck holds to.
+  type Parameter = Parameters<typeof stringifyForScript>[0];
+  const takesUndefined: undefined extends Parameter ? true : false = false;
+  const takesFunction: (() => void) extends Parameter ? true : false = false;
+  assert.equal(takesUndefined, false);
+  assert.equal(takesFunction, false);
+});
 
-// Every one of these is settable as a Discord nickname or global display name.
-const cases: (Record<string, unknown> | readonly unknown[])[] = [
-  { author: '</script><svg onload=alert(1)>' },
-  { author: '<!--<script>' },
-  { author: '</SCRIPT ><img src=x onerror=alert(1)>' },
-  { author: 'line' + LS + 'sep' + PS + 'para' },
-  { author: 'plain & ordinary <text>' },
-  { author: '\ud800 lone surrogate' },
-  { nested: { deep: ['</script>', '&amp;'] } },
-  { '</script><b>': 'hostile text in a key rather than a value' },
-];
+test('hostile nicknames cannot close the script element or survive the round trip changed', () => {
+  // Every one of these is settable as a Discord nickname or global display name.
+  const cases: (Record<string, unknown> | readonly unknown[])[] = [
+    { author: '</script><svg onload=alert(1)>' },
+    { author: '<!--<script>' },
+    { author: '</SCRIPT ><img src=x onerror=alert(1)>' },
+    { author: 'line' + LS + 'sep' + PS + 'para' },
+    { author: 'plain & ordinary <text>' },
+    { author: '\ud800 lone surrogate' },
+    { nested: { deep: ['</script>', '&amp;'] } },
+    { '</script><b>': 'hostile text in a key rather than a value' },
+  ];
 
-for (const value of cases) {
-  const serialized: string = stringifyForScript(value);
+  for (const value of cases) {
+    const serialized: string = stringifyForScript(value);
 
-  // Asserted on the text the generator emits, not on the escape set.
-  const emitted: string = `<script>window.$discordMessage={profiles:${serialized}}</script>`;
+    // Asserted on the text the generator emits, not on the escape set.
+    const emitted: string = `<script>window.$discordMessage={profiles:${serialized}}</script>`;
 
-  assert.equal(emitted.match(/<\/script/gi)?.length, 1, `closed the script element early: ${serialized}`);
-  assert.ok(!emitted.includes('<!--'), `opened a comment the tokenizer follows: ${serialized}`);
-  assert.deepEqual(JSON.parse(serialized), value, 'the value must survive the round trip unchanged');
-}
+    assert.equal(emitted.match(/<\/script/gi)?.length, 1, `closed the script element early: ${serialized}`);
+    assert.ok(!emitted.includes('<!--'), `opened a comment the tokenizer follows: ${serialized}`);
+    assert.deepEqual(JSON.parse(serialized), value, 'the value must survive the round trip unchanged');
+  }
+});
 
 // The cases above protect the helper. This one protects the fix: it renders a real transcript and
 // checks the document, so reverting a call site back to JSON.stringify fails here even though
@@ -77,8 +83,6 @@ const message = {
   attachments: [],
   embeds: [],
   pinned: false,
-  // A user select menu, so the render reaches the three select menu script blobs in
-  // components.tsx as well as the profiles blob in index.tsx. ActionRow is 1, UserSelect is 5.
   // User, role and channel select menus, so the render reaches all three select menu script
   // blobs in components.tsx as well as the profiles blob in index.tsx. ActionRow is 1, and
   // UserSelect, RoleSelect and ChannelSelect are 5, 6 and 8.
@@ -124,7 +128,7 @@ class FixtureAdapter extends TranscriptAdapter<null> {
   }
 }
 
-async function rendersSafely(): Promise<void> {
+test('a rendered transcript keeps every hostile payload inert', async () => {
   const html: string = String(
     await generateFromMessages([message], {
       adapter: new FixtureAdapter(null),
@@ -140,8 +144,4 @@ async function rendersSafely(): Promise<void> {
   assert.equal(closed, opened, `a payload closed a script element early: ${opened} opened, ${closed} closed`);
   assert.ok(!html.includes('<svg'), 'the payload reached the document as markup');
   assert.ok(html.includes('\\u003c'), 'the profiles blob should carry the escaped form');
-
-  console.info('stringifyForScript: %d cases, plus a rendered transcript, are safe to inline.', cases.length);
-}
-
-void rendersSafely();
+});
