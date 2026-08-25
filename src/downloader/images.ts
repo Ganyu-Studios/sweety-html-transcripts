@@ -78,21 +78,28 @@ export class TranscriptImageDownloader {
       const mimetype = response.headers.get('content-type');
       const buffer = Buffer.from(await response.arrayBuffer());
 
-      // if the compression options are set, compress the image
-      if (this.compression) {
-        const sharp = await import('sharp');
+      // Only still images can go through sharp. Videos and gifs also carry width/height, so the
+      // dimension check above lets them in; guard on the response mime type instead. If sharp is
+      // missing or cannot decode this particular image, fall back to embedding the raw bytes rather
+      // than rejecting the callback and dropping the attachment.
+      if (this.compression && mimetype?.startsWith('image/')) {
+        try {
+          const sharp = await import('sharp');
 
-        const sharpbuf = await sharp
-          .default(buffer)
-          .webp({
-            quality: this.compression.quality,
-            force: this.compression.convertToWebP,
-            effort: 2,
-            ...this.compression.options,
-          })
-          .toBuffer({ resolveWithObject: true });
+          const sharpbuf = await sharp
+            .default(buffer)
+            .webp({
+              quality: this.compression.quality,
+              force: this.compression.convertToWebP,
+              effort: 2,
+              ...this.compression.options,
+            })
+            .toBuffer({ resolveWithObject: true });
 
-        return `data:image/${sharpbuf.info.format};base64,${sharpbuf.data.toString('base64')}`;
+          return `data:image/${sharpbuf.info.format};base64,${sharpbuf.data.toString('base64')}`;
+        } catch (err) {
+          console.error(`[sweety-html-transcripts] Failed to compress image, embedding it uncompressed: `, err);
+        }
       }
 
       // return the base64 string
