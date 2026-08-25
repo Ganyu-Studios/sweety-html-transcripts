@@ -10,12 +10,16 @@ pull request.
 
 ```bash
 pnpm test              # the whole suite
-pnpm test:list         # just the markdown list rule
-pnpm test:escape       # just the <script> escaping
 ```
 
 Files are named `*.test.ts`, so `pnpm test` picks up anything added under
-`unit/` automatically.
+`unit/` automatically. To run a subset, point `tsx --test` at a single file, or
+filter by name:
+
+```bash
+tsx --test tests/unit/list-rule.test.ts
+tsx --test --test-name-pattern="blank line" tests/unit/*.test.ts
+```
 
 ## `generators/` — manual smoke generators
 

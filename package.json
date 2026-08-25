@@ -14,8 +14,6 @@
     "typecheck": "tsc -p tsconfig.eslint.json",
     "vite": "vite",
     "test": "tsx --test tests/unit/*.test.ts",
-    "test:escape": "tsx --test tests/unit/stringify-for-script.test.ts",
-    "test:list": "tsx --test tests/unit/list-rule.test.ts",
     "generate:seyfert": "tsx ./tests/generators/seyfert-generate.ts",
     "generate:djs": "tsx ./tests/generators/djs-generate.ts",
     "update-components": "pnpm update @penwin/*@latest"
