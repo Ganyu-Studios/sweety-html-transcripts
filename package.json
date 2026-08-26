@@ -1,6 +1,6 @@
 {
   "name": "sweety-html-transcripts",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "A sweety formatted html transcript generator for discord bots.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
