@@ -139,7 +139,7 @@ function build(
       // every sub-list here sits inside a discord-list-item, so the check never fires.
       nested,
       items,
-    } as unknown as SingleASTNode,
+    },
     next: i,
   };
 }
@@ -214,7 +214,11 @@ export const list: ParserRule = {
 
 // Built once. discord-markdown-parser builds its own parsers at module load for the same reason:
 // parserFor filters and sorts every rule, and this runs for every message, embed field and reply.
-const parser = SimpleMarkdown.parserFor({ ...rulesExtended, list } as never);
+// rulesExtended and this rule are typed against two different copies of simple-markdown's types:
+// the standalone package this file imports for its annotations, and the copy bundled inside
+// discord-markdown-parser that parserFor is declared with. They differ only in that the bundled
+// State allows `inline: null`, so the object is cast to the parameter type parserFor expects.
+const parser = SimpleMarkdown.parserFor({ ...rulesExtended, list } as Parameters<typeof SimpleMarkdown.parserFor>[0]);
 
 /**
  *
@@ -224,5 +228,4 @@ const parser = SimpleMarkdown.parserFor({ ...rulesExtended, list } as never);
  * @param content - The message content
  * @returns The parsed nodes
  */
-export const parseWithLists = (content: string): SingleASTNode[] =>
-  parser(content, { inline: true }) as SingleASTNode[];
+export const parseWithLists = (content: string): SingleASTNode[] => parser(content, { inline: true });

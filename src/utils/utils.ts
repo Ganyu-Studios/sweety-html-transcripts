@@ -56,7 +56,7 @@ export function streamToString(stream: NodeJS.ReadableStream): Promise<string> {
  * @param {FlagsOptions} options - The options to check.
  * @returns boolean
  */
-export const hasFlag = (options: FlagsOptions): boolean => (options.bitfield ?? 0 & options.flag) === options.flag;
+export const hasFlag = (options: FlagsOptions): boolean => ((options.bitfield ?? 0) & options.flag) === options.flag;
 
 /**
  *
@@ -64,7 +64,8 @@ export const hasFlag = (options: FlagsOptions): boolean => (options.bitfield ?? 
  * @param color - The color number
  * @returns
  */
-export const convertToHEX = (color?: number): string => (color ? `#${color.toString(16).padStart(6, '0')}` : '#FFFFFF');
+export const convertToHEX = (color?: number | null): string =>
+  isDefined(color) ? `#${color.toString(16).padStart(6, '0')}` : '#FFFFFF';
 
 /**
  *

@@ -4,7 +4,7 @@ import type { RenderMessageContext } from '../generator';
 import type { GuildMemberData } from './channel';
 import { channelUtils } from './channel';
 import { userUtils } from './user';
-import { convertToHEX, hasFlag } from './utils';
+import { convertToHEX, hasFlag, isDefined } from './utils';
 import { guildUtils } from './guild';
 
 export type Profile = {
@@ -86,7 +86,7 @@ async function buildProfile(
     avatar:
       (member && guildId ? userUtils.memberAvatarURL(member, author, guildId, { size: 64 }) : null) ??
       userUtils.avatarURL(author, { size: 64 }),
-    roleColor: roleColor ? convertToHEX(roleColor) : undefined,
+    roleColor: isDefined(roleColor) ? convertToHEX(roleColor) : undefined,
     roleIcon: role?.icon ?? undefined,
     roleName: role?.name ?? undefined,
     bot: author.bot,

@@ -4,7 +4,7 @@ import { UserFlags } from 'discord-api-types/v10';
 import type { RenderMessageContext } from '..';
 import type { APIMessageData } from '../../utils/channel';
 import { channelUtils } from '../../utils/channel';
-import { convertToHEX, hasFlag } from '../../utils/utils';
+import { convertToHEX, hasFlag, isDefined } from '../../utils/utils';
 import MessageContent, { RenderType } from './content';
 import { userUtils } from '../../utils/user';
 import { isObject } from '../../utils/replacer';
@@ -48,7 +48,7 @@ export default async function MessageReply({
       attachment={referencedMessage.attachments.length > 0}
       author={referencedMessage.member?.nick ?? authorName}
       avatar={userUtils.avatarURL(referencedMessage.author, { size: 32 })}
-      roleColor={roleColor ? convertToHEX(roleColor) : undefined}
+      roleColor={isDefined(roleColor) ? convertToHEX(roleColor) : undefined}
       bot={!isCrosspost && referencedMessage.author.bot}
       verified={hasFlag({
         bitfield: referencedMessage.author.flags ?? referencedMessage.author.public_flags,

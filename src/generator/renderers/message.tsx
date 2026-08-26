@@ -156,12 +156,7 @@ export default async function DiscordMessage({
             }
           >
             {message.thread.last_message_id && threadMessage ? (
-              <DiscordThreadMessage
-                profile={
-                  // (await message.client.messages.fetch(message.thread.lastMessageId, message.thread.id)).author.id
-                  (await adapter.resolveMessage(message.thread.id, message.thread.last_message_id!))?.author.id
-                }
-              >
+              <DiscordThreadMessage profile={threadMessage.author.id}>
                 <MessageContent
                   content={
                     threadMessage.content.length > 128

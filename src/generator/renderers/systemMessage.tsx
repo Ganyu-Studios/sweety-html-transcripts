@@ -33,7 +33,7 @@ export default async function SystemMessage({
     case MessageType.UserJoin:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="join">
-          <JoinMessage member={message.member} fallbackUser={message.author} />
+          <JoinMessage member={message.member} fallbackUser={message.author} highestRole={role ?? undefined} />
         </DiscordSystemMessage>
       );
 
