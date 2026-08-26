@@ -25,5 +25,7 @@ minimumReleaseAgeExclude:
   - '@typescript-eslint/typescript-estree@8.68.0'
   - '@typescript-eslint/utils@8.68.0'
   - '@typescript-eslint/visitor-keys@8.68.0'
+  - '@penwin/discord-components-core'
+  - '@penwin/discord-components-react-render'
 
 packages: []
