@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@penwin/discord-components-react-render':
-        specifier: ^4.3.9-dev-32918495512.0
-        version: 4.3.9-dev-32918495512.0(@types/node@26.3.0)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^4.4.0
+        version: 4.4.0(@types/node@26.3.0)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       discord-api-types:
         specifier: ^0.38.53
         version: 0.38.53
@@ -37,8 +37,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.9.1)
       '@penwin/discord-components-core':
-        specifier: 4.3.9-dev-32918495512.0
-        version: 4.3.9-dev-32918495512.0(@types/node@26.3.0)
+        specifier: 4.4.0
+        version: 4.4.0(@types/node@26.3.0)
       '@types/node':
         specifier: ^26.3.0
         version: 26.3.0
@@ -531,12 +531,12 @@ packages:
   '@parse5/tools@0.3.0':
     resolution: {integrity: sha512-zxRyTHkqb7WQMV8kTNBKWb1BeOFUKXBXTBWuxg9H9hfvQB3IwP6Iw2U75Ia5eyRxPNltmY7E8YAlz6zWwUnjKg==}
 
-  '@penwin/discord-components-core@4.3.9-dev-32918495512.0':
-    resolution: {integrity: sha512-atfseaODkfeJk0sX6HFAw9sZERTIs/SJnaBRun9Bu9zGVRApz/jDLDI9R3ZtjhItdJqKiWbA6rW1BIhYBWEErA==}
+  '@penwin/discord-components-core@4.4.0':
+    resolution: {integrity: sha512-SX6OpepeKHFAtukkRODkDtNN2mR2QKlIvJnhpsGfXf4NqIgpF24wQbjVlPlz8evkWSPK7EDnKUllfkiiUAPfeg==}
     engines: {node: '>=v18'}
 
-  '@penwin/discord-components-react-render@4.3.9-dev-32918495512.0':
-    resolution: {integrity: sha512-TykYhFS9WxUKMOA+yfK/dLLXFDZoLsxPcjrQjMsygnkp1iXqrAJL6PLHb83qZkUcMzL/Yb5ExNjnmdN2vu9ZZg==}
+  '@penwin/discord-components-react-render@4.4.0':
+    resolution: {integrity: sha512-YcC9DqcNxMgCQ8a7bSHGUBMYS3k40lDR9BHN0eIaEVEPHEfuxCBsc+PdyLK2qHrU0iFarwmnXsRp+LHD7r13nA==}
     engines: {node: '>=v18'}
     peerDependencies:
       react: 16.8.x || 17.x || 18.x || 19.x
@@ -1511,7 +1511,7 @@ snapshots:
     dependencies:
       parse5: 7.3.0
 
-  '@penwin/discord-components-core@4.3.9-dev-32918495512.0(@types/node@26.3.0)':
+  '@penwin/discord-components-core@4.4.0(@types/node@26.3.0)':
     dependencies:
       '@lit-labs/ssr': 4.1.0(@types/node@26.3.0)
       '@lit/context': 1.1.6
@@ -1524,10 +1524,10 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@penwin/discord-components-react-render@4.3.9-dev-32918495512.0(@types/node@26.3.0)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+  '@penwin/discord-components-react-render@4.4.0(@types/node@26.3.0)(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       '@lit/react': 1.0.8(@types/react@19.2.18)
-      '@penwin/discord-components-core': 4.3.9-dev-32918495512.0(@types/node@26.3.0)
+      '@penwin/discord-components-core': 4.4.0(@types/node@26.3.0)
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
     transitivePeerDependencies:
