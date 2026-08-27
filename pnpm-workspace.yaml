@@ -5,11 +5,27 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - seyfert
   - '@eslint/plugin-kit@0.7.2'
-  - eslint@10.4.1 || 10.7.0 || 10.8.0
+  - eslint@10.4.1 || 10.7.0 || 10.8.0 || 10.9.1
   - prettier@3.9.4
   - vite@8.1.2
   - '@eslint/eslintrc@3.3.6'
   - discord.js@14.26.5
   - discord-api-types@0.38.51
+  - '@types/react-dom@19.2.4'
+  - '@types/react@19.2.18'
+  - lint-staged@17.3.0
+  - '@types/node@26.3.0'
+  - '@typescript-eslint/eslint-plugin@8.68.0'
+  - '@typescript-eslint/parser@8.68.0'
+  - '@typescript-eslint/project-service@8.68.0'
+  - '@typescript-eslint/scope-manager@8.68.0'
+  - '@typescript-eslint/tsconfig-utils@8.68.0'
+  - '@typescript-eslint/type-utils@8.68.0'
+  - '@typescript-eslint/types@8.68.0'
+  - '@typescript-eslint/typescript-estree@8.68.0'
+  - '@typescript-eslint/utils@8.68.0'
+  - '@typescript-eslint/visitor-keys@8.68.0'
+  - '@penwin/discord-components-core'
+  - '@penwin/discord-components-react-render'
 
 packages: []

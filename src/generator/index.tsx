@@ -1,4 +1,4 @@
-import { renderToString } from '@derockdev/discord-components-core/hydrate';
+import { renderMarkup, setConfig } from '@penwin/discord-components-core/hydrate';
 import type { APIGuild, APIRole, APIUser } from 'discord-api-types/v10';
 import React from 'react';
 import { prerenderToNodeStream } from 'react-dom/static';
@@ -10,8 +10,9 @@ import { buildProfiles } from '../utils/profiles';
 import type { AllAPIChannel, APIMessageData } from '../utils/channel';
 import { channelUtils } from '../utils/channel';
 import { guildUtils } from '../utils/guild';
-import { streamToString } from '../utils/utils';
+import { streamToString, stringifyForScript } from '../utils/utils';
 import DiscordMessages from './transcript';
+import type { DiscordMessageOptions } from '@penwin/discord-components-core';
 
 const resolveVersion = (version: string) => version.replace('^', '').replace('~', '');
 const discordComponentsVersion = resolveVersion(devDependencies['@penwin/discord-components-core']);
@@ -101,7 +102,7 @@ export default async function render(context: RenderMessageContext) {
             {/* profiles */}
             <script
               dangerouslySetInnerHTML={{
-                __html: `window.$discordMessage={profiles:${JSON.stringify(profiles)}}`,
+                __html: `window.$discordMessage={profiles:${stringifyForScript(profiles)}}`,
               }}
             ></script>
             {/* component library */}
@@ -134,26 +135,25 @@ export default async function render(context: RenderMessageContext) {
   const markup = await streamToString(stream.prelude);
 
   if (options.hydrate) {
-    const result = await renderToString(markup, {
-      beforeHydrate: async (document) => {
-        document.defaultView.$discordMessage = {
-          profiles,
-        };
-        document.defaultView.$discordSelectMenu = {
-          users: !adapter.renderContext.selectMenu.users?.injectedScript
-            ? (adapter.renderContext.selectMenu.users?.data ?? [])
-            : [],
-          roles: !adapter.renderContext.selectMenu.roles?.injectedScript
-            ? (adapter.renderContext.selectMenu.roles?.data ?? [])
-            : [],
-          channels: !adapter.renderContext.selectMenu.channels?.injectedScript
-            ? (adapter.renderContext.selectMenu.channels?.data ?? [])
-            : [],
-        };
-      },
-    });
+    // Feed the profile and select-menu data the components read from globals, then let Lit SSR
+    // expand every custom element in the markup to declarative shadow DOM. setConfig keeps the
+    // live profiles collection in sync; the select menu portal reads $discordSelectMenu directly.
+    // The transcript's Profile allows clanIcon: null where the component library expects undefined;
+    // the two are interchangeable at runtime, so the object is cast to the parameter type.
+    setConfig({ profiles } as DiscordMessageOptions);
+    globalThis.$discordSelectMenu = {
+      users: !adapter.renderContext.selectMenu.users?.injectedScript
+        ? (adapter.renderContext.selectMenu.users?.data ?? [])
+        : [],
+      roles: !adapter.renderContext.selectMenu.roles?.injectedScript
+        ? (adapter.renderContext.selectMenu.roles?.data ?? [])
+        : [],
+      channels: !adapter.renderContext.selectMenu.channels?.injectedScript
+        ? (adapter.renderContext.selectMenu.channels?.data ?? [])
+        : [],
+    };
 
-    return result.html;
+    return renderMarkup(markup);
   }
 
   return markup;

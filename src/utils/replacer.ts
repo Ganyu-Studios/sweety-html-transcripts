@@ -86,11 +86,9 @@ export function toSnakeCase<Obj extends Record<string, any>>(target: Obj): Objec
           result[ReplaceRegex.snake(key)] = toSnakeCase(value);
           break;
         }
-        if (!Number.isNaN(value)) {
-          result[ReplaceRegex.snake(key)] = null;
-          break;
-        }
-        result[ReplaceRegex.snake(key)] = toSnakeCase(value);
+        // typeof null === 'object', but it is neither an array nor a plain object, so it lands here.
+        // It is the only value that reaches this point; keep it as null.
+        result[ReplaceRegex.snake(key)] = null;
         break;
       }
     }
