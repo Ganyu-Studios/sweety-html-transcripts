@@ -66,12 +66,6 @@ export type GenerateFromMessagesOptions<
    * @default "guild"
    */
   favicon: 'guild' | (string & {});
-
-  /**
-   * Whether to hydrate the html server-side
-   * @default false - the returned html will be hydrated client-side
-   */
-  hydrate: boolean;
 }> &
   RequiredTranscriptData<Adapter>;
 

@@ -1,18 +1,16 @@
-import { renderMarkup, setConfig } from '@penwin/discord-components-core/hydrate';
 import type { APIGuild, APIRole, APIUser } from 'discord-api-types/v10';
 import React from 'react';
 import { prerenderToNodeStream } from 'react-dom/static';
 import { devDependencies } from '../../package.json';
 import type { Awaitable, TranscriptAdapter } from '../adapters/core';
 import type { ResolveImageCallback } from '../downloader/images';
-import { revealSpoiler, scrollToMessage } from '../static/client';
+import { scrollToMessage } from '../static/client';
 import { buildProfiles } from '../utils/profiles';
 import type { AllAPIChannel, APIMessageData } from '../utils/channel';
 import { channelUtils } from '../utils/channel';
 import { guildUtils } from '../utils/guild';
 import { streamToString, stringifyForScript } from '../utils/utils';
 import DiscordMessages from './transcript';
-import type { DiscordMessageOptions } from '@penwin/discord-components-core';
 
 const resolveVersion = (version: string) => version.replace('^', '').replace('~', '');
 const discordComponentsVersion = resolveVersion(devDependencies['@penwin/discord-components-core']);
@@ -34,7 +32,6 @@ export type RenderMessageContext = {
   footerText?: string;
   saveImages: boolean;
   favicon: 'guild' | string;
-  hydrate: boolean;
   /** @default false */
   lightTheme?: boolean;
 
@@ -97,21 +94,17 @@ export default async function render(context: RenderMessageContext) {
           }}
         />
 
-        {!options.hydrate && (
-          <>
-            {/* profiles */}
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `window.$discordMessage={profiles:${stringifyForScript(profiles)}}`,
-              }}
-            ></script>
-            {/* component library */}
-            <script
-              type="module"
-              src={`https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${discordComponentsVersion}/dist/bundle/index.mjs`}
-            ></script>
-          </>
-        )}
+        {/* profiles */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.$discordMessage={profiles:${stringifyForScript(profiles)}}`,
+          }}
+        ></script>
+        {/* component library */}
+        <script
+          type="module"
+          src={`https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${discordComponentsVersion}/dist/bundle/index.mjs`}
+        ></script>
         <link
           rel="stylesheet"
           href={`https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${discordComponentsVersion}/dist/bundle/styles/base.css`}
@@ -126,35 +119,8 @@ export default async function render(context: RenderMessageContext) {
       >
         <DiscordMessages context={context} />
       </body>
-
-      {/* Make sure the script runs after the DOM has loaded */}
-      {options.hydrate && <script dangerouslySetInnerHTML={{ __html: revealSpoiler }}></script>}
     </html>
   );
 
-  const markup = await streamToString(stream.prelude);
-
-  if (options.hydrate) {
-    // Feed the profile and select-menu data the components read from globals, then let Lit SSR
-    // expand every custom element in the markup to declarative shadow DOM. setConfig keeps the
-    // live profiles collection in sync; the select menu portal reads $discordSelectMenu directly.
-    // The transcript's Profile allows clanIcon: null where the component library expects undefined;
-    // the two are interchangeable at runtime, so the object is cast to the parameter type.
-    setConfig({ profiles } as DiscordMessageOptions);
-    globalThis.$discordSelectMenu = {
-      users: !adapter.renderContext.selectMenu.users?.injectedScript
-        ? (adapter.renderContext.selectMenu.users?.data ?? [])
-        : [],
-      roles: !adapter.renderContext.selectMenu.roles?.injectedScript
-        ? (adapter.renderContext.selectMenu.roles?.data ?? [])
-        : [],
-      channels: !adapter.renderContext.selectMenu.channels?.injectedScript
-        ? (adapter.renderContext.selectMenu.channels?.data ?? [])
-        : [],
-    };
-
-    return renderMarkup(markup);
-  }
-
-  return markup;
+  return streamToString(stream.prelude);
 }

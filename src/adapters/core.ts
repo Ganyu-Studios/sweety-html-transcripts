@@ -46,9 +46,9 @@ export abstract class TranscriptAdapter<Client> {
 
   renderContext = {
     selectMenu: {
-      users: <{ data: UserSelectMenuOptionData[]; injectedScript: boolean } | null>null,
-      roles: <{ data: RoleSelectMenuOptionData[]; injectedScript: boolean } | null>null,
-      channels: <{ data: ChannelSelectMenuOptionData[]; injectedScript: boolean } | null>null,
+      users: <{ data: UserSelectMenuOptionData[] } | null>null,
+      roles: <{ data: RoleSelectMenuOptionData[] } | null>null,
+      channels: <{ data: ChannelSelectMenuOptionData[] } | null>null,
     },
     profiles: <Record<string, Profile>>{},
   };
