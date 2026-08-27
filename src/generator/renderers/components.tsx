@@ -203,19 +203,16 @@ export async function Component({
                 verified: profile.verified,
               }) as UserSelectMenuOptionData
           ),
-          injectedScript: !context.hydrate,
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        !context.hydrate &&
-          scripts.push(
-            <script
-              key={'users-script'}
-              dangerouslySetInnerHTML={{
-                __html: `${selectMenuScriptHeader}.users = ${stringifyForScript(context.adapter.renderContext.selectMenu.users.data)}`,
-              }}
-            />
-          );
+        scripts.push(
+          <script
+            key={'users-script'}
+            dangerouslySetInnerHTML={{
+              __html: `${selectMenuScriptHeader}.users = ${stringifyForScript(context.adapter.renderContext.selectMenu.users.data)}`,
+            }}
+          />
+        );
       }
 
       if (containsRoles && !context.adapter.renderContext.selectMenu.roles && context.guild?.id) {
@@ -238,19 +235,16 @@ export async function Component({
 
         context.adapter.renderContext.selectMenu.roles = {
           data,
-          injectedScript: !context.hydrate,
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        !context.hydrate &&
-          scripts.push(
-            <script
-              key={'roles-script'}
-              dangerouslySetInnerHTML={{
-                __html: `${selectMenuScriptHeader}.roles = ${stringifyForScript(context.adapter.renderContext.selectMenu.roles.data)}`,
-              }}
-            />
-          );
+        scripts.push(
+          <script
+            key={'roles-script'}
+            dangerouslySetInnerHTML={{
+              __html: `${selectMenuScriptHeader}.roles = ${stringifyForScript(context.adapter.renderContext.selectMenu.roles.data)}`,
+            }}
+          />
+        );
       }
 
       if (containsChannels && !context.adapter.renderContext.selectMenu.channels && context.guild?.id) {
@@ -271,19 +265,16 @@ export async function Component({
 
         context.adapter.renderContext.selectMenu.channels = {
           data,
-          injectedScript: !context.hydrate,
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        !context.hydrate &&
-          scripts.push(
-            <script
-              key={'channels-script'}
-              dangerouslySetInnerHTML={{
-                __html: `${selectMenuScriptHeader}.channels = ${stringifyForScript(context.adapter.renderContext.selectMenu.channels.data)}`,
-              }}
-            />
-          );
+        scripts.push(
+          <script
+            key={'channels-script'}
+            dangerouslySetInnerHTML={{
+              __html: `${selectMenuScriptHeader}.channels = ${stringifyForScript(context.adapter.renderContext.selectMenu.channels.data)}`,
+            }}
+          />
+        );
       }
 
       return (
