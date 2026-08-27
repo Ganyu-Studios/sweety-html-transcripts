@@ -79,7 +79,6 @@ export async function generateFromMessages<
     poweredBy: options.poweredBy ?? true,
     footerText: options.footerText ?? 'Exported {number} message{s}.',
     favicon: options.favicon ?? 'guild',
-    hydrate: options.hydrate ?? false,
   });
 
   // return the html in the specified format
