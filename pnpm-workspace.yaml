@@ -6,7 +6,7 @@ minimumReleaseAgeExclude:
   - seyfert
   - '@eslint/plugin-kit@0.7.2'
   - eslint@10.4.1 || 10.7.0 || 10.8.0 || 10.9.1
-  - prettier@3.9.4
+  - prettier@3.9.4 || 3.9.10
   - vite@8.1.2
   - '@eslint/eslintrc@3.3.6'
   - discord.js@14.26.5
