@@ -2,29 +2,18 @@ import 'dotenv/config';
 
 import { Client, type ParseClient } from 'seyfert';
 import { GatewayIntentBits } from 'seyfert/lib/types';
-import { ExportReturnType } from '../../src';
-import { SeyfertTranscript } from '../../src/adapters/seyfert';
-import { writeFile } from 'node:fs/promises';
+import { seyfert } from '../../src';
+import { generate } from './shared';
 
 const client = new Client({
   getRC() {
     return {
-      debug: true,
       token: process.env.TOKEN!,
-      locations: {
-        base: '.',
-      },
-      intents: [
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
-      ].reduce((a, b) => a | b, 0),
+      locations: { base: '.' },
+      intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMessages | GatewayIntentBits.MessageContent,
     };
   },
 });
-
-const isSendable = process.env.SEND_TRANSCRIPT_TEST !== 'false';
 
 client.events.values.READY = {
   __filePath: null,
@@ -32,45 +21,20 @@ client.events.values.READY = {
   async run(user, client) {
     client.logger.info(`Logged in as ${user.username}`);
 
-    if (process.env.CHANNEL) {
-      const channel = await client.channels.fetch(process.env.CHANNEL).catch((): null => null);
-      if (!channel || !channel.isGuildTextable()) {
-        client.logger.error('Invalid channel provided.');
-        process.exit(1);
-      }
-
-      client.logger.info(`Generating transcript for channel ${channel.name}...`);
-
-      const attachment = await SeyfertTranscript.create({
-        channel,
-        limit: 30,
-        returnType: isSendable ? ExportReturnType.Attachment : ExportReturnType.String,
-      });
-
-      client.logger.info(`Transcript generated for channel ${channel.name}.`);
-
-      if (typeof attachment === 'string') {
-        const route = `./index.html`;
-        await writeFile(route, attachment);
-        client.logger.info(`Transcript saved in  ${route}`);
-      } else {
-        await channel.messages.write({
-          content: 'Here is the transcript',
-          files: [attachment],
-        });
-        client.logger.info(`Transcript sent in channel ${channel.name}. (${channel.id})`);
-      }
-
-      client.gateway.disconnectAll();
+    try {
+      await generate(
+        seyfert(client),
+        (channelId, file) => client.messages.write(channelId, { content: 'Here is the transcript', files: [file] }),
+        (message) => client.logger.info(message)
+      );
+    } finally {
+      await client.gateway.disconnectAll();
       process.exit(0);
-    } else {
-      client.logger.error('No channel provided.');
-      process.exit(1);
     }
   },
 };
 
-client.start();
+void client.start();
 
 declare module 'seyfert' {
   interface SeyfertRegistry {

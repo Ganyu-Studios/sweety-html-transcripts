@@ -5,5 +5,5 @@
     "skipLibCheck": true,
     "rootDir": "./"
   },
-  "include": ["src", "eslint.config.mjs", "tests/**/*.ts"]
+  "include": ["src", "eslint.config.mjs", "tests/**/*.ts", "tests/**/*.tsx"]
 }

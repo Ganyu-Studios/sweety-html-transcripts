@@ -31,12 +31,11 @@ This module can format the following:
 - Mentions
 - Threads
 
-**This module is designed to work with [seyfert](https://seyfert.dev) 3.2 or
-above, or [discord.js](https://discord.js.org) 14 or above.**
+**Works with [seyfert](https://seyfert.dev), [discord.js](https://discord.js.org), any other library through a small adapter, or no library at all.**
 
 Styles from
 [@penwin/discord-components-core](https://github.com/Ganyu-Studios/discord-components).\
-Behind the scenes, this package uses React SSR to generate a static site.
+The HTML is built with a tiny string renderer (no React); components render in the browser, or on the server with `mode: 'server'`.
 
 ## 👋 Support
 
@@ -49,130 +48,120 @@ Instead, please open a thread on [this](https://discord.gg/4JmKY8wgB6) server.
 
 ## 📝 Usage
 
-### Example usage using the built in message fetcher.
+Create a `transcripts` instance once, with the adapter for your library, and use it anywhere you
+have the client:
 
-#### Seyfert
+```ts
+import { createTranscripts, seyfert } from 'sweety-html-transcripts';
+// discord.js: import { createTranscripts, discordjs } from 'sweety-html-transcripts';
 
-```js
-const discordTranscripts = require('sweety-html-transcripts');
-// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
-const { SeyfertTranscriptAdapter } = require('sweety-html-transcripts/adapters/seyfert');
+const transcripts = createTranscripts(seyfert(client)); // or discordjs(client)
 
-const channel = await client.channels.raw(channelId);
+// 1. A file ready to send
+const file = await transcripts.attachment(channelId, { filename: 'ticket-42.html' });
+await client.messages.write(logChannelId, { content: 'Transcript:', files: [file] });
+// discord.js: await logChannel.send({ content: 'Transcript:', files: [file] });
 
-// Must be awaited
-const attachment = await discordTranscripts.createTranscript({
-  channel,
-  adapter: new SeyfertTranscriptAdapter(client),
-});
+// 2. Just the HTML (store it, serve it…)
+const html = await transcripts.html(channelId, { theme: 'light', title: 'Ticket #42' });
 
-await client.messages.write(channelId, {
-  files: [attachment],
+// 3. The data model (save it, render it later or somewhere else)
+const transcript = await transcripts.fetch(channelId);
+const again = transcripts.render(transcript, { locale: 'en' });
+```
+
+`transcripts.fetch()` returns plain JSON with the raw Discord API messages and everything needed to
+draw them. Store it in a database and render it on demand, without a bot.
+
+### Adapters
+
+An adapter is just "GET this Discord API route and give me the raw JSON", plus an optional way to
+wrap the finished file. Nothing is converted from library objects, so it does not break when a
+library changes its classes, and rate limits stay with your library.
+
+| Adapter             | Uses                                | `attachment()` returns           |
+| ------------------- | ----------------------------------- | -------------------------------- |
+| `seyfert(client)`   | `client.rest`                       | a seyfert `RawFile`              |
+| `discordjs(client)` | `client.rest`                       | a discord.js `AttachmentPayload` |
+| `rest(token)`       | `fetch` and a bot token, no library | `{ data, name }`                 |
+
+Any other library works by implementing `TranscriptAdapter`:
+
+```ts
+const adapter: TranscriptAdapter<MyFile> = {
+  get: (route, query) => myRest.get(route, query), // must resolve with the raw JSON body
+  file: (data, name) => new MyFile(data, name), // optional
+};
+```
+
+### Messages you already have
+
+```ts
+const transcript = await transcripts.fromMessages(channelId, messages);
+```
+
+Raw API messages are used as they are. Library message objects (anything with an `id`) are
+refetched as raw messages.
+
+### Server rendering
+
+By default the components render in the viewer's browser from the
+[@penwin/discord-components-core](https://github.com/Ganyu-Studios/discord-components) bundle.
+`mode: 'server'` pre-renders them to declarative shadow DOM instead, so the transcript paints
+instantly and stays readable before (or without) the bundle. It costs file size, roughly 6× for a
+large channel, and needs the optional dependency:
+
+```shell
+pnpm add @penwin/discord-components-core
+```
+
+```ts
+const html = await transcripts.html(channelId, { mode: 'server' });
+```
+
+## ⚙️ Options
+
+Every option is optional. `html()`, `buffer()` and `attachment()` take fetch and render options
+together; `createTranscripts(adapter, { fetch, render })` sets defaults for both.
+
+### Fetch
+
+```ts
+await transcripts.fetch(channelId, {
+  limit: Infinity, // newest messages to fetch; Infinity (or -1) fetches the whole channel
+  before: undefined, // only messages before this message id
+  filter: (message) => true, // e.g. (message) => !message.author.bot
+  saveImages: false, // inline images as data urls, or a configured TranscriptImageDownloader
+  resolveImageSrc: undefined, // (media, message) => url | undefined (keep) | null (drop)
+  threads: true, // fetch the latest message of each thread for its preview
+  filePreviews: true, // download small code/text attachments to show them inline
+  concurrency: 4, // parallel requests while resolving members, users and channels
 });
 ```
 
-#### Discord.js
+### Render
 
-```js
-const discordTranscripts = require('sweety-html-transcripts');
-// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
-const { DiscordJSTranscriptAdapter } = require('sweety-html-transcripts/adapters/discordjs');
-
-const channel = await client.channels.fetch(channelId);
-
-// Must be awaited
-const attachment = await discordTranscripts.createTranscript({
-  channel, // Some way to get the api channel object, or use DiscordJSTranscript class instead.
-  adapter: new DiscordJSTranscriptAdapter(client),
-});
-
-await channel.send({
-  files: [attachment],
+```ts
+transcripts.render(transcript, {
+  theme: 'dark', // 'dark' | 'light'
+  title: undefined, // <title>, defaults to the channel name
+  locale: 'en', // 'en' | 'es' | partial overrides of the English strings
+  mode: 'client', // 'client' | 'server'
+  favicon: 'guild', // 'guild' | a url | false
+  footer: undefined, // footer text with {count}, or false to hide it
+  poweredBy: true, // the "Powered by" link
+  selectMenus: { users: true, roles: true, channels: true, channelLimit: 25 },
+  cdn: undefined, // where the component bundle is served from
 });
 ```
 
-### Or if you prefer, you can pass in your own messages.
+### Upgrading from 0.x
 
-#### Seyfert
-
-```js
-const discordTranscripts = require('sweety-html-transcripts');
-// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
-const { SeyfertTranscriptAdapter } = require('sweety-html-transcripts/adapters/seyfert');
-
-const messages = someWayToGetMessages(); // Must be APIMessage[]
-const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name in api object.
-
-// Must be awaited
-const attachment = await discordTranscripts.generateFromMessages(messages, {
-  channel,
-  adapter: new SeyfertTranscriptAdapter(client),
-});
-
-await client.messages.write(channelId, {
-  files: [attachment],
-});
-```
-
-#### Discord.js
-
-```js
-const discordTranscripts = require('sweety-html-transcripts');
-// or (if using typescript) import * as discordTranscripts from 'sweety-html-transcripts';
-const { DiscordJSTranscriptAdapter } = require('sweety-html-transcripts/adapters/discordjs');
-
-const messages = someWayToGetMessages(); // Must be APIMessage[]
-const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name in api object.
-
-// Must be awaited
-const attachment = await discordTranscripts.generateFromMessages(messages, {
-  channel,
-  adapter: new DiscordJSTranscriptAdapter(client),
-});
-
-await channel.send({
-  files: [attachment],
-});
-```
-
-## ⚙️ Configuration
-
-Both methods of generating a transcript allow for an option object as the last
-parameter.\
-**All configuration options are optional!**
-
-### Built in Message Fetcher
-
-```js
-const attachment = await discordTranscripts.createTranscript({
-    channel: channel, // The API channel object to create the transcript.
-    limit: -1, // Max amount of messages to fetch. `-1` recursively fetches.
-    returnType: 'attachment', // Valid options: 'buffer' | 'string' | 'attachment' Default: 'attachment' OR use the enum ExportReturnType
-    filename: 'transcript.html', // Only valid with returnType is 'attachment'. Name of attachment.
-    saveImages: false, // Download all images and include the image data in the HTML (allows viewing the image even after it has been deleted) (! WILL INCREASE FILE SIZE !)
-    footerText: "Exported {number} message{s}", // Change text at footer, don't forget to put {number} to show how much messages got exported, and {s} for plural
-    adapter: new SomeAdapter(...), // The adapter to use to generate the transcripts
-    callbacks: {
-      // register custom callbacks for the following:
-      resolveChannel: (channelId: string) => Awaitable<AllAPIChannel | null>,
-      resolveUser: (userId: string) => Awaitable<APIUser | null>,
-      resolveRole: (roleId: string) => Awaitable<APIRole | null>,
-    },
-    poweredBy: true, // Whether to include the "Powered by sweety-html-transcripts" footer
-    hydrate: true, // Whether to hydrate the html server-side
-    filter: (APIMessage) => true // Filter messages, e.g. (message) => !message.author.bot
-});
-```
-
-### Providing your own messages
-
-```js
-const attachment = await discordTranscripts.generateFromMessages(messages, {
-  // Same as createTranscript, except no limit or filter
-  adapter: new SomeAdapter(...), // The client adapter to use.
-  channel: channel, // The API channel object to create the transcript.
-});
-```
+`createTranscript`, `generateFromMessages`, `DiscordJSTranscript`, `SeyfertTranscript` and the
+adapter classes still work and are deprecated. They now take the same adapters, so
+`new SeyfertTranscriptAdapter(client)` still works, and the channel only needs an `id`. The
+`callbacks.resolveChannel`/`resolveUser`/`resolveRole` and `hydrate` options are gone: lookups now
+happen once during `fetch`, and server rendering is `mode: 'server'`.
 
 ## 🤝 Enjoy the package?
 

@@ -2,11 +2,12 @@
   "compilerOptions": {
     "target": "es2020",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["@types/node", "react/experimental", "@types/react-dom"],
+    "types": ["@types/node"],
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "module": "commonjs",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
@@ -24,6 +25,8 @@
     "noUnusedParameters": true,
     "pretty": true,
     "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "incremental": false,
     "declaration": true,
     "skipLibCheck": true

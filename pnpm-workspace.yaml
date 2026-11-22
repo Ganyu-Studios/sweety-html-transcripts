@@ -13,7 +13,7 @@ minimumReleaseAgeExclude:
   - discord-api-types@0.38.51
   - '@types/react-dom@19.2.4'
   - '@types/react@19.2.18'
-  - lint-staged@17.3.0
+  - lint-staged@17.3.0 || 17.6.2
   - '@types/node@26.3.0'
   - '@typescript-eslint/eslint-plugin@8.68.0'
   - '@typescript-eslint/parser@8.68.0'

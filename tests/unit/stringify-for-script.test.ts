@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { APIGuild, APIMessage, APIRole, APIUser } from 'discord-api-types/v10';
-import { ExportReturnType, generateFromMessages, TranscriptAdapter } from '../../src';
-import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../../src/utils/channel';
+import type { APIMessage } from 'discord-api-types/v10';
+import { createTranscripts } from '../../src';
 import { stringifyForScript } from '../../src/utils/utils';
+import { alice, CHANNEL_ID, fakeAdapter, message } from '../fixtures';
 
 // A raw U+2028 is still a line terminator inside a regular expression literal, and it is
 // message content Discord happily carries, so it is built rather than typed.
@@ -61,87 +61,35 @@ test('hostile nicknames cannot close the script element or survive the round tri
 // every assertion above still passes.
 const PAYLOAD = '</script><svg onload=alert(1)>';
 
-const user: APIUser = { id: '1', username: 'fixture', discriminator: '0', global_name: PAYLOAD, avatar: null };
-const role = { id: '2', name: PAYLOAD, color: 0, position: 1 } as unknown as APIRole;
-const channel = { id: '3', guild_id: '4', name: PAYLOAD, type: 0 } as unknown as AllAPIChannel;
-const guild = { id: '4', name: PAYLOAD, roles: [role], icon: null } as unknown as APIGuild;
-const member = { nick: PAYLOAD, roles: [role.id], user } as unknown as GuildMemberData;
-
-const message = {
-  id: '5',
-  channel_id: '3',
-  guild_id: '4',
-  author: user,
-  content: PAYLOAD,
-  timestamp: '2025-01-01T00:00:00.000Z',
-  edited_timestamp: null,
-  type: 0,
-  tts: false,
-  mention_everyone: false,
-  mentions: [],
-  mention_roles: [],
-  attachments: [],
-  embeds: [],
-  pinned: false,
-  // User, role and channel select menus, so the render reaches all three select menu script
-  // blobs in components.tsx as well as the profiles blob in index.tsx. ActionRow is 1, and
-  // UserSelect, RoleSelect and ChannelSelect are 5, 6 and 8.
-  components: [
-    { type: 1, components: [{ type: 5, custom_id: 'user' }] },
-    { type: 1, components: [{ type: 6, custom_id: 'role' }] },
-    { type: 1, components: [{ type: 8, custom_id: 'channel' }] },
-  ],
-} as unknown as APIMessageData;
-
-// Only the shapes the generator reaches for are filled in, so the fixture is cast rather than
-// built out in full. It needs no token and no network.
-class FixtureAdapter extends TranscriptAdapter<null> {
-  resolveChannel(): AllAPIChannel {
-    return channel;
-  }
-  resolveUser(): APIUser {
-    return user;
-  }
-  resolveRole(): APIRole {
-    return role;
-  }
-  resolveGuild(): APIGuild {
-    return guild;
-  }
-  resolveMessage(): null {
-    return null;
-  }
-  listChannelMessages(): APIMessage[] {
-    return [];
-  }
-  createTranscriptAttachment(html: string): string {
-    return html;
-  }
-  resolveGuildRoles(): APIRole[] {
-    return [role];
-  }
-  resolveGuildMember(): GuildMemberData {
-    return member;
-  }
-  resolveGuildChannels(): AllAPIChannel[] {
-    return [channel];
-  }
-}
-
 test('a rendered transcript keeps every hostile payload inert', async () => {
-  const html: string = String(
-    await generateFromMessages([message], {
-      adapter: new FixtureAdapter(null),
-      channel,
-      returnType: ExportReturnType.String,
-      poweredBy: false,
-    })
-  );
+  const hostile = { ...alice, global_name: PAYLOAD };
+  const messages = [
+    message({
+      author: hostile,
+      content: PAYLOAD,
+      // User, role and channel select menus, so the render reaches the select menu data blob as
+      // well as the profiles blob. ActionRow is 1; UserSelect, RoleSelect, ChannelSelect are 5, 6, 8.
+      components: [
+        { type: 1, components: [{ type: 5, custom_id: 'user' }] },
+        { type: 1, components: [{ type: 6, custom_id: 'role' }] },
+        { type: 1, components: [{ type: 8, custom_id: 'channel' }] },
+      ],
+    } as Partial<APIMessage>),
+  ];
+
+  const transcripts = createTranscripts(fakeAdapter(messages, { [alice.id]: { nick: PAYLOAD } }));
+  const transcript = await transcripts.fetch(CHANNEL_ID);
+  transcript.channel.name = PAYLOAD;
+  transcript.guild!.name = PAYLOAD;
+  for (const role of Object.values(transcript.roles)) role.name = PAYLOAD;
+
+  const html = transcripts.render(transcript, { poweredBy: false });
 
   const opened: number = html.match(/<script[\s>]/gi)?.length ?? 0;
   const closed: number = html.match(/<\/script/gi)?.length ?? 0;
 
   assert.equal(closed, opened, `a payload closed a script element early: ${opened} opened, ${closed} closed`);
   assert.ok(!html.includes('<svg'), 'the payload reached the document as markup');
-  assert.ok(html.includes('\\u003c'), 'the profiles blob should carry the escaped form');
+  assert.ok(html.includes('\\u003c'), 'the inline data should carry the escaped form');
+  assert.ok(html.includes('$discordSelectMenu'), 'the select menu data blob should be rendered');
 });
