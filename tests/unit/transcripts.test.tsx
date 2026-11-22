@@ -110,6 +110,37 @@ test('render writes the attributes the components actually read', async () => {
   assert.match(html, /"roleColor":"#ff0000"/, 'profiles carry the role color');
 });
 
+test('a forwarded message passes the author and time to the media viewer', async () => {
+  const forwarded = message({
+    message_reference: { type: 1, channel_id: CHANNEL_ID, message_id: '1' },
+    message_snapshots: [
+      {
+        message: {
+          type: 0,
+          content: 'forwarded',
+          timestamp: '2025-01-02T03:04:05.000Z',
+          edited_timestamp: null,
+          flags: 0,
+          mentions: [],
+          mention_roles: [],
+          attachments: [],
+          embeds: [],
+          components: [],
+        },
+      },
+    ],
+  } as Partial<APIMessage>);
+  const transcripts = createTranscripts(fakeAdapter([forwarded]));
+  const html = transcripts.render(await transcripts.fetch(CHANNEL_ID));
+
+  assert.match(
+    html,
+    new RegExp(
+      `<discord-message id="m-${forwarded.id}-f0" profile="${alice.id}" timestamp="2025-01-02T03:04:05.000Z" raw-timestamp="2025-01-02T03:04:05.000Z" message-body-only>`
+    )
+  );
+});
+
 test('locales and options change the document', async () => {
   const transcripts = createTranscripts(fakeAdapter([message({ content: 'hola' })]));
   const transcript = await transcripts.fetch(CHANNEL_ID);

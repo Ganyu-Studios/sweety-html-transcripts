@@ -22,18 +22,13 @@ export function Message({ ctx, message }: { ctx: RenderContext; message: APIMess
   }
 
   const author = message.author;
-  // Webhook messages carry their own name and avatar per message, so they are not shared profiles.
-  const identity = message.webhook_id
-    ? { author: author.username, avatar: ctx.avatar(author), bot: true }
-    : { profile: ctx.profile(author.id) };
-
   const channel = ctx.transcript.channel;
   const isThread = channel.type === ChannelType.PublicThread || channel.type === ChannelType.PrivateThread;
 
   return (
     <discord-message
       id={`m-${message.id}`}
-      {...identity}
+      {...identity(ctx, message)}
       timestamp={message.timestamp}
       raw-timestamp={message.timestamp}
       edited={message.edited_timestamp !== null}
@@ -52,6 +47,15 @@ export function Message({ ctx, message }: { ctx: RenderContext; message: APIMess
       <Thread ctx={ctx} message={message} />
     </discord-message>
   );
+}
+
+/** Who sent a message, as `<discord-message>` attributes. */
+function identity(ctx: RenderContext, message: APIMessage) {
+  const author = message.author;
+  // Webhook messages carry their own name and avatar per message, so they are not shared profiles.
+  return message.webhook_id
+    ? { author: author.username, avatar: ctx.avatar(author), bot: true }
+    : { profile: ctx.profile(author.id) };
 }
 
 /** Content, attachments, embeds and components: the parts a forward copies. */
@@ -136,7 +140,14 @@ function Forwarded({
       timestamp={snapshot.timestamp}
       is-same-guild={guildId === ctx.guildId}
     >
-      <discord-message id={`m-${message.id}-f${index}`} timestamp={snapshot.timestamp} message-body-only>
+      {/* The header is hidden, but the media viewer reads the author and time from this message. */}
+      <discord-message
+        id={`m-${message.id}-f${index}`}
+        {...identity(ctx, message)}
+        timestamp={snapshot.timestamp}
+        raw-timestamp={snapshot.timestamp}
+        message-body-only
+      >
         <Body ctx={ctx} message={snapshot} />
       </discord-message>
     </discord-forwarded-message>
