@@ -37,11 +37,13 @@ export function render(transcript: Transcript, options: RenderOptions = {}): str
   const selectMenus = selectMenuData(ctx);
 
   if (options.mode === 'server') {
-    return renderServer(body, { profiles: ctx.profiles, theme, selectMenus }).then(({ html, styles }) =>
+    return renderServer(body, { profiles: ctx.profiles, theme, selectMenus }).then(({ html, styles, coreVersion }) =>
       Document({
         ctx,
         body: html,
         selectMenus,
+        // The bundle must match the core that rendered the markup, or it duplicates it.
+        coreVersion,
         afterBody: [
           <script type="application/json" id="sweety-styles">
             {raw(stringifyForScript(styles))}

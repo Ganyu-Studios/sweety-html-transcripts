@@ -1,6 +1,8 @@
 /** @jsx h */
 /** @jsxFrag Fragment */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import type { APIMessage } from 'discord-api-types/v10';
 import {
@@ -180,4 +182,14 @@ test('server mode pre-renders shadow roots with deduplicated styles', async (t) 
   assert.match(html, /<style data-s="\d+"><\/style>/);
   assert.match(html, /id="sweety-styles"/);
   assert.ok(!html.includes('lit-part'), 'hydration markers are stripped');
+
+  // The client bundle must be the core that rendered the markup: an older bundle cannot take over
+  // server-rendered components and renders a second copy next to them.
+  const installed = JSON.parse(
+    readFileSync(join(dirname(require.resolve('@penwin/discord-components-core')), '..', 'package.json'), 'utf8')
+  ) as { version: string };
+  assert.ok(
+    html.includes(`@penwin/discord-components-core@${installed.version}/dist/bundle/index.mjs`),
+    `server mode should load the installed core bundle (${installed.version})`
+  );
 });

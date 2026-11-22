@@ -9,7 +9,7 @@ import { GOTO_SCRIPT } from './scripts';
 import { STYLES } from './styles';
 
 const CORE_VERSION = devDependencies['@penwin/discord-components-core'].replace(/^[\^~]/, '');
-const DEFAULT_CDN = `https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${CORE_VERSION}`;
+const cdnFor = (version: string): string => `https://cdn.jsdelivr.net/npm/@penwin/discord-components-core@${version}`;
 
 /** The HTML document around the rendered messages. */
 export function Document({
@@ -17,15 +17,18 @@ export function Document({
   body,
   selectMenus,
   afterBody = [],
+  coreVersion = CORE_VERSION,
 }: {
   ctx: RenderContext;
   body: string;
   selectMenus: Record<string, unknown[]> | null;
   afterBody?: Child[];
+  /** The core version whose bundle the page loads. Server mode passes the one that rendered it. */
+  coreVersion?: string;
 }): string {
   const { transcript, options } = ctx;
   const { channel, guild } = transcript;
-  const base = (options.cdn ?? DEFAULT_CDN).replace(/\/$/, '');
+  const base = (options.cdn ?? cdnFor(coreVersion)).replace(/\/$/, '');
 
   const favicon =
     options.favicon === false
