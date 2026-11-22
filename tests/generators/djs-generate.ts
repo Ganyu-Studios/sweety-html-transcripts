@@ -1,61 +1,37 @@
 import 'dotenv/config';
 
-import type { GuildTextBasedChannel } from 'discord.js';
-import { Client, GatewayIntentBits } from 'discord.js';
-import { ExportReturnType } from '../../src';
-import { DiscordJSTranscript } from '../../src/adapters/discordjs';
 import { writeFile } from 'node:fs/promises';
+import type { SendableChannels } from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
+import { createTranscripts, discordjs } from '../../src';
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers,
-  ],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
 
-const isSendable = process.env.SEND_TRANSCRIPT_TEST !== 'false';
+const send = process.env.SEND_TRANSCRIPT_TEST !== 'false';
+const mode = process.env.MODE === 'server' ? 'server' : 'client';
 
-client.on('debug', (message) => console.info(message));
-
-client.on('clientReady', async () => {
+client.once('clientReady', async () => {
   console.info(`Logged in as ${client.user?.username}`);
 
-  if (process.env.CHANNEL) {
-    const channel = await client.channels.fetch(process.env.CHANNEL);
-    if (!channel || !channel.isTextBased()) {
-      console.error('Invalid channel provided.');
-      process.exit(1);
-    }
+  const channelId = process.env.CHANNEL;
+  if (!channelId) throw new Error('Set CHANNEL in .env');
 
-    console.info(`Generating transcript for channel ${(channel as GuildTextBasedChannel).name}...`);
+  const transcripts = createTranscripts(discordjs(client));
+  const started = performance.now();
 
-    const attachment = await DiscordJSTranscript.create({
-      channel,
-      limit: 30,
-      returnType: isSendable ? ExportReturnType.Attachment : ExportReturnType.String,
-    });
-
-    console.info(`Transcript generated for channel ${(channel as GuildTextBasedChannel).name}.`);
-
-    if (typeof attachment === 'string') {
-      const route = `./index.html`;
-      await writeFile(route, attachment);
-      console.info(`Transcript saved in  ${route}`);
-    } else {
-      await (channel as GuildTextBasedChannel).send({
-        content: 'Here is the transcript',
-        files: [attachment],
-      });
-    }
-
-    client.destroy();
-    process.exit(0);
+  if (send) {
+    const file = await transcripts.attachment(channelId, { limit: 30, mode });
+    const channel = (await client.channels.fetch(channelId)) as SendableChannels;
+    await channel.send({ content: 'Here is the transcript', files: [file] });
   } else {
-    console.error('No channel provided.');
-    process.exit(1);
+    await writeFile('./index.html', await transcripts.html(channelId, { limit: 30, mode }));
+    console.info('Transcript saved to ./index.html');
   }
+
+  console.info(`Done in ${(performance.now() - started).toFixed(0)}ms`);
+  await client.destroy();
 });
 
-client.login(process.env.TOKEN!);
+void client.login(process.env.TOKEN);

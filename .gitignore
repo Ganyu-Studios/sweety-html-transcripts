@@ -181,3 +181,6 @@ dist
 sweety-html-transcripts-*.tgz
 
 index.html
+# sample transcripts (pnpm generate:sample)
+sample-output/
+index.html

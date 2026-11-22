@@ -1,7 +1,7 @@
 {
   "name": "sweety-html-transcripts",
-  "version": "0.4.0",
-  "description": "A sweety formatted html transcript generator for discord bots.",
+  "version": "1.0.0",
+  "description": "Fast, library-agnostic HTML transcripts for Discord bots (seyfert, discord.js, or plain REST).",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.js",
@@ -13,10 +13,11 @@
     "lint": "prettier --write --cache . && eslint --cache --fix .",
     "typecheck": "tsc -p tsconfig.eslint.json",
     "vite": "vite",
-    "test": "tsx --test tests/unit/*.test.ts",
+    "test": "tsx --test tests/unit/*.test.ts tests/unit/*.test.tsx",
     "generate:seyfert": "tsx ./tests/generators/seyfert-generate.ts",
     "generate:djs": "tsx ./tests/generators/djs-generate.ts",
-    "update-components": "pnpm update @penwin/*@latest"
+    "update-components": "pnpm update @penwin/discord-components-core@latest",
+    "generate:sample": "tsx ./tests/generators/sample-generate.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,mjs}": [
@@ -45,11 +46,11 @@
   "keywords": [
     "seyfert",
     "discord.js",
-    "seyfert-transcripts",
-    "discordjs-transcripts",
-    "sweety-html-transcripts",
+    "discord-api",
+    "transcripts",
     "html-transcripts",
-    "discord-transcripts"
+    "discord-transcripts",
+    "sweety-html-transcripts"
   ],
   "author": "Ganyu Studios",
   "license": "GNU GPLv3",
@@ -67,8 +68,6 @@
     "@eslint/js": "^10.0.1",
     "@penwin/discord-components-core": "4.5.0",
     "@types/node": "^26.6.5",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
     "@typescript-eslint/eslint-plugin": "^8.71.1",
     "@typescript-eslint/parser": "^8.71.1",
     "discord.js": "^14.27.0",
@@ -84,20 +83,22 @@
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "dependencies": {
-    "@penwin/discord-components-react-render": "^4.5.0",
     "discord-api-types": "^0.38.56",
     "discord-markdown-parser": "~1.3.1",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
     "simple-markdown": "^0.7.3",
     "twemoji": "^14.0.2"
   },
   "peerDependencies": {
-    "discord.js": ">=14.25.1",
-    "seyfert": ">=4.0.0-0"
+    "@penwin/discord-components-core": "^4.6.0",
+    "sharp": ">=0.33.0"
   },
-  "overrides": {
-    "react": "$react"
-  },
-  "packageManager": "pnpm@12.11.2+sha512.25a51652a196785af5f28bda6dfe8dc582ebefa4ac1d180221ce1390231c5fb76637822ea4b6e4633ce74acdcb0a77f725af11bad38177fdeddaee818a955cb9"
+  "packageManager": "pnpm@12.11.2+sha512.25a51652a196785af5f28bda6dfe8dc582ebefa4ac1d180221ce1390231c5fb76637822ea4b6e4633ce74acdcb0a77f725af11bad38177fdeddaee818a955cb9",
+  "peerDependenciesMeta": {
+    "@penwin/discord-components-core": {
+      "optional": true
+    },
+    "sharp": {
+      "optional": true
+    }
+  }
 }

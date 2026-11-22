@@ -4,9 +4,10 @@
 
 ## Guides
 
-- [soon™️](guides/soon-tm.md)
+- [Upgrading from 0.x](guides/upgrading.md)
+- [Server rendering](guides/server-rendering.md)
 
 ## API Reference
 
-- [createTranscript](api-reference/createtranscript.md)
-- [generateFromMessages](api-reference/generatefrommessages.md)
+- [createTranscripts](api-reference/createtranscripts.md)
+- [Adapters](api-reference/adapters.md)

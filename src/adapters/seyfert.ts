@@ -1,89 +1,38 @@
-import type { APIGuild, APIRole, APIUser } from 'discord-api-types/v10';
-import type { AllChannels, UsingClient } from 'seyfert';
-import { AttachmentBuilder } from 'seyfert';
-import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../utils/channel';
-import { TranscriptAdapter } from './core';
-import type { CreateTranscriptOptions, ExportReturnType } from '../types';
-import { createTranscript } from '..';
+import type { TranscriptAdapter } from './types';
+import { cleanQuery } from './types';
 
-export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
-  override resolveChannel(id: string): Promise<AllAPIChannel | null> {
-    return this.client.channels.raw(id).catch((): null => null) as Promise<AllAPIChannel | null>;
-  }
-
-  override resolveUser(id: string): Promise<APIUser | null> {
-    return this.client.users.raw(id).catch((): null => null);
-  }
-
-  override resolveRole(guildId: string, id: string): Promise<APIRole | null> {
-    return this.client.roles.raw(guildId, id).catch((): null => null);
-  }
-
-  override resolveGuild(id: string): Promise<APIGuild | null> {
-    return this.client.guilds.raw(id).catch((): null => null) as Promise<APIGuild | null>;
-  }
-
-  override async resolveMessage(channelId: string, messageId: string): Promise<APIMessageData | null> {
-    const message = (await this.client.messages
-      .raw(messageId, channelId)
-      .catch((): null => null)) as APIMessageData | null;
-    if (!message) return null;
-
-    // why seyfert? WHY
-    // for some reason, some messages don't have an author but have a user_id
-    if (typeof message.author === 'undefined' && 'user_id' in message && message.user_id)
-      message.author = (await this.resolveUser(message.user_id))!;
-
-    return message;
-  }
-
-  override listChannelMessages(
-    channelId: string,
-    options: { limit?: number; before?: string }
-  ): Promise<APIMessageData[]> {
-    if (options && !options?.before) delete options.before;
-
-    return this.client.messages
-      .list(channelId, options)
-      .then((messages) => Promise.all(messages.map((message) => this.resolveMessage(channelId, message.id))))
-      .catch(() => []) as Promise<APIMessageData[]>;
-  }
-
-  override resolveGuildChannels(guildId: string): Promise<AllAPIChannel[]> {
-    return this.client.guilds.channels
-      .list(guildId)
-      .then((channels) => Promise.all(channels.map((channel) => this.resolveChannel(channel.id))))
-      .catch(() => []) as Promise<AllAPIChannel[]>;
-  }
-
-  override createTranscriptAttachment(html: string, filename: string): AttachmentBuilder {
-    return new AttachmentBuilder().setFile('buffer', Buffer.from(html)).setName(filename);
-  }
-
-  override resolveGuildRoles(guildId: string): Promise<APIRole[]> {
-    return this.client.roles
-      .list(guildId)
-      .then((roles) => Promise.all(roles.map((role) => this.resolveRole(guildId, role.id))))
-      .then((roles) => roles.filter((role): role is APIRole => role !== null))
-      .catch(() => []);
-  }
-
-  override resolveGuildMember(guildId: string, userId: string): Promise<GuildMemberData | null> {
-    return this.client.members.raw(guildId, userId).catch((): null => null);
-  }
+/**
+ * The parts of a seyfert `Client` the adapter uses. Typed structurally so this module never
+ * imports seyfert.
+ */
+export interface SeyfertClientLike {
+  rest: {
+    request<T>(method: 'GET', url: `/${string}`, options?: { query?: Record<string, string> }): Promise<T>;
+  };
 }
 
-export class SeyfertTranscript {
-  static async create<T extends ExportReturnType = ExportReturnType.Attachment>(
-    options: Omit<CreateTranscriptOptions<T, SeyfertTranscriptAdapter>, 'adapter' | 'channel'> & {
-      channel: AllChannels;
-    }
-  ) {
-    const raw = await options.channel.client.channels.raw(options.channel.id);
-    return createTranscript<SeyfertTranscriptAdapter, T>({
-      ...options,
-      adapter: new SeyfertTranscriptAdapter(options.channel.client),
-      channel: raw as AllAPIChannel,
-    });
-  }
+/** seyfert's `RawFile`, accepted in `files`. */
+export interface SeyfertFile {
+  data: Buffer;
+  filename: string;
 }
+
+/**
+ * Adapter for seyfert. Requests go through `client.rest`, which returns raw API objects and handles
+ * rate limits.
+ *
+ * @example
+ * const transcripts = createTranscripts(seyfert(client));
+ */
+export function seyfert(client: SeyfertClientLike): TranscriptAdapter<SeyfertFile> {
+  return {
+    get: <T>(route: `/${string}`, query?: Record<string, string | number | boolean | undefined>) => {
+      const params = cleanQuery(query);
+      return client.rest.request<T>('GET', route, params ? { query: params } : undefined);
+    },
+    file: (data, name) => ({ data, filename: name }),
+  };
+}
+
+/** 0.x names, kept for `sweety-html-transcripts/adapters/*` imports. */
+export { SeyfertTranscript, SeyfertTranscriptAdapter, ExportReturnType } from '../legacy';
