@@ -5,9 +5,13 @@ import { Client, GatewayIntentBits } from 'discord.js';
 import { discordjs } from '../../src';
 import { generate } from './shared';
 
+const isDebug = process.env.DEBUG === 'true';
+
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
+
+if (isDebug) client.on('debug', (message) => console.info(message));
 
 client.once('clientReady', async () => {
   console.info(`Logged in as ${client.user?.username}`);
