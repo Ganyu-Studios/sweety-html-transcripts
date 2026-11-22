@@ -1,157 +1,38 @@
-import type { APIGuild, APIMessage, APIRole, APIUser } from 'discord-api-types/v10';
-import { Collection } from 'seyfert';
-import type { TranscriptAdapter } from './adapters/core';
-import { TranscriptImageDownloader, type ResolveImageCallback } from './downloader/images';
-import DiscordMessages from './generator';
-import {
-  ExportReturnType,
-  type CreateTranscriptOptions,
-  type GenerateFromMessagesOptions,
-  type ObjectType,
-} from './types';
-import type { AllAPIChannel, APIMessageData } from './utils/channel';
-import { channelUtils } from './utils/channel';
-import { name as packageName } from '../package.json';
+// The main API
+export { createTranscripts } from './transcripts';
+export type { AttachmentOptions, ChannelInput, HtmlOptions, Transcripts, TranscriptsDefaults } from './transcripts';
 
-// re-exports
-export { TranscriptImageDownloader } from './downloader/images';
-export { default as DiscordMessages } from './generator/transcript';
-export * from './types';
+// Adapters
+export { discordjs } from './adapters/discordjs';
+export type { DiscordJSAdapterOptions, DiscordJSClientLike, DiscordJSFile } from './adapters/discordjs';
+export { seyfert } from './adapters/seyfert';
+export type { SeyfertAdapterOptions, SeyfertClientLike, SeyfertFile } from './adapters/seyfert';
+export { DiscordAPIError, rest } from './adapters/rest';
+export type { RestAdapterOptions, RestFile } from './adapters/rest';
+export type { AdapterFile, Awaitable, Query, TranscriptAdapter, TranscriptCache } from './adapters/types';
 
-// adapter exports
-export * from './adapters/core';
+// The two phases, for use without an instance
+export { fetchTranscript, resolveTranscript, transcriptFromMessages } from './fetch';
+export type { FetchOptions, MessageInput } from './fetch';
+export { TranscriptImageDownloader } from './fetch/images';
+export type { MediaSource, ResolveImageCallback } from './fetch/images';
+export { render } from './render';
+export type { Profile, RenderOptions } from './render';
+export { locales } from './render/locales';
+export type { DeepPartial, Locale, LocaleName } from './render/locales';
 
-/**
- *
- * Generate a transcript from an array of messages.
- * @param messages The messages to generate a transcript from
- * @param options  The options to use when generating the transcript
- * @returns        The generated transcript
- */
-export async function generateFromMessages<
-  Adapter extends TranscriptAdapter<unknown>,
-  T extends ExportReturnType = ExportReturnType.Attachment,
->(messages: APIMessageData[], options: GenerateFromMessagesOptions<T, Adapter>): Promise<ObjectType<T, Adapter>> {
-  const { adapter, channel } = options;
+// The data model
+export { TRANSCRIPT_VERSION } from './model';
+export type { Transcript, TranscriptChannel, TranscriptGuild, TranscriptMember } from './model';
 
-  const guild: APIGuild | null =
-    'guild_id' in channel && channel.guild_id ? await adapter.resolveGuild(channel.guild_id) : null;
-
-  // turn messages into an array
-  const transformedMessages: APIMessageData[] =
-    messages instanceof Collection ? Array.from(messages.values()) : messages;
-  const allMessages: APIMessageData[] = transformedMessages.map((message): APIMessageData => {
-    if (channelUtils.isDM(channel) || channelUtils.isDirectory(channel)) return message;
-
-    // ts is dumb because for some reason guild_id doesn't exist sometimes
-    if (typeof message.guild_id === 'undefined' && guild) message.guild_id = guild.id;
-
-    return message;
-  });
-
-  // figure out how the user wants images saved
-  let resolveImageSrc: ResolveImageCallback = options.callbacks?.resolveImageSrc ?? ((attachment) => attachment.url);
-  if (options.saveImages) {
-    if (options.callbacks?.resolveImageSrc) {
-      console.warn(
-        `[${packageName}] You have specified both saveImages and resolveImageSrc, please only specify one. resolveImageSrc will be used.`
-      );
-    } else {
-      resolveImageSrc = new TranscriptImageDownloader().build();
-    }
-  }
-
-  // render the messages
-  const html: string = await DiscordMessages({
-    adapter,
-    channel,
-    guild,
-    messages: allMessages,
-    saveImages: options.saveImages ?? false,
-    callbacks: {
-      resolveImageSrc,
-      resolveChannel: async (id): Promise<AllAPIChannel | null> => adapter.resolveChannel(id),
-      resolveUser: async (id): Promise<APIUser | null> => adapter.resolveUser(id),
-      resolveRole: async (id): Promise<APIRole | null> => (guild ? adapter.resolveRole(guild.id, id) : null),
-
-      ...(options.callbacks ?? {}),
-    },
-    poweredBy: options.poweredBy ?? true,
-    footerText: options.footerText ?? 'Exported {number} message{s}.',
-    favicon: options.favicon ?? 'guild',
-  });
-
-  // return the html in the specified format
-  if (options.returnType === ExportReturnType.Buffer) {
-    return Buffer.from(html) as unknown as ObjectType<T, Adapter>;
-  }
-
-  if (options.returnType === ExportReturnType.String) {
-    return html as unknown as ObjectType<T, Adapter>;
-  }
-
-  return adapter.createTranscriptAttachment(html, options.filename ?? `transcript-${channel.id}.html`) as ObjectType<
-    T,
-    Adapter
-  >;
-}
-
-/**
- * Create a transcript from a channel.
- * @param options The options to use when creating the transcript
- * @returns       The generated transcript
- */
-export async function createTranscript<
-  Adapter extends TranscriptAdapter<unknown>,
-  T extends ExportReturnType = ExportReturnType.Attachment,
->(options: CreateTranscriptOptions<T, Adapter>): Promise<ObjectType<T, Adapter>> {
-  const { channel, adapter } = options;
-
-  // validate type
-  if (!channelUtils.isGuildTextable(channel))
-    throw new TypeError(`Provided channel must be text-based, received ${channel.type}`);
-
-  // fetch messages
-  let allMessages: APIMessage[] = [];
-  let lastMessageId: string | undefined;
-
-  const { limit, filter } = options;
-
-  const resolvedLimit: number = typeof limit === 'undefined' || limit === -1 ? Infinity : limit;
-
-  // until there are no more messages, keep fetching
-  while (true) {
-    // calculate how many messages we still need to fetch
-    const remainingMessages: number = resolvedLimit - allMessages.length;
-    const fetchLimit: number = Math.min(100, remainingMessages);
-
-    // create fetch options
-    const fetchLimitOptions = { limit: fetchLimit, before: lastMessageId };
-    if (!lastMessageId) delete fetchLimitOptions.before;
-
-    // fetch messages
-    const messages: APIMessage[] = await adapter.listChannelMessages(channel.id, fetchLimitOptions);
-    const filtered: APIMessage[] = typeof filter === 'function' ? messages.filter(filter) : messages;
-
-    // add the messages to the array
-    allMessages.push(...filtered);
-    // Get the last key of 'messages', not 'filteredMessages' because you will be refetching the same messages
-    lastMessageId = messages.at(-1)?.id;
-
-    // if there are no more messages, break
-    if (messages.length < fetchLimit) break;
-
-    // if the limit has been reached, break
-    if (allMessages.length >= resolvedLimit) break;
-  }
-
-  if (resolvedLimit < allMessages.length) allMessages = allMessages.slice(0, limit);
-
-  // generate the transcript
-  return generateFromMessages<Adapter, T>(allMessages.reverse(), options);
-}
-
-export default {
+// 0.x compatibility (deprecated)
+export {
   createTranscript,
+  DiscordJSTranscript,
+  DiscordJSTranscriptAdapter,
+  ExportReturnType,
   generateFromMessages,
-};
+  SeyfertTranscript,
+  SeyfertTranscriptAdapter,
+} from './legacy';
+export type { LegacyOptions, LegacyResult } from './legacy';

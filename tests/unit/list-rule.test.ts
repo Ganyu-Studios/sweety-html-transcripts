@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseWithLists } from '../../src/utils/list';
+import { parseWithLists } from '../../src/utils/markdown';
 
 // A raw U+2028 is still a line terminator inside a regular expression literal, and it is
 // message content Discord happily carries, so it is built rather than typed.

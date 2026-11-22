@@ -1,89 +1,82 @@
-import type { APIGuild, APIRole, APIUser } from 'discord-api-types/v10';
-import type { AllChannels, UsingClient } from 'seyfert';
-import { AttachmentBuilder } from 'seyfert';
-import type { AllAPIChannel, APIMessageData, GuildMemberData } from '../utils/channel';
-import { TranscriptAdapter } from './core';
-import type { CreateTranscriptOptions, ExportReturnType } from '../types';
-import { createTranscript } from '..';
+import type { APIGuildMember, APIRole, APIUser } from 'discord-api-types/v10';
+import type { TranscriptChannel, TranscriptGuild } from '../model';
+import type { TranscriptAdapter, TranscriptCache } from './types';
+import { cleanQuery } from './types';
 
-export class SeyfertTranscriptAdapter extends TranscriptAdapter<UsingClient> {
-  override resolveChannel(id: string): Promise<AllAPIChannel | null> {
-    return this.client.channels.raw(id).catch((): null => null) as Promise<AllAPIChannel | null>;
-  }
-
-  override resolveUser(id: string): Promise<APIUser | null> {
-    return this.client.users.raw(id).catch((): null => null);
-  }
-
-  override resolveRole(guildId: string, id: string): Promise<APIRole | null> {
-    return this.client.roles.raw(guildId, id).catch((): null => null);
-  }
-
-  override resolveGuild(id: string): Promise<APIGuild | null> {
-    return this.client.guilds.raw(id).catch((): null => null) as Promise<APIGuild | null>;
-  }
-
-  override async resolveMessage(channelId: string, messageId: string): Promise<APIMessageData | null> {
-    const message = (await this.client.messages
-      .raw(messageId, channelId)
-      .catch((): null => null)) as APIMessageData | null;
-    if (!message) return null;
-
-    // why seyfert? WHY
-    // for some reason, some messages don't have an author but have a user_id
-    if (typeof message.author === 'undefined' && 'user_id' in message && message.user_id)
-      message.author = (await this.resolveUser(message.user_id))!;
-
-    return message;
-  }
-
-  override listChannelMessages(
-    channelId: string,
-    options: { limit?: number; before?: string }
-  ): Promise<APIMessageData[]> {
-    if (options && !options?.before) delete options.before;
-
-    return this.client.messages
-      .list(channelId, options)
-      .then((messages) => Promise.all(messages.map((message) => this.resolveMessage(channelId, message.id))))
-      .catch(() => []) as Promise<APIMessageData[]>;
-  }
-
-  override resolveGuildChannels(guildId: string): Promise<AllAPIChannel[]> {
-    return this.client.guilds.channels
-      .list(guildId)
-      .then((channels) => Promise.all(channels.map((channel) => this.resolveChannel(channel.id))))
-      .catch(() => []) as Promise<AllAPIChannel[]>;
-  }
-
-  override createTranscriptAttachment(html: string, filename: string): AttachmentBuilder {
-    return new AttachmentBuilder().setFile('buffer', Buffer.from(html)).setName(filename);
-  }
-
-  override resolveGuildRoles(guildId: string): Promise<APIRole[]> {
-    return this.client.roles
-      .list(guildId)
-      .then((roles) => Promise.all(roles.map((role) => this.resolveRole(guildId, role.id))))
-      .then((roles) => roles.filter((role): role is APIRole => role !== null))
-      .catch(() => []);
-  }
-
-  override resolveGuildMember(guildId: string, userId: string): Promise<GuildMemberData | null> {
-    return this.client.members.raw(guildId, userId).catch((): null => null);
-  }
+/**
+ * The parts of a seyfert `Client` the adapter uses. Typed structurally so this module never
+ * imports seyfert, and any client exposing `rest.request` works.
+ */
+export interface SeyfertClientLike {
+  rest: {
+    request<T>(method: 'GET', url: `/${string}`, options?: { query?: Record<string, string> }): Promise<T>;
+  };
+  /** seyfert's cache. Its resources already store raw API objects. */
+  cache?: unknown;
 }
 
-export class SeyfertTranscript {
-  static async create<T extends ExportReturnType = ExportReturnType.Attachment>(
-    options: Omit<CreateTranscriptOptions<T, SeyfertTranscriptAdapter>, 'adapter' | 'channel'> & {
-      channel: AllChannels;
-    }
-  ) {
-    const raw = await options.channel.client.channels.raw(options.channel.id);
-    return createTranscript<SeyfertTranscriptAdapter, T>({
-      ...options,
-      adapter: new SeyfertTranscriptAdapter(options.channel.client),
-      channel: raw as AllAPIChannel,
-    });
-  }
+/** seyfert's `RawFile`, accepted in `files`. */
+export interface SeyfertFile {
+  data: Buffer;
+  filename: string;
 }
+
+export interface SeyfertAdapterOptions {
+  /**
+   * Read channels, guilds, roles, members and users from `client.cache` before asking the API.
+   * @default true
+   */
+  cache?: boolean;
+}
+
+/** The seyfert cache resources read here, each optional since any of them can be disabled. */
+interface SeyfertCache {
+  channels?: { raw(id: string): unknown; valuesRaw(guild: string): unknown };
+  guilds?: { raw(id: string): unknown };
+  roles?: { valuesRaw(guild: string): unknown };
+  members?: { raw(id: string, guild: string): unknown };
+  users?: { raw(id: string): unknown };
+}
+
+function seyfertCache(cache: SeyfertCache): TranscriptCache {
+  return {
+    channel: async (id) => (await cache.channels?.raw(id)) as TranscriptChannel | undefined,
+    channels: async (guildId) => (await cache.channels?.valuesRaw(guildId)) as TranscriptChannel[] | undefined,
+    guild: async (id) => (await cache.guilds?.raw(id)) as TranscriptGuild | undefined,
+    roles: async (guildId) => (await cache.roles?.valuesRaw(guildId)) as APIRole[] | undefined,
+    member: async (guildId, userId) => {
+      const member = (await cache.members?.raw(userId, guildId)) as APIGuildMember | undefined;
+      if (!member) return undefined;
+      // The member resource may store the user apart; join it back when the users cache has it.
+      if (member.user) return member;
+      const user = (await cache.users?.raw(userId)) as APIUser | undefined;
+      return user ? { ...member, user } : member;
+    },
+    user: async (id) => (await cache.users?.raw(id)) as APIUser | undefined,
+  };
+}
+
+/**
+ * Adapter for seyfert. Channels, guilds, roles, members and users come from `client.cache` when it
+ * has them (it stores raw API objects, so nothing is converted), and from `client.rest` otherwise.
+ * Messages always come from `client.rest`.
+ *
+ * @example
+ * const transcripts = createTranscripts(seyfert(client));
+ */
+export function seyfert(
+  client: SeyfertClientLike,
+  options: SeyfertAdapterOptions = {}
+): TranscriptAdapter<SeyfertFile> {
+  return {
+    get: <T>(route: `/${string}`, query?: Record<string, string | number | boolean | undefined>) => {
+      const params = cleanQuery(query);
+      return client.rest.request<T>('GET', route, params ? { query: params } : undefined);
+    },
+    cache: options.cache === false || !client.cache ? undefined : seyfertCache(client.cache as SeyfertCache),
+    file: (data, name) => ({ data, filename: name }),
+  };
+}
+
+/** 0.x names, kept for `sweety-html-transcripts/adapters/*` imports. */
+export { SeyfertTranscript, SeyfertTranscriptAdapter, ExportReturnType } from '../legacy';
