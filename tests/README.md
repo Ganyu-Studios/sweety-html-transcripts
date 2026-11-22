@@ -23,11 +23,26 @@ tsx --test --test-name-pattern="blank line" tests/unit/*.test.ts
 
 ## `generators/` — manual smoke generators
 
-Scripts that spin up a real bot and render an actual channel to an HTML file, so
-you can eyeball the output. They need a `TOKEN` in `.env` and are **not** part of
-the suite or CI.
+Not part of the suite or CI. They render with the 1.x API: `createTranscripts(adapter)`,
+then `fetch` and `render` timed separately, with the number of API calls the fetch took.
 
 ```bash
-pnpm generate:seyfert  # render a channel with the seyfert adapter
-pnpm generate:djs      # render a channel with the discord.js adapter
+pnpm generate:seyfert  # a real channel, through the seyfert adapter
+pnpm generate:djs      # a real channel, through the discord.js adapter
+pnpm generate:sample   # a synthetic transcript, no token needed: writes client.html and server.html
+```
+
+The bot generators read their settings from `.env` (copy `.env.example`):
+
+| Variable               | Default        | What it does                                                 |
+| ---------------------- | -------------- | ------------------------------------------------------------ |
+| `TOKEN`, `CHANNEL`     |                | The bot and the channel to export                            |
+| `LIMIT`                | `30`           | Newest messages to fetch, `-1` for the whole channel         |
+| `SSR`                  | `false`        | `true` renders on the server (`mode: 'server'`)              |
+| `SEND_TRANSCRIPT_TEST` | `true`         | `false` writes `OUTPUT` instead of sending it to the channel |
+| `OUTPUT`               | `./index.html` | Where to write the HTML when not sending                     |
+| `THEME`, `LOCALE`      | `dark`, `en`   | Render options                                               |
+
+```bash
+SSR=true SEND_TRANSCRIPT_TEST=false pnpm generate:seyfert
 ```
