@@ -195,8 +195,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.15.0)
       '@penwin/discord-components-core':
-        specifier: 4.6.0
-        version: 4.6.0(@types/node@26.6.6)
+        specifier: 4.7.0
+        version: 4.7.0(@types/node@26.6.6)
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -696,8 +696,8 @@ packages:
   '@parse5/tools@0.3.0':
     resolution: {integrity: sha512-zxRyTHkqb7WQMV8kTNBKWb1BeOFUKXBXTBWuxg9H9hfvQB3IwP6Iw2U75Ia5eyRxPNltmY7E8YAlz6zWwUnjKg==}
 
-  '@penwin/discord-components-core@4.6.0':
-    resolution: {integrity: sha512-hjKb6klCMzeFj4EXbZkLRIBjm7OT1G1pD7T9DmbPrxt6AA2R4Tjj+cKD76f3XzvkwB1NYMOGrprasui5LBL18w==}
+  '@penwin/discord-components-core@4.7.0':
+    resolution: {integrity: sha512-9ToCk+vBpm4SHNmdONdQtfyimy5npKKFFeesrQ5GhY6r5OZXhd6Omd8kXdO9411KFkmTrcWTs+/CnkO++NVjXA==}
     engines: {node: '>=v18'}
 
   '@popperjs/core@2.11.8':
@@ -1689,7 +1689,7 @@ snapshots:
     dependencies:
       parse5: 7.3.0
 
-  '@penwin/discord-components-core@4.6.0(@types/node@26.6.6)':
+  '@penwin/discord-components-core@4.7.0(@types/node@26.6.6)':
     dependencies:
       '@lit-labs/ssr': 4.1.0(@types/node@26.6.6)
       '@lit/context': 1.1.6
