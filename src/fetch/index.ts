@@ -1,6 +1,5 @@
 import type {
   APIAttachment,
-  APIGuild,
   APIGuildMember,
   APIMessage,
   APIMessageSnapshotFields,
@@ -8,12 +7,13 @@ import type {
 } from 'discord-api-types/v10';
 import { ChannelType, ComponentType, MessageReferenceType } from 'discord-api-types/v10';
 import type { TranscriptAdapter } from '../adapters/types';
-import type { Transcript, TranscriptChannel, TranscriptGuild, TranscriptMember } from '../model';
+import type { Transcript, TranscriptChannel, TranscriptMember } from '../model';
 import { TRANSCRIPT_VERSION } from '../model';
 import { attachmentKind, attachmentLanguage } from '../utils/files';
 import { mapLimit } from '../utils/utils';
 import type { ResolveImageCallback } from './images';
 import { TranscriptImageDownloader } from './images';
+import { Lookup } from './lookup';
 
 const TAG = '[sweety-html-transcripts]';
 
@@ -66,25 +66,6 @@ const MENTION_PATTERNS = {
   channel: /<#(\d{15,25})>/g,
 };
 
-function pickChannel(channel: TranscriptChannel & Record<string, unknown>): TranscriptChannel {
-  return {
-    id: channel.id,
-    type: channel.type,
-    name: channel.name,
-    topic: channel.topic,
-    guild_id: channel.guild_id,
-    parent_id: channel.parent_id,
-    owner_id: channel.owner_id,
-    recipients: channel.recipients,
-  };
-}
-
-const pickGuild = (guild: Pick<APIGuild, 'id' | 'name' | 'icon'>): TranscriptGuild => ({
-  id: guild.id,
-  name: guild.name,
-  icon: guild.icon,
-});
-
 /** Every message shape the transcript renders: the messages, their forwards and their replies. */
 function* messageBodies(message: APIMessage): Generator<APIMessage | APIMessageSnapshotFields> {
   yield message;
@@ -93,13 +74,13 @@ function* messageBodies(message: APIMessage): Generator<APIMessage | APIMessageS
 }
 
 /** Fetch a page of messages, newest first, until `limit` is reached or the channel runs out. */
-async function listMessages(adapter: TranscriptAdapter, channelId: string, options: FetchOptions) {
+async function listMessages(lookup: Lookup, channelId: string, options: FetchOptions) {
   const limit = options.limit === undefined || options.limit < 0 ? Infinity : options.limit;
   const kept: APIMessage[] = [];
   let before = options.before;
 
   while (kept.length < limit) {
-    const page = await adapter.get<APIMessage[]>(`/channels/${channelId}/messages`, { limit: 100, before });
+    const page = await lookup.get<APIMessage[]>(`/channels/${channelId}/messages`, { limit: 100, before });
     if (page.length === 0) break;
 
     for (const message of page) {
@@ -126,10 +107,11 @@ export async function fetchTranscript(
   channelId: string,
   options: FetchOptions = {}
 ): Promise<Transcript> {
-  const channel = await adapter.get<TranscriptChannel & Record<string, unknown>>(`/channels/${channelId}`);
-  const messages = await listMessages(adapter, channelId, options);
+  const lookup = new Lookup(adapter);
+  const channel = await lookup.channel(channelId);
+  const messages = await listMessages(lookup, channelId, options);
 
-  return resolveTranscript(adapter, pickChannel(channel), messages, options);
+  return resolveWith(lookup, channel, messages, options);
 }
 
 /**
@@ -142,30 +124,41 @@ export async function transcriptFromMessages(
   input: Iterable<MessageInput>,
   options: FetchOptions = {}
 ): Promise<Transcript> {
-  const channel = await adapter.get<TranscriptChannel & Record<string, unknown>>(`/channels/${channelId}`);
+  const lookup = new Lookup(adapter);
+  const channel = await lookup.channel(channelId);
   const items = [...input];
 
   const messages = (
     await mapLimit(items, options.concurrency ?? 4, (message) =>
       isRawMessage(message)
         ? Promise.resolve(message)
-        : adapter.get<APIMessage>(`/channels/${channelId}/messages/${message.id}`).catch(() => null)
+        : lookup.get<APIMessage>(`/channels/${channelId}/messages/${message.id}`).catch(() => null)
     )
   ).filter((message): message is APIMessage => message !== null && (!options.filter || options.filter(message)));
 
   messages.sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1));
 
-  return resolveTranscript(adapter, pickChannel(channel), messages, options);
+  return resolveWith(lookup, channel, messages, options);
 }
 
 /**
- * Resolve every lookup the renderer needs, each one requested once.
+ * Resolve every lookup the renderer needs, each one requested once, from the adapter's cache
+ * when it has the data and from REST otherwise.
  */
-export async function resolveTranscript(
+export function resolveTranscript(
   adapter: TranscriptAdapter,
   channel: TranscriptChannel,
   messages: APIMessage[],
   options: FetchOptions = {}
+): Promise<Transcript> {
+  return resolveWith(new Lookup(adapter), channel, messages, options);
+}
+
+async function resolveWith(
+  lookup: Lookup,
+  channel: TranscriptChannel,
+  messages: APIMessage[],
+  options: FetchOptions
 ): Promise<Transcript> {
   const concurrency = options.concurrency ?? 4;
   const transcript: Transcript = {
@@ -213,16 +206,16 @@ export async function resolveTranscript(
 
   const guildId = channel.guild_id;
 
-  // Guild, with its roles, in one request.
+  // Guild and its roles.
   if (guildId) {
-    const guild = await adapter.get<APIGuild>(`/guilds/${guildId}`).catch((error: unknown) => {
+    const found = await lookup.guild(guildId).catch((error: unknown) => {
       console.warn(`${TAG} Could not fetch guild ${guildId}:`, error);
       return null;
     });
 
-    if (guild) {
-      transcript.guild = pickGuild(guild);
-      for (const role of guild.roles) transcript.roles[role.id] = role;
+    if (found) {
+      transcript.guild = found.guild;
+      for (const role of found.roles) transcript.roles[role.id] = role;
     }
   }
 
@@ -233,7 +226,7 @@ export async function resolveTranscript(
       .filter((thread): thread is { id: string; last_message_id: string } => Boolean(thread?.last_message_id));
 
     await mapLimit(threads, concurrency, async (thread) => {
-      const last = await adapter
+      const last = await lookup
         .get<APIMessage>(`/channels/${thread.id}/messages/${thread.last_message_id}`)
         .catch(() => null);
       if (!last) return;
@@ -246,16 +239,16 @@ export async function resolveTranscript(
   // Users mentioned only by syntax (e.g. inside an embed) are not in `mentions`.
   const unknownUsers = [...mentioned.user].filter((id) => !transcript.users[id]);
   await mapLimit(unknownUsers, concurrency, async (id) => {
-    addUser(await adapter.get<APIUser>(`/users/${id}`).catch(() => undefined));
+    addUser(await lookup.user(id).catch(() => undefined));
   });
 
   // Members, for nicknames, guild avatars and role colors. Users that left the guild 404.
   if (guildId) {
     await mapLimit(Object.keys(transcript.users), concurrency, async (id) => {
-      const member = await adapter.get<APIGuildMember>(`/guilds/${guildId}/members/${id}`).catch(() => null);
+      const member = await lookup.member(guildId, id).catch(() => null);
       if (!member) return;
 
-      const { user, ...rest } = member;
+      const { user, ...rest } = member as APIGuildMember;
       if (user) transcript.users[id] = { ...transcript.users[id], ...user };
       transcript.members[id] = rest as TranscriptMember;
     });
@@ -264,10 +257,8 @@ export async function resolveTranscript(
   // Channels: one request for the whole guild when anything needs it, then the stragglers
   // (threads and channels of other guilds are not in that list).
   if (guildId && (needsGuildChannels || mentioned.channel.size > 0)) {
-    const channels = await adapter
-      .get<(TranscriptChannel & Record<string, unknown>)[]>(`/guilds/${guildId}/channels`)
-      .catch(() => []);
-    for (const item of channels) transcript.channels[item.id] ??= pickChannel(item);
+    const channels = await lookup.guildChannels(guildId).catch(() => []);
+    for (const item of channels) transcript.channels[item.id] ??= item;
   }
 
   const forwards = messages.filter(
@@ -283,8 +274,8 @@ export async function resolveTranscript(
   );
 
   await mapLimit([...missingChannels], concurrency, async (id) => {
-    const item = await adapter.get<TranscriptChannel & Record<string, unknown>>(`/channels/${id}`).catch(() => null);
-    if (item) transcript.channels[id] = pickChannel(item);
+    const item = await lookup.channel(id).catch(() => null);
+    if (item) transcript.channels[id] = item;
   });
 
   // Guilds forwarded messages came from. The bot is often not in them, which is fine.
@@ -292,8 +283,8 @@ export async function resolveTranscript(
     forwards.map((message) => message.message_reference!.guild_id!).filter((id) => id !== guildId)
   );
   await mapLimit([...otherGuilds], concurrency, async (id) => {
-    const guild = await adapter.get<APIGuild>(`/guilds/${id}`).catch(() => null);
-    if (guild) transcript.guilds[id] = pickGuild(guild);
+    const guild = await lookup.guildInfo(id).catch(() => null);
+    if (guild) transcript.guilds[id] = guild;
   });
 
   await resolveFiles(transcript, options, concurrency);
