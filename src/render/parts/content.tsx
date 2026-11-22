@@ -3,9 +3,9 @@ import type { RuleTypesExtended } from 'discord-markdown-parser';
 import type { ASTNode, SingleASTNode } from 'simple-markdown';
 import type { Child } from '../jsx';
 import { Fragment, h } from '../jsx';
-import { parseWithLists } from '../utils/list';
-import { parseDiscordEmoji, toHex } from '../utils/utils';
-import type { RenderContext } from './context';
+import { parseWithLists } from '../../utils/markdown';
+import { parseDiscordEmoji, toHex } from '../../utils/utils';
+import type { RenderContext } from '../context';
 
 export enum ContentKind {
   Normal,
@@ -157,7 +157,8 @@ export function renderNode(ctx: RenderContext, node: SingleASTNode, state: Conte
       const items = node.items as ASTNode[];
 
       // A reply preview is a single line, so items are joined with spaces.
-      if (reply) return items.map((item) => [renderNodes(ctx, item, state), ' ']);
+      // The leading space separates a nested list from the item text it hangs off.
+      if (reply) return [' ', items.map((item) => [renderNodes(ctx, item, state), ' '])];
 
       const children = items.map((item) => <discord-list-item>{renderNodes(ctx, item, state)}</discord-list-item>);
 

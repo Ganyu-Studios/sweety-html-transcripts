@@ -2,9 +2,9 @@ import type { APIAttachment, APIMessage, APIMessageSnapshotFields } from 'discor
 import { AttachmentFlags, MessageFlags } from 'discord-api-types/v10';
 import type { Child } from '../jsx';
 import { h } from '../jsx';
-import { attachmentKind, attachmentLanguage, formatBytes } from '../utils/files';
-import { hasFlag } from '../utils/utils';
-import type { RenderContext } from './context';
+import { attachmentKind, attachmentLanguage, formatBytes } from '../../utils/files';
+import { hasFlag } from '../../utils/utils';
+import type { RenderContext } from '../context';
 
 export interface GalleryItem {
   media: string;

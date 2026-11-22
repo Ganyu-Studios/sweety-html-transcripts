@@ -2,11 +2,11 @@ import type { APIMessageComponent, APIMessageTopLevelComponent } from 'discord-a
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import type { Child } from '../jsx';
 import { h } from '../jsx';
-import { formatBytes } from '../utils/files';
-import { parseDiscordEmoji, toHex } from '../utils/utils';
+import { formatBytes } from '../../utils/files';
+import { parseDiscordEmoji, toHex } from '../../utils/utils';
 import { MediaGallery } from './attachments';
 import { Content, ContentKind } from './content';
-import type { RenderContext } from './context';
+import type { RenderContext } from '../context';
 
 const BUTTON_STYLES: Record<ButtonStyle, string> = {
   [ButtonStyle.Primary]: 'primary',

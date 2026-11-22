@@ -12,7 +12,7 @@ import {
   seyfert,
   TRANSCRIPT_VERSION,
 } from '../../src';
-import { h, raw, renderChild } from '../../src/jsx';
+import { h, raw, renderChild } from '../../src/render/jsx';
 import { alice, bob, CHANNEL_ID, fakeAdapter, message, moderator } from '../fixtures';
 
 test('jsx escapes text and attributes, and only raw() bypasses it', () => {

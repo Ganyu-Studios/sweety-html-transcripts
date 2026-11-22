@@ -18,8 +18,8 @@ export { TranscriptImageDownloader } from './fetch/images';
 export type { MediaSource, ResolveImageCallback } from './fetch/images';
 export { render } from './render';
 export type { Profile, RenderOptions } from './render';
-export { locales } from './render/locale';
-export type { DeepPartial, Locale, LocaleName } from './render/locale';
+export { locales } from './render/locales';
+export type { DeepPartial, Locale, LocaleName } from './render/locales';
 
 // The data model
 export { TRANSCRIPT_VERSION } from './model';

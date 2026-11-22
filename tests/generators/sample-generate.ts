@@ -107,6 +107,52 @@ function sampleMessages(): APIMessage[] {
       })),
     }),
     message({ type: 6, content: '', message_reference: { message_id: first.id, channel_id: CHANNEL_ID } }),
+    // Things that tend to break narrow layouts.
+    message({
+      author: bob,
+      content:
+        'https://example.com/a/very/long/url/without/any/spaces/that/keeps/going/and/going/forever?query=1&other=2\n' +
+        'Averyveryveryveryveryveryveryveryveryveryverylongwordwithoutbreaks\n' +
+        '```js\nconst aVeryLongLineOfCode = someFunction(withMany, argumentsThat, doNotFit, onASmallPhoneScreen, atAll);\n```',
+      embeds: [
+        {
+          title: 'An embed with an image and a long title that will need to wrap on small screens',
+          description: 'Description',
+          image: { url: 'https://picsum.photos/seed/wide/1200/400', width: 1200, height: 400 },
+          thumbnail: { url: 'https://picsum.photos/seed/thumb/200/200', width: 200, height: 200 },
+          color: 0xfee75c,
+        },
+      ],
+      attachments: [
+        {
+          id: '600000000000000001',
+          filename: 'a-file-with-a-rather-long-name-that-goes-on.zip',
+          size: 123456789,
+          url: 'https://example.com/file.zip',
+          proxy_url: 'https://example.com/file.zip',
+          content_type: 'application/zip',
+        },
+        {
+          id: '600000000000000002',
+          filename: 'voice-memo.mp3',
+          size: 512000,
+          url: 'https://example.com/voice.mp3',
+          proxy_url: 'https://example.com/voice.mp3',
+          content_type: 'audio/mpeg',
+        },
+      ],
+      components: [
+        {
+          type: 1,
+          components: ['First', 'Second', 'Third', 'Fourth', 'Fifth'].map((label, i) => ({
+            type: 2,
+            style: (i % 4) + 1,
+            label: `${label} button`,
+            custom_id: label,
+          })),
+        },
+      ],
+    } as Partial<APIMessage>),
   ];
 }
 

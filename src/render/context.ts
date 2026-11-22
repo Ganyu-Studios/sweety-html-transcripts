@@ -3,7 +3,7 @@ import { UserFlags } from 'discord-api-types/v10';
 import type { Transcript, TranscriptMember } from '../model';
 import { cdn } from '../utils/cdn';
 import { hasFlag, toHex } from '../utils/utils';
-import type { DeepPartial, Locale, LocaleName } from './locale';
+import type { DeepPartial, Locale, LocaleName } from './locales';
 
 export interface RenderOptions {
   /** @default 'dark' */
@@ -63,6 +63,11 @@ export class RenderContext {
     public readonly options: RenderOptions,
     public readonly locale: Locale
   ) {}
+
+  /** The document language: the built-in locale's name, or English for custom locales. */
+  public get localeName(): string {
+    return typeof this.options.locale === 'string' ? this.options.locale : 'en';
+  }
 
   public get guildId(): string | undefined {
     return this.transcript.guild?.id;

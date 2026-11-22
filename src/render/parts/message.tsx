@@ -1,30 +1,20 @@
-import type { APIMessage, APIMessageSnapshotFields, APIReaction, APIUser } from 'discord-api-types/v10';
+import type { APIMessage, APIMessageSnapshotFields } from 'discord-api-types/v10';
 import { ChannelType, InteractionType, MessageFlags, MessageReferenceType, MessageType } from 'discord-api-types/v10';
+import { cdn } from '../../utils/cdn';
+import { hasFlag } from '../../utils/utils';
+import type { RenderContext } from '../context';
 import type { Child } from '../jsx';
 import { h } from '../jsx';
-import { cdn } from '../utils/cdn';
-import { hasFlag, parseDiscordEmoji } from '../utils/utils';
+import { plural } from '../locales';
 import { Attachments } from './attachments';
 import { Components } from './components';
 import { Content, ContentKind } from './content';
-import type { RenderContext } from './context';
 import { Embed } from './embed';
-import { plural } from './locale';
-
-const SYSTEM_TYPES = new Set<MessageType>([
-  MessageType.RecipientAdd,
-  MessageType.UserJoin,
-  MessageType.ChannelNameChange,
-  MessageType.ChannelPinnedMessage,
-  MessageType.GuildBoost,
-  MessageType.GuildBoostTier1,
-  MessageType.GuildBoostTier2,
-  MessageType.GuildBoostTier3,
-  MessageType.ThreadCreated,
-]);
+import { Reactions } from './reactions';
+import { isSystemMessage, SystemMessage } from './system';
 
 export function Message({ ctx, message }: { ctx: RenderContext; message: APIMessage }): Child {
-  if (SYSTEM_TYPES.has(message.type)) return <SystemMessage ctx={ctx} message={message} />;
+  if (isSystemMessage(message)) return <SystemMessage ctx={ctx} message={message} />;
 
   // A thread's first message points at the message the thread was started from: show that one.
   if (message.type === MessageType.ThreadStarterMessage) {
@@ -153,22 +143,6 @@ function Forwarded({
   );
 }
 
-export function Reactions({ reactions }: { reactions: APIReaction[] | undefined }): Child {
-  if (!reactions || reactions.length === 0) return null;
-
-  return (
-    <discord-reactions slot="reactions">
-      {reactions.map((reaction) => (
-        <discord-reaction
-          name={reaction.emoji.name ?? undefined}
-          emoji={parseDiscordEmoji(reaction.emoji)}
-          count={reaction.count}
-        />
-      ))}
-    </discord-reactions>
-  );
-}
-
 function Thread({ ctx, message }: { ctx: RenderContext; message: APIMessage }): Child {
   const thread = message.thread;
   if (!thread || (thread.type !== ChannelType.PublicThread && thread.type !== ChannelType.PrivateThread)) return null;
@@ -191,67 +165,4 @@ function Thread({ ctx, message }: { ctx: RenderContext; message: APIMessage }): 
       )}
     </discord-thread>
   );
-}
-
-/** Fill `{name}` placeholders in a locale template with rendered children. */
-export function fill(template: string, values: Record<string, Child>): Child[] {
-  return template.split(/(\{\w+\})/).map((part) => {
-    const key = /^\{(\w+)\}$/.exec(part)?.[1];
-    return key !== undefined && key in values ? values[key] : part;
-  });
-}
-
-function SystemMessage({ ctx, message }: { ctx: RenderContext; message: APIMessage }): Child {
-  const user = <Highlight ctx={ctx} user={message.author} />;
-  const { system } = ctx.locale;
-
-  const wrap = (type: string, body: Child): Child => (
-    <discord-system-message id={`m-${message.id}`} type={type} timestamp={message.timestamp}>
-      {body}
-      <Reactions reactions={message.reactions} />
-    </discord-system-message>
-  );
-
-  switch (message.type) {
-    case MessageType.RecipientAdd:
-    case MessageType.UserJoin: {
-      // Picked from the id so the same message always reads the same.
-      const template = system.join[Number(BigInt(message.id) % BigInt(system.join.length))]!;
-      return wrap('join', fill(template, { user }));
-    }
-
-    case MessageType.ChannelPinnedMessage:
-      return wrap(
-        'pin',
-        fill(system.pinned, {
-          user,
-          message: <i data-goto={message.message_reference?.message_id}>{system.pinnedMessage}</i>,
-        })
-      );
-
-    case MessageType.GuildBoost:
-    case MessageType.GuildBoostTier1:
-    case MessageType.GuildBoostTier2:
-    case MessageType.GuildBoostTier3:
-      return wrap('boost', fill(system.boost, { user }));
-
-    case MessageType.ThreadCreated:
-      return wrap(
-        'thread',
-        fill(system.threadStarted, {
-          user,
-          name: <i data-goto={message.message_reference?.message_id}>{message.content}</i>,
-        })
-      );
-
-    case MessageType.ChannelNameChange:
-      return wrap('edit', fill(system.channelName, { user, name: <b>{message.content}</b> }));
-
-    default:
-      return null;
-  }
-}
-
-function Highlight({ ctx, user }: { ctx: RenderContext; user: APIUser }): Child {
-  return <i style={{ color: ctx.roleColor(user.id) ?? 'inherit', fontWeight: 500 }}>{ctx.displayName(user)}</i>;
 }

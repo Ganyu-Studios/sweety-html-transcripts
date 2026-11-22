@@ -2,11 +2,11 @@ import type { APIEmbed } from 'discord-api-types/v10';
 import { EmbedType } from 'discord-api-types/v10';
 import type { Child } from '../jsx';
 import { h } from '../jsx';
-import { calculateInlineIndex } from '../utils/embeds';
-import { toHex } from '../utils/utils';
+import { calculateInlineIndex } from '../../utils/embeds';
+import { toHex } from '../../utils/utils';
 import { MediaGallery } from './attachments';
 import { Content, ContentKind } from './content';
-import type { RenderContext } from './context';
+import type { RenderContext } from '../context';
 
 export function Embed({ ctx, embed }: { ctx: RenderContext; embed: APIEmbed }): Child {
   // Image, video and gifv embeds are link unfurls Discord draws as bare media.

@@ -1,4 +1,4 @@
-import type { Profile } from './context';
+import type { Profile } from '../context';
 
 /** The `@penwin/discord-components-core/ssr` entry. Declared locally so the dependency stays optional. */
 interface CoreSSR {
