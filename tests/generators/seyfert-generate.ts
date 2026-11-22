@@ -9,6 +9,7 @@ const client = new Client({
   getRC() {
     return {
       token: process.env.TOKEN!,
+      debug: process.env.DEBUG === 'true',
       locations: { base: '.' },
       intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMessages | GatewayIntentBits.MessageContent,
     };

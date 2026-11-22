@@ -7,7 +7,7 @@ import type { DiscordJSClientLike, DiscordJSFile } from './adapters/discordjs';
 import { discordjs } from './adapters/discordjs';
 import type { SeyfertClientLike, SeyfertFile } from './adapters/seyfert';
 import { seyfert } from './adapters/seyfert';
-import type { AdapterFile, TranscriptAdapter } from './adapters/types';
+import type { AdapterFile, TranscriptAdapter, TranscriptCache } from './adapters/types';
 import type { ResolveImageCallback } from './fetch/images';
 import { render } from './render';
 import { createTranscripts } from './transcripts';
@@ -97,11 +97,13 @@ export async function generateFromMessages<
 export class DiscordJSTranscriptAdapter implements TranscriptAdapter<DiscordJSFile> {
   public readonly get: TranscriptAdapter['get'];
   public readonly file: (data: Buffer, name: string) => DiscordJSFile;
+  public readonly cache: TranscriptCache | undefined;
 
   public constructor(client: DiscordJSClientLike) {
     const adapter = discordjs(client);
     this.get = adapter.get;
     this.file = adapter.file!;
+    this.cache = adapter.cache;
   }
 }
 
@@ -109,11 +111,13 @@ export class DiscordJSTranscriptAdapter implements TranscriptAdapter<DiscordJSFi
 export class SeyfertTranscriptAdapter implements TranscriptAdapter<SeyfertFile> {
   public readonly get: TranscriptAdapter['get'];
   public readonly file: (data: Buffer, name: string) => SeyfertFile;
+  public readonly cache: TranscriptCache | undefined;
 
   public constructor(client: SeyfertClientLike) {
     const adapter = seyfert(client);
     this.get = adapter.get;
     this.file = adapter.file!;
+    this.cache = adapter.cache;
   }
 }
 

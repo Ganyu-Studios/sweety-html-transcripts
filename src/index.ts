@@ -4,12 +4,12 @@ export type { AttachmentOptions, ChannelInput, HtmlOptions, Transcripts, Transcr
 
 // Adapters
 export { discordjs } from './adapters/discordjs';
-export type { DiscordJSClientLike, DiscordJSFile } from './adapters/discordjs';
+export type { DiscordJSAdapterOptions, DiscordJSClientLike, DiscordJSFile } from './adapters/discordjs';
 export { seyfert } from './adapters/seyfert';
-export type { SeyfertClientLike, SeyfertFile } from './adapters/seyfert';
+export type { SeyfertAdapterOptions, SeyfertClientLike, SeyfertFile } from './adapters/seyfert';
 export { DiscordAPIError, rest } from './adapters/rest';
 export type { RestAdapterOptions, RestFile } from './adapters/rest';
-export type { AdapterFile, Awaitable, Query, TranscriptAdapter } from './adapters/types';
+export type { AdapterFile, Awaitable, Query, TranscriptAdapter, TranscriptCache } from './adapters/types';
 
 // The two phases, for use without an instance
 export { fetchTranscript, resolveTranscript, transcriptFromMessages } from './fetch';
