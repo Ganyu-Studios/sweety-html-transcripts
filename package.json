@@ -33,6 +33,11 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./plugin": {
+      "import": "./dist/plugin.js",
+      "require": "./dist/plugin.js",
+      "types": "./dist/plugin.d.ts"
+    },
     "./adapters/*": {
       "import": "./dist/adapters/*.js",
       "require": "./dist/adapters/*.js",
@@ -90,7 +95,8 @@
   },
   "peerDependencies": {
     "@penwin/discord-components-core": "^4.6.0",
-    "sharp": ">=0.33.0"
+    "sharp": ">=0.33.0",
+    "seyfert": ">=5.0.0"
   },
   "packageManager": "pnpm@12.23.0+sha512.02da94ffaf133f46074322afe552f90d40b5f71ae259aefbccdacc5085b1d617e98d65e0131f5748b9b67445978ee5055d7d59a473f1eef0d504854fefcd5975",
   "peerDependenciesMeta": {
@@ -98,6 +104,9 @@
       "optional": true
     },
     "sharp": {
+      "optional": true
+    },
+    "seyfert": {
       "optional": true
     }
   }

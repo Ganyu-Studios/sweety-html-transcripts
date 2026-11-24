@@ -38,21 +38,28 @@ interface SeyfertCache {
   users?: { raw(id: string): unknown };
 }
 
-function seyfertCache(cache: SeyfertCache): TranscriptCache {
+/**
+ * Lookups into the client's cache. The cache is read on every call, not captured: seyfert can
+ * replace `client.cache` after the adapter exists (`setServices`, or when a plugin creates the
+ * adapter in the client's constructor).
+ */
+function seyfertCache(client: SeyfertClientLike): TranscriptCache {
+  const cache = () => client.cache as SeyfertCache | undefined;
+
   return {
-    channel: async (id) => (await cache.channels?.raw(id)) as TranscriptChannel | undefined,
-    channels: async (guildId) => (await cache.channels?.valuesRaw(guildId)) as TranscriptChannel[] | undefined,
-    guild: async (id) => (await cache.guilds?.raw(id)) as TranscriptGuild | undefined,
-    roles: async (guildId) => (await cache.roles?.valuesRaw(guildId)) as APIRole[] | undefined,
+    channel: async (id) => (await cache()?.channels?.raw(id)) as TranscriptChannel | undefined,
+    channels: async (guildId) => (await cache()?.channels?.valuesRaw(guildId)) as TranscriptChannel[] | undefined,
+    guild: async (id) => (await cache()?.guilds?.raw(id)) as TranscriptGuild | undefined,
+    roles: async (guildId) => (await cache()?.roles?.valuesRaw(guildId)) as APIRole[] | undefined,
     member: async (guildId, userId) => {
-      const member = (await cache.members?.raw(userId, guildId)) as APIGuildMember | undefined;
+      const member = (await cache()?.members?.raw(userId, guildId)) as APIGuildMember | undefined;
       if (!member) return undefined;
       // The member resource may store the user apart; join it back when the users cache has it.
       if (member.user) return member;
-      const user = (await cache.users?.raw(userId)) as APIUser | undefined;
+      const user = (await cache()?.users?.raw(userId)) as APIUser | undefined;
       return user ? { ...member, user } : member;
     },
-    user: async (id) => (await cache.users?.raw(id)) as APIUser | undefined,
+    user: async (id) => (await cache()?.users?.raw(id)) as APIUser | undefined,
   };
 }
 
@@ -73,7 +80,7 @@ export function seyfert(
       const params = cleanQuery(query);
       return client.rest.request<T>('GET', route, params ? { query: params } : undefined);
     },
-    cache: options.cache === false || !client.cache ? undefined : seyfertCache(client.cache as SeyfertCache),
+    cache: options.cache === false ? undefined : seyfertCache(client),
     file: (data, name) => ({ data, filename: name }),
   };
 }
