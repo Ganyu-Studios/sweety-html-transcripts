@@ -1,6 +1,6 @@
 {
   "name": "sweety-html-transcripts",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Fast, library-agnostic HTML transcripts for Discord bots (seyfert, discord.js, or plain REST).",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -32,6 +32,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./plugin": {
+      "import": "./dist/plugin.js",
+      "require": "./dist/plugin.js",
+      "types": "./dist/plugin.d.ts"
     },
     "./adapters/*": {
       "import": "./dist/adapters/*.js",
@@ -67,9 +72,9 @@
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^10.0.1",
     "@penwin/discord-components-core": "4.7.0",
-    "@types/node": "^26.6.6",
-    "@typescript-eslint/eslint-plugin": "^8.73.0",
-    "@typescript-eslint/parser": "^8.73.0",
+    "@types/node": "^26.6.7",
+    "@typescript-eslint/eslint-plugin": "^8.74.0",
+    "@typescript-eslint/parser": "^8.74.0",
     "discord.js": "^14.28.1",
     "dotenv": "^18.0.10",
     "eslint": "^10.15.0",
@@ -77,7 +82,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.6.2",
     "prettier": "^3.10.1",
-    "seyfert": "5.2.1",
+    "seyfert": "6.0.0",
     "sharp": "^0.35.5",
     "tsx": "^4.23.15",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
@@ -90,14 +95,18 @@
   },
   "peerDependencies": {
     "@penwin/discord-components-core": "^4.6.0",
-    "sharp": ">=0.33.0"
+    "sharp": ">=0.33.0",
+    "seyfert": ">=5.0.0"
   },
-  "packageManager": "pnpm@12.21.0+sha512.66fd8278ee28935ce951792d34367ff3af5c432a2756445823029533835b8da529bbe0be5130afd56ed0713fb8789e47bad82d93bd5ae2fe54b15562d6276ef0",
+  "packageManager": "pnpm@12.23.0+sha512.02da94ffaf133f46074322afe552f90d40b5f71ae259aefbccdacc5085b1d617e98d65e0131f5748b9b67445978ee5055d7d59a473f1eef0d504854fefcd5975",
   "peerDependenciesMeta": {
     "@penwin/discord-components-core": {
       "optional": true
     },
     "sharp": {
+      "optional": true
+    },
+    "seyfert": {
       "optional": true
     }
   }

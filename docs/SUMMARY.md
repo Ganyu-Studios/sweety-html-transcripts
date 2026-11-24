@@ -6,6 +6,7 @@
 
 - [Upgrading from 0.x](guides/upgrading.md)
 - [Server rendering](guides/server-rendering.md)
+- [Seyfert plugin](guides/seyfert-plugin.md)
 
 ## API Reference
 
