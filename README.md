@@ -101,6 +101,37 @@ const adapter: TranscriptAdapter<MyFile> = {
 };
 ```
 
+### Seyfert plugin
+
+On seyfert 5 or later, the plugin puts the instance on the client (`client.transcripts`), and on
+every command, component and modal context (`ctx.transcripts`) already bound to that context's
+channel:
+
+```ts
+import { Client, definePlugins } from 'seyfert';
+import { transcriptsPlugin } from 'sweety-html-transcripts/plugin';
+
+const plugins = definePlugins(transcriptsPlugin({ render: { theme: 'dark' } }));
+const client = new Client({ plugins });
+
+// Types client.transcripts and ctx.transcripts everywhere
+declare module 'seyfert' {
+  interface SeyfertRegistry {
+    plugins: typeof plugins;
+  }
+}
+
+// In a command, component or modal: the channel it runs in
+const file = await ctx.transcripts.attachment({ filename: 'ticket.html' });
+await ctx.write({ files: [file] });
+
+// Any other channel
+const html = await ctx.client.transcripts.html(otherChannelId);
+```
+
+The options are the `createTranscripts` defaults (`fetch` and `render`) plus `cache: false` to skip
+`client.cache`. See [the guide](docs/guides/seyfert-plugin.md).
+
 ### Messages you already have
 
 ```ts
