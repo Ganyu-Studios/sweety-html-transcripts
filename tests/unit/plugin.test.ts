@@ -69,6 +69,21 @@ test('ctx.transcripts works on the channel the context runs in', async () => {
   assert.ok(file.data.toString().includes('from the plugin'));
   assert.ok(api.calls.includes(`/channels/${CHANNEL_ID}/messages`));
 
-  assert.equal(extend({ channel: { id: CHANNEL_ID } }).transcripts.channelId, CHANNEL_ID, 'falls back to channel.id');
+  assert.equal(
+    extend({ channel: { id: CHANNEL_ID } }).transcripts.channelId,
+    CHANNEL_ID,
+    'an interaction carries the channel itself'
+  );
+
+  // A prefix-command message: channelId, and channel() is a method that would fetch the channel.
+  let fetchedChannel = false;
+  const fetchChannel = async () => {
+    fetchedChannel = true;
+    return { id: 'from-the-api' };
+  };
+  assert.equal(extend({ channelId: CHANNEL_ID, channel: fetchChannel }).transcripts.channelId, CHANNEL_ID);
+  assert.equal(extend({ channel: fetchChannel }).transcripts.channelId, '', 'a channel() method is not a channel');
+  assert.equal(fetchedChannel, false, 'binding never calls channel()');
+
   await assert.rejects(extend({}).transcripts.html(), /has no channel/);
 });
