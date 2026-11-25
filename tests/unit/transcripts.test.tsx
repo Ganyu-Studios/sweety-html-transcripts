@@ -352,3 +352,123 @@ test('the seyfert adapter reads raw objects straight from client.cache', async (
   assert.equal(await cache.guild!(GUILD_ID), undefined, 'a disabled resource is a miss');
   assert.equal(seyfert(client, { cache: false }).cache, undefined);
 });
+
+test('seyfert raw shorters fill the cache, so the next transcript only asks for messages', async () => {
+  const api = fakeAdapter([message({ content: 'one' }), message({ author: bob, content: 'two' })], {
+    [alice.id]: { nick: 'Ali' },
+    [bob.id]: {},
+  });
+
+  // Shorters the way seyfert's behave: cached value, otherwise a request that is then cached.
+  const cached = new Map<string, unknown>();
+  const raw = async <T,>(key: string, route: `/${string}`): Promise<T> => {
+    if (!cached.has(key)) cached.set(key, await api.get(route));
+    return cached.get(key) as T;
+  };
+  const client = {
+    rest: {
+      request: <T,>(_method: string, route: `/${string}`, options?: { query?: Record<string, string> }) =>
+        api.get<T>(route, options?.query),
+    },
+    channels: { raw: (id: string) => raw(`channel:${id}`, `/channels/${id}`) },
+    guilds: { raw: (id: string) => raw(`guild:${id}`, `/guilds/${id}`) },
+    roles: { listRaw: async (id: string) => (await raw<{ roles: unknown[] }>(`guild:${id}`, `/guilds/${id}`)).roles },
+    members: { raw: (guildId: string, id: string) => raw(`member:${id}`, `/guilds/${guildId}/members/${id}`) },
+    users: { raw: (id: string) => raw(`user:${id}`, `/users/${id}`) },
+  };
+  const transcripts = createTranscripts(seyfert(client));
+
+  const first = await transcripts.fetch(CHANNEL_ID);
+  assert.ok(api.calls.length > 1, 'the first transcript fetches the channel, guild and members');
+  assert.equal(first.members[alice.id]?.nick, 'Ali');
+
+  api.calls.length = 0;
+  const second = await transcripts.fetch(CHANNEL_ID);
+  assert.deepEqual(api.calls, [`/channels/${CHANNEL_ID}/messages`], 'everything else comes from the cache');
+  assert.deepEqual(second.members, first.members);
+});
+
+test('an API error from a library lookup is final, not retried over REST', async () => {
+  const api = fakeAdapter([message({ author: bob, content: 'left the server' })]);
+  let asked = 0;
+  const client = {
+    rest: {
+      request: <T,>(_method: string, route: `/${string}`, options?: { query?: Record<string, string> }) =>
+        api.get<T>(route, options?.query),
+    },
+    members: {
+      // seyfert's errors carry the response status in metadata.
+      raw: async () => {
+        asked++;
+        throw Object.assign(new Error('Unknown Member'), { metadata: { status: 404 } });
+      },
+    },
+  };
+  const transcripts = createTranscripts(seyfert(client));
+
+  const transcript = await transcripts.fetch(CHANNEL_ID);
+  assert.equal(transcript.members[bob.id], undefined);
+  assert.ok(!api.calls.some((route) => route.includes('/members/')), 'seyfert already got the 404');
+
+  await transcripts.fetch(CHANNEL_ID);
+  assert.equal(asked, 1, 'the 404 is remembered, so the next transcript does not ask again');
+});
+
+test('the discord.js adapter uses fetch(), which caches, for what is not cached yet', async () => {
+  const fetched: string[] = [];
+  const djsUser = {
+    id: alice.id,
+    username: 'alice',
+    discriminator: '0',
+    globalName: 'Alice',
+    avatar: null,
+    bot: false,
+  };
+  const roles = new Map([[moderator.id, { id: moderator.id, name: 'Moderator', color: 0, position: 1, icon: null }]]);
+  const members = {
+    cache: new Map<string, unknown>(),
+    fetch: async (id: string) => {
+      fetched.push(`member:${id}`);
+      const member = { nickname: 'Ali', avatar: null, joinedAt: null, roles: { cache: roles }, user: djsUser };
+      members.cache.set(id, member);
+      return member;
+    },
+  };
+  const guild = {
+    id: GUILD_ID,
+    name: 'Guild',
+    icon: null,
+    roles: {
+      cache: new Map<string, unknown>(),
+      fetch: async () => {
+        fetched.push('roles');
+        for (const [id, role] of roles) guild.roles.cache.set(id, role);
+        return guild.roles.cache;
+      },
+    },
+    channels: { cache: new Map() },
+    members,
+  };
+  const guilds = {
+    cache: new Map<string, unknown>(),
+    fetch: async (id: string) => {
+      fetched.push(`guild:${id}`);
+      guilds.cache.set(id, guild);
+      return guild;
+    },
+  };
+  const client = {
+    rest: { get: async () => Promise.reject(new Error('REST is not used here')) },
+    guilds,
+    channels: { cache: new Map() },
+    users: { cache: new Map() },
+  };
+
+  const cache = discordjs(client).cache!;
+  for (let i = 0; i < 2; i++) {
+    assert.equal(((await cache.member!(GUILD_ID, alice.id)) as { nick: string }).nick, 'Ali');
+    assert.equal((await cache.roles!(GUILD_ID))![0]!.name, 'Moderator');
+  }
+
+  assert.deepEqual(fetched, [`guild:${GUILD_ID}`, `member:${alice.id}`, 'roles'], 'each fetched once, then cached');
+});

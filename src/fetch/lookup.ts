@@ -1,5 +1,6 @@
 import type { APIGuild, APIGuildMember, APIRole, APIUser } from 'discord-api-types/v10';
 import type { Awaitable, TranscriptAdapter } from '../adapters/types';
+import { httpStatus } from '../adapters/types';
 import type { TranscriptChannel, TranscriptGuild } from '../model';
 
 /** The channel fields the model keeps, from any raw-shaped channel. */
@@ -22,20 +23,25 @@ export const pickGuild = (guild: Pick<APIGuild, 'id' | 'name' | 'icon'>): Transc
   icon: guild.icon,
 });
 
-/** Run a cache read; anything it cannot answer (undefined, empty list, a thrown error) is a miss. */
+/**
+ * Run an adapter lookup. What it cannot answer (undefined, an empty list) is a miss, and REST is
+ * asked instead. If it fails with an HTTP status, the library already asked the API, so the error is
+ * the answer (a 404 stays a 404) and is not retried. Any other failure (a broken cache) is a miss.
+ */
 async function fromCache<T>(read: (() => Awaitable<T | undefined>) | undefined): Promise<T | undefined> {
   if (!read) return undefined;
   try {
     const value = await read();
     return Array.isArray(value) && value.length === 0 ? undefined : (value ?? undefined);
-  } catch {
+  } catch (error) {
+    if (httpStatus(error) !== undefined) throw error;
     return undefined;
   }
 }
 
 /**
- * Every lookup the fetch phase makes, each one trying the adapter's cache before REST. Counts what
- * came from where, so callers can see how much the cache saved.
+ * Every lookup the fetch phase makes, each one trying the adapter (the library's cache, or its
+ * cache-then-fetch methods) before REST. Counts what came from where.
  */
 export class Lookup {
   public readonly stats = { cache: 0, rest: 0 };
@@ -73,13 +79,12 @@ export class Lookup {
     return channels.map((channel) => pickChannel(channel as TranscriptChannel & Record<string, unknown>));
   }
 
-  /** The guild and its roles: from the cache when it has both, otherwise one REST request. */
+  /** The guild and its roles: from the adapter when it has both, otherwise one REST request. */
   public async guild(id: string): Promise<{ guild: TranscriptGuild; roles: APIRole[] }> {
     const cache = this.adapter.cache;
-    const [guild, roles] = await Promise.all([
-      fromCache(cache?.guild && (() => cache.guild!(id))),
-      fromCache(cache?.roles && (() => cache.roles!(id))),
-    ]);
+    // One after the other: a library that has to fetch the guild usually caches its roles with it.
+    const guild = await fromCache(cache?.guild && (() => cache.guild!(id)));
+    const roles = guild ? await fromCache(cache?.roles && (() => cache.roles!(id))) : undefined;
 
     if (guild && roles) {
       this.stats.cache++;
