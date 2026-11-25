@@ -1,4 +1,5 @@
 import type { APIGuildMember, APIRole, APIUser } from 'discord-api-types/v10';
+import type { UsingClient } from 'seyfert';
 import type { TranscriptChannel, TranscriptGuild } from '../model';
 import type { TranscriptAdapter, TranscriptCache } from './types';
 import { cleanQuery, rememberMisses } from './types';
@@ -37,26 +38,13 @@ export interface SeyfertAdapterOptions {
   cache?: boolean;
 }
 
-/** The seyfert cache resources read here, each optional since any of them can be disabled. */
-interface SeyfertCache {
-  channels?: { raw(id: string): unknown; valuesRaw(guild: string): unknown };
-  guilds?: { raw(id: string): unknown };
-  roles?: { valuesRaw(guild: string): unknown };
-  members?: { raw(id: string, guild: string): unknown };
-  users?: { raw(id: string): unknown };
-}
-
 /**
- * The seyfert shorters used here. Their `raw` methods return the cached raw object, or request it
- * and store it in the cache.
+ * The parts of a seyfert client read here, with seyfert's own types. Partial: a client may have no
+ * cache, a cache resource may be disabled, and a client-like object may have no shorters.
+ *
+ * Only used inside this module, so the published declarations never import seyfert.
  */
-interface SeyfertShorters {
-  channels?: { raw?(id: string): Promise<unknown> };
-  guilds?: { raw?(id: string): Promise<unknown> };
-  roles?: { listRaw?(guildId: string): Promise<unknown> };
-  members?: { raw?(guildId: string, memberId: string): Promise<unknown> };
-  users?: { raw?(id: string): Promise<unknown> };
-}
+type SeyfertParts = Partial<Pick<UsingClient, 'cache' | 'channels' | 'guilds' | 'roles' | 'members' | 'users'>>;
 
 /**
  * Lookups through seyfert. Each one uses the shorter's `raw` method (cache, then a request that
@@ -66,33 +54,28 @@ interface SeyfertShorters {
  * adapter exists (`setServices`, or when a plugin creates the adapter in the client's constructor).
  */
 function seyfertLookups(client: SeyfertClientLike): TranscriptCache {
-  const cache = () => client.cache as SeyfertCache | undefined;
-  const shorters = client as SeyfertShorters;
+  const seyfert = client as SeyfertParts;
 
-  const user = async (id: string) =>
-    (shorters.users?.raw ? await shorters.users.raw(id) : await cache()?.users?.raw(id)) as APIUser | undefined;
+  const user = async (id: string): Promise<APIUser | undefined> =>
+    seyfert.users?.raw ? seyfert.users.raw(id) : seyfert.cache?.users?.raw(id);
 
   return {
     channel: async (id) =>
-      (shorters.channels?.raw ? await shorters.channels.raw(id) : await cache()?.channels?.raw(id)) as
+      (seyfert.channels?.raw ? await seyfert.channels.raw(id) : await seyfert.cache?.channels?.raw(id)) as
         TranscriptChannel | undefined,
     // seyfert has no raw list for a guild's channels: read the cache, and REST fills in otherwise.
-    channels: async (guildId) => (await cache()?.channels?.valuesRaw(guildId)) as TranscriptChannel[] | undefined,
-    guild: async (id) =>
-      (shorters.guilds?.raw ? await shorters.guilds.raw(id) : await cache()?.guilds?.raw(id)) as
-        TranscriptGuild | undefined,
-    roles: async (guildId) =>
-      (shorters.roles?.listRaw ? await shorters.roles.listRaw(guildId) : await cache()?.roles?.valuesRaw(guildId)) as
-        APIRole[] | undefined,
+    channels: async (guildId) => (await seyfert.cache?.channels?.valuesRaw(guildId)) as TranscriptChannel[] | undefined,
+    guild: async (id): Promise<TranscriptGuild | undefined> =>
+      seyfert.guilds?.raw ? seyfert.guilds.raw(id) : seyfert.cache?.guilds?.raw(id),
+    roles: async (guildId): Promise<APIRole[] | undefined> =>
+      seyfert.roles?.listRaw ? seyfert.roles.listRaw(guildId) : seyfert.cache?.roles?.valuesRaw(guildId),
     member: async (guildId, userId) => {
-      const member = (
-        shorters.members?.raw
-          ? await shorters.members.raw(guildId, userId)
-          : await cache()?.members?.raw(userId, guildId)
-      ) as APIGuildMember | undefined;
+      const member: APIGuildMember | Omit<APIGuildMember, 'user'> | undefined = seyfert.members?.raw
+        ? await seyfert.members.raw(guildId, userId)
+        : await seyfert.cache?.members?.raw(userId, guildId);
       if (!member) return undefined;
       // A cached member may be stored without its user; join it back.
-      if (member.user) return member;
+      if ('user' in member && member.user) return member;
       const found = await user(userId).catch(() => undefined);
       return found ? { ...member, user: found } : member;
     },
