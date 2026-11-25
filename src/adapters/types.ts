@@ -7,12 +7,15 @@ export type Awaitable<T> = Promise<T> | T;
 export type Query = Record<string, string | number | boolean | undefined>;
 
 /**
- * Read-only lookups into a library's cache, tried before the REST request for the same data so a
- * transcript does not hit the API for what the bot already knows.
+ * Lookups through a library, tried before the REST request for the same data so a transcript does
+ * not hit the API for what the bot already knows. The built-in adapters use the library's own
+ * cache-then-fetch methods (seyfert's `raw` shorters, discord.js's `fetch()`), so what they request
+ * is cached for the next transcript.
  *
  * Every method is optional and may return `undefined` (not cached, cache disabled): the REST
- * request is made instead. A method that throws is treated the same way. Shapes are the raw API
- * ones; only the fields listed on the model types are read.
+ * request is made instead. A method that throws an error with an HTTP status (the library already
+ * asked the API) fails the lookup without a second request; any other error counts as `undefined`.
+ * Shapes are the raw API ones; only the fields listed on the model types are read.
  */
 export interface TranscriptCache {
   channel?(id: string): Awaitable<TranscriptChannel | undefined>;
@@ -59,6 +62,52 @@ export interface TranscriptAdapter<File = unknown> {
 
 /** The file type an adapter produces. */
 export type AdapterFile<A> = A extends TranscriptAdapter<infer File> ? File : never;
+
+/**
+ * The HTTP status of a failed API request: `status` on discord.js errors and ours, `metadata.status`
+ * on seyfert's. `undefined` for anything that is not an API response.
+ */
+export function httpStatus(error: unknown): number | undefined {
+  if (typeof error !== 'object' || error === null) return undefined;
+  const { status, metadata } = error as { status?: unknown; metadata?: { status?: unknown } };
+  const value = typeof status === 'number' ? status : metadata?.status;
+  return typeof value === 'number' ? value : undefined;
+}
+
+/** How long a 403 or 404 from a lookup is remembered. */
+const MISS_TTL = 5 * 60_000;
+
+/**
+ * Remember lookups the API answered with 403 or 404 (a member who left, a forwarded message's
+ * channel the bot cannot see) for a few minutes. Libraries do not cache those, so without this
+ * every transcript would ask again.
+ */
+export function rememberMisses(lookups: TranscriptCache, ttl = MISS_TTL): TranscriptCache {
+  const misses = new Map<string, { error: unknown; until: number }>();
+  const wrapped: Record<string, (...args: string[]) => Promise<unknown>> = {};
+
+  for (const [name, lookup] of Object.entries(lookups) as [string, (...args: string[]) => Awaitable<unknown>][]) {
+    wrapped[name] = async (...args) => {
+      const key = `${name}:${args.join(':')}`;
+      const now = Date.now();
+      const miss = misses.get(key);
+      if (miss && miss.until > now) throw miss.error;
+
+      try {
+        return await lookup(...args);
+      } catch (error) {
+        const status = httpStatus(error);
+        if (status === 403 || status === 404) {
+          if (misses.size >= 1000) for (const [k, v] of misses) if (v.until <= now) misses.delete(k);
+          misses.set(key, { error, until: now + ttl });
+        }
+        throw error;
+      }
+    };
+  }
+
+  return wrapped as TranscriptCache;
+}
 
 /** Drop undefined values so they are not sent as the string "undefined". */
 export function cleanQuery(query: Query | undefined): Record<string, string> | undefined {

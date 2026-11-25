@@ -1,7 +1,8 @@
-import type { APIGuildMember, APIRole, APIUser, ChannelType } from 'discord-api-types/v10';
+import type { APIGuildMember, APIRole, APIUser } from 'discord-api-types/v10';
+import type { Channel, Client, Collection, Guild, GuildBasedChannel, GuildMember, Role, User } from 'discord.js';
 import type { TranscriptChannel, TranscriptGuild } from '../model';
 import type { TranscriptAdapter, TranscriptCache } from './types';
-import { cleanQuery } from './types';
+import { cleanQuery, rememberMisses } from './types';
 
 /**
  * The parts of a discord.js `Client` the adapter uses. Typed structurally so this module never
@@ -11,7 +12,7 @@ export interface DiscordJSClientLike {
   rest: {
     get(route: `/${string}`, options?: { query?: URLSearchParams }): Promise<unknown>;
   };
-  /** The client's caches (`client.channels`, `client.guilds`, `client.users`). */
+  /** The client's managers (`client.channels`, `client.guilds`, `client.users`): their caches and `fetch()`. */
   channels?: unknown;
   guilds?: unknown;
   users?: unknown;
@@ -25,64 +26,27 @@ export interface DiscordJSFile {
 
 export interface DiscordJSAdapterOptions {
   /**
-   * Read channels, guilds, roles, members and users from the client's caches before asking the API.
+   * Look channels, guilds, roles, members and users up through the client's managers: their cache
+   * first, then `fetch()`, which stores what it gets for the next transcript. `false` asks the API
+   * directly every time.
    * @default true
    */
   cache?: boolean;
 }
 
-// The discord.js structures read from the cache, reduced to the fields the transcript model uses.
-// discord.js caches structures rather than API objects, so these are mapped back below; messages
-// always come from REST as raw objects, so this is the only mapping there is.
-interface Cache<V> {
-  get(key: string): V | undefined;
-  values(): Iterable<V>;
-}
-interface DJSUser {
-  id: string;
-  username: string;
-  discriminator: string;
-  globalName: string | null;
-  avatar: string | null;
-  bot: boolean;
-  flags?: { bitfield: number } | null;
-  primaryGuild?: { identityGuildId: string | null; tag: string | null; badge: string | null } | null;
-}
-interface DJSRole {
-  id: string;
-  name: string;
-  color: number;
-  colors?: { primaryColor: number; secondaryColor: number | null; tertiaryColor: number | null };
-  position: number;
-  icon: string | null;
-  unicodeEmoji?: string | null;
-}
-interface DJSMember {
-  nickname: string | null;
-  avatar: string | null;
-  joinedAt?: Date | null;
-  roles: { cache: Cache<DJSRole> };
-  user: DJSUser;
-}
-interface DJSChannel {
-  id: string;
-  type: ChannelType;
-  name?: string | null;
-  topic?: string | null;
-  guildId?: string | null;
-  parentId?: string | null;
-  ownerId?: string | null;
-}
-interface DJSGuild {
-  id: string;
-  name: string;
-  icon: string | null;
-  roles: { cache: Cache<DJSRole> };
-  channels: { cache: Cache<DJSChannel> };
-  members: { cache: Cache<DJSMember> };
-}
+/**
+ * The parts of a discord.js client read here, with discord.js's own types. Partial, so a client-like
+ * object without some managers still works.
+ *
+ * Only used inside this module, so the published declarations never import discord.js.
+ */
+type DiscordJSParts = Partial<Pick<Client, 'channels' | 'guilds' | 'users'>>;
 
-const user = (u: DJSUser): APIUser => ({
+// discord.js caches structures rather than API objects, so the few the transcript needs are mapped
+// back here. Messages always come from REST as raw objects, so this is the only mapping there is.
+// Fields added in later 14.x releases (`primaryGuild`, `colors`) are read defensively.
+
+const user = (u: User): APIUser => ({
   id: u.id,
   username: u.username,
   discriminator: u.discriminator,
@@ -100,12 +64,12 @@ const user = (u: DJSUser): APIUser => ({
     : undefined,
 });
 
-const role = (r: DJSRole): APIRole =>
+const role = (r: Role): APIRole =>
   ({
     id: r.id,
     name: r.name,
     color: r.color,
-    colors: r.colors
+    colors: (r.colors as Role['colors'] | undefined)
       ? {
           primary_color: r.colors.primaryColor,
           secondary_color: r.colors.secondaryColor,
@@ -117,62 +81,78 @@ const role = (r: DJSRole): APIRole =>
     unicode_emoji: r.unicodeEmoji ?? null,
   }) as APIRole;
 
-const channel = (c: DJSChannel): TranscriptChannel => ({
+const channel = (c: Channel): TranscriptChannel => ({
   id: c.id,
-  type: c.type,
-  name: c.name ?? null,
-  topic: c.topic ?? null,
-  guild_id: c.guildId ?? undefined,
-  parent_id: c.parentId ?? null,
-  owner_id: c.ownerId ?? undefined,
+  type: c.type as number as TranscriptChannel['type'],
+  name: 'name' in c ? (c.name ?? null) : null,
+  topic: 'topic' in c ? (c.topic ?? null) : null,
+  guild_id: 'guildId' in c ? (c.guildId ?? undefined) : undefined,
+  parent_id: 'parentId' in c ? (c.parentId ?? null) : null,
+  owner_id: 'ownerId' in c ? (c.ownerId ?? undefined) : undefined,
 });
 
-function discordjsCache(client: {
-  channels?: { cache: Cache<DJSChannel> };
-  guilds?: { cache: Cache<DJSGuild> };
-  users?: { cache: Cache<DJSUser> };
-}): TranscriptCache {
-  const guild = (id: string): DJSGuild | undefined => client.guilds?.cache.get(id);
+/** A guild's roles or channels: the cache when it has any, otherwise `fetch()`, which caches them. */
+async function listOf<V>(manager: {
+  cache: Collection<string, V>;
+  fetch?(): Promise<Collection<string, V>>;
+}): Promise<V[]> {
+  if (manager.cache.size !== 0 || !manager.fetch) return [...manager.cache.values()];
+  return [...(await manager.fetch()).values()];
+}
+
+/**
+ * Lookups through the client's managers: the cached structure when there is one, otherwise
+ * `fetch()`, which requests it and caches it, the way the bot itself would.
+ */
+function discordjsLookups(client: DiscordJSParts): TranscriptCache {
+  const guild = async (id: string): Promise<Guild | undefined> =>
+    client.guilds?.cache.get(id) ?? (await client.guilds?.fetch?.(id));
 
   return {
-    channel: (id) => {
-      const found = client.channels?.cache.get(id);
+    channel: async (id) => {
+      const found = client.channels?.cache.get(id) ?? (await client.channels?.fetch?.(id));
       return found ? channel(found) : undefined;
     },
-    channels: (guildId) => {
-      const found = guild(guildId);
-      return found ? [...found.channels.cache.values()].map(channel) : undefined;
+    channels: async (guildId) => {
+      const found = await guild(guildId);
+      if (!found) return undefined;
+      const all: (GuildBasedChannel | null)[] = await listOf(found.channels);
+      return all.filter((item): item is GuildBasedChannel => item !== null).map(channel);
     },
-    guild: (id) => {
-      const found = guild(id);
+    guild: async (id) => {
+      const found = await guild(id);
       return found ? ({ id: found.id, name: found.name, icon: found.icon } satisfies TranscriptGuild) : undefined;
     },
-    roles: (guildId) => {
-      const found = guild(guildId);
-      return found ? [...found.roles.cache.values()].map(role) : undefined;
+    roles: async (guildId) => {
+      const found = await guild(guildId);
+      return found ? (await listOf(found.roles)).map(role) : undefined;
     },
-    member: (guildId, userId) => {
-      const found = guild(guildId)?.members.cache.get(userId);
-      if (!found) return undefined;
+    member: async (guildId, userId) => {
+      const found = await guild(guildId);
+      const member: GuildMember | undefined = found
+        ? (found.members.cache.get(userId) ?? (await found.members.fetch?.(userId)))
+        : undefined;
+      if (!member) return undefined;
       return {
-        nick: found.nickname,
-        avatar: found.avatar,
-        roles: [...found.roles.cache.values()].map((r) => r.id).filter((id) => id !== guildId),
-        joined_at: found.joinedAt?.toISOString() ?? null,
-        user: user(found.user),
+        nick: member.nickname,
+        avatar: member.avatar,
+        roles: [...member.roles.cache.values()].map((r) => r.id).filter((id) => id !== guildId),
+        joined_at: member.joinedAt?.toISOString() ?? null,
+        user: user(member.user),
       } as APIGuildMember;
     },
-    user: (id) => {
-      const found = client.users?.cache.get(id);
+    user: async (id) => {
+      const found = client.users?.cache.get(id) ?? (await client.users?.fetch?.(id));
       return found ? user(found) : undefined;
     },
   };
 }
 
 /**
- * Adapter for discord.js. Channels, guilds, roles, members and users come from the client's caches
- * when they have them, and from `client.rest` (which returns raw API objects and handles rate
- * limits) otherwise. Messages always come from `client.rest`.
+ * Adapter for discord.js. Channels, guilds, roles, members and users go through the client's
+ * managers: from their cache when they have them, otherwise through `fetch()`, which stores them so
+ * the next transcript does not ask the API again. Messages always come from `client.rest` as raw
+ * API objects.
  *
  * @example
  * const transcripts = createTranscripts(discordjs(client));
@@ -186,7 +166,7 @@ export function discordjs(
       const params = cleanQuery(query);
       return client.rest.get(route, params ? { query: new URLSearchParams(params) } : undefined) as Promise<T>;
     },
-    cache: options.cache === false ? undefined : discordjsCache(client as Parameters<typeof discordjsCache>[0]),
+    cache: options.cache === false ? undefined : rememberMisses(discordjsLookups(client as DiscordJSParts)),
     file: (data, name) => ({ attachment: data, name }),
   };
 }
