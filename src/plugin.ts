@@ -1,4 +1,4 @@
-import type { SeyfertPlugin } from 'seyfert';
+import type { PluginContextInteraction, SeyfertPlugin } from 'seyfert';
 import { name, version } from '../package.json';
 import type { SeyfertAdapterOptions, SeyfertClientLike, SeyfertFile } from './adapters/seyfert';
 import { seyfert } from './adapters/seyfert';
@@ -44,6 +44,18 @@ export interface TranscriptsPluginExtension {
 /** What the plugin adds to command, component and modal contexts. */
 export interface TranscriptsPluginContext {
   transcripts: ChannelTranscripts;
+}
+
+/**
+ * The channel a context runs in. `channel` means different things depending on the source:
+ *
+ * - An interaction carries the channel itself as a `channel` property.
+ * - A message (prefix commands) has `channelId`, and `channel()` is a method that fetches the
+ *   channel. That method is never called here, since binding a context must not hit the API.
+ */
+function contextChannelId(source: PluginContextInteraction): string | undefined {
+  if ('channelId' in source && typeof source.channelId === 'string') return source.channelId;
+  return typeof source.channel === 'object' ? source.channel.id : undefined;
 }
 
 /** Bind the client's transcript methods to one channel. */
@@ -110,10 +122,7 @@ export function transcriptsPlugin(
     },
     ctx: {
       // seyfert calls this for every context it creates, so it only binds, it fetches nothing.
-      transcripts: (interaction, client) => {
-        const source = interaction as { channelId?: string; channel?: { id?: string } };
-        return forChannel(client.transcripts, source.channelId ?? source.channel?.id);
-      },
+      transcripts: (source, client) => forChannel(client.transcripts, contextChannelId(source)),
     },
   };
 }
