@@ -41,8 +41,7 @@ test('the plugin reads the cache seyfert has at request time, not at constructio
   const { client } = clientWith(transcriptsPlugin());
   const cache = client.transcripts.adapter.cache!;
 
-  assert.equal(await cache.user!(alice.id), undefined, 'the fresh client cache has nothing');
-
+  // seyfert's own users.raw shorter reads client.cache, so a cache set after construction is used.
   Object.assign(client, { cache: { users: { raw: async (id: string) => (id === alice.id ? alice : undefined) } } });
   assert.deepEqual(await cache.user!(alice.id), alice, 'a cache set later is used');
 });

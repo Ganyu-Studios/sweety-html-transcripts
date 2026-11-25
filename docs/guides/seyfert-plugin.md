@@ -81,7 +81,7 @@ See [createTranscripts](../api-reference/createtranscripts.md) for every method 
 | -------- | ------- | --------------------------------------------------------------------------- |
 | `fetch`  | `{}`    | Fetch defaults for every transcript (`limit`, `filter`, `saveImages`…).     |
 | `render` | `{}`    | Render defaults for every transcript (`theme`, `title`, `locale`, `mode`…). |
-| `cache`  | `true`  | Read channels, guilds, roles, members and users from `client.cache` first.  |
+| `cache`  | `true`  | Look channels, guilds, roles, members and users up through seyfert's cache. |
 
 Options passed to a single call override these defaults, on `ctx.transcripts` and
 `client.transcripts` alike.
@@ -90,6 +90,8 @@ Options passed to a single call override these defaults, on `ctx.transcripts` an
 
 The plugin is a plain seyfert plugin object, so the package never imports seyfert at runtime. Seyfert
 creates `client.transcripts` while it constructs the client, and `ctx.transcripts` each time it
-creates a context. The adapter reads `client.rest` and `client.cache` on every request, so a REST
-client or cache that seyfert sets up later (for example through `setServices`) is the one
+creates a context. Channels, guilds, roles, members and users go through seyfert's `raw` shorters
+(`client.members.raw()` and the like): the cache when it has them, otherwise one request that seyfert
+caches, so the next transcript does not ask again. The adapter reads the client on every request, so
+a REST client or cache that seyfert sets up later (for example through `setServices`) is the one
 transcripts use.

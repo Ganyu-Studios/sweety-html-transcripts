@@ -31,8 +31,8 @@ export interface ChannelTranscripts {
 }
 
 /**
- * Defaults for every transcript (`fetch` and `render`), and whether to read `client.cache` before
- * the API (`cache`, on by default).
+ * Defaults for every transcript (`fetch` and `render`), and whether to look things up through
+ * seyfert's cache before the API (`cache`, on by default).
  */
 export interface TranscriptsPluginOptions extends TranscriptsDefaults, SeyfertAdapterOptions {}
 
@@ -104,8 +104,8 @@ export function transcriptsPlugin(
     name,
     version,
     client: {
-      // seyfert calls this once, while constructing the client. The adapter reads `client.rest`
-      // and `client.cache` on each request, so services the client sets up later are still used.
+      // seyfert calls this once, while constructing the client. The adapter reads the client's
+      // REST, cache and shorters on each request, so services the client sets up later are used.
       transcripts: (client) => createTranscripts(seyfert(client as unknown as SeyfertClientLike, { cache }), defaults),
     },
     ctx: {
