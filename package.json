@@ -71,7 +71,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^10.0.1",
-    "@penwin/discord-components-core": "4.7.0",
+    "@penwin/discord-components-core": "4.7.1",
     "@types/node": "^26.6.7",
     "@typescript-eslint/eslint-plugin": "^8.74.0",
     "@typescript-eslint/parser": "^8.74.0",
