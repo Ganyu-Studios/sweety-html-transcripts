@@ -1,6 +1,6 @@
 {
   "name": "sweety-html-transcripts",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Fast, library-agnostic HTML transcripts for Discord bots (seyfert, discord.js, or plain REST).",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -71,7 +71,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^10.0.1",
-    "@penwin/discord-components-core": "4.7.0",
+    "@penwin/discord-components-core": "4.7.1",
     "@types/node": "^26.6.7",
     "@typescript-eslint/eslint-plugin": "^8.74.0",
     "@typescript-eslint/parser": "^8.74.0",

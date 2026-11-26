@@ -110,6 +110,26 @@ test('render writes the attributes the components actually read', async () => {
   assert.match(html, /"roleColor":"#ff0000"/, 'profiles carry the role color');
 });
 
+test('a separator without a divider is written as divider="false"', async () => {
+  const separators = message({
+    flags: 1 << 15,
+    components: [
+      { type: 14, id: 1, divider: false, spacing: 1 },
+      { type: 14, id: 2, divider: true, spacing: 2 },
+      { type: 14, id: 3, spacing: 1 },
+    ],
+  } as Partial<APIMessage>);
+  const transcripts = createTranscripts(fakeAdapter([separators]));
+  const html = transcripts.render(await transcripts.fetch(CHANNEL_ID));
+
+  // The component defaults to drawing the line, so only false needs an attribute.
+  assert.deepEqual(html.match(/<discord-separator[^>]*>/g), [
+    '<discord-separator spacing="1" divider="false">',
+    '<discord-separator spacing="2">',
+    '<discord-separator spacing="1">',
+  ]);
+});
+
 test('a forwarded message passes the author and time to the media viewer', async () => {
   const forwarded = message({
     message_reference: { type: 1, channel_id: CHANNEL_ID, message_id: '1' },

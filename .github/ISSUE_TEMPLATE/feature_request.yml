@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest a new option, a missing Discord feature, or an improvement.
+title: '[Feature] '
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to do?
+      description: The problem or use case behind the request. If Discord shows something the transcripts don't, a screenshot helps.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How you'd like it to work. An example of the API you have in mind is welcome.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Workarounds or other approaches you considered.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to open a pull request for this.
+          required: false

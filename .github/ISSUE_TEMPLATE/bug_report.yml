@@ -1,0 +1,95 @@
+name: Bug report
+description: Something renders wrong, crashes or doesn't behave as documented.
+title: '[Bug] '
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. For usage questions, please ask on the [support server](https://discord.gg/4JmKY8wgB6) instead.
+
+        Before opening the issue, please check that it still happens on the latest version, or on `sweety-html-transcripts@dev`.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happens? Include the full error and stack trace if there is one.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should happen instead? How does Discord show it?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: The code you use to create the transcript, and the message content or components that trigger the problem.
+      placeholder: |
+        const attachment = await client.transcripts.attachment(channelId, { ... });
+      render: ts
+    validations:
+      required: false
+
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Attachments
+      description: Screenshots of the transcript next to the same message in Discord, or the generated HTML file. You can drag files into this field.
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: sweety-html-transcripts version
+      placeholder: '1.2.1'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: library
+    attributes:
+      label: Library
+      options:
+        - Seyfert (plugin)
+        - Seyfert (adapter)
+        - discord.js
+        - Other / plain REST
+    validations:
+      required: true
+
+  - type: input
+    id: library-version
+    attributes:
+      label: Library version
+      placeholder: 'seyfert 6.0.0 / discord.js 14.x'
+    validations:
+      required: false
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Render mode
+      description: Leave it as client if you don't set `mode`.
+      options:
+        - client (default)
+        - server
+        - Not sure
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Runtime and version, plus the browser used to open the transcript if it's a display problem.
+      placeholder: 'Node.js 22.x, Chrome 131'
+    validations:
+      required: false
