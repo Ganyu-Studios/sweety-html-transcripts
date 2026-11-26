@@ -1,6 +1,6 @@
 {
   "name": "sweety-html-transcripts",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Fast, library-agnostic HTML transcripts for Discord bots (seyfert, discord.js, or plain REST).",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
