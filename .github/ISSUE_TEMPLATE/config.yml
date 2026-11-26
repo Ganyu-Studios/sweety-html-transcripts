@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support server
+    url: https://discord.gg/4JmKY8wgB6
+    about: Questions about using the package. Please open a thread there instead of an issue.
+  - name: Documentation
+    url: https://github.com/Ganyu-Studios/sweety-html-transcripts/tree/main/docs
+    about: Guides and the API reference.
+  - name: Component rendering (discord-components)
+    url: https://github.com/Ganyu-Studios/discord-components/issues
+    about: Problems in the web components themselves, outside of transcripts.
