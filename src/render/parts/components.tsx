@@ -96,7 +96,10 @@ function Component({
       );
 
     case ComponentType.Separator:
-      return <discord-separator spacing={component.spacing} divider={component.divider ?? true} />;
+      // `divider` defaults to true on the component, so only false is written, as divider="false".
+      return (
+        <discord-separator spacing={component.spacing} divider={component.divider === false ? 'false' : undefined} />
+      );
 
     case ComponentType.File: {
       // The API resolves file components with name and size, which the types do not declare.
